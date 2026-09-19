@@ -10,7 +10,9 @@ import type { Database } from "@/lib/database.types";
 
 type Requirement = Database["public"]["Tables"]["material_requirements"]["Row"];
 type PlanItem = Database["public"]["Tables"]["material_plan_items"]["Row"];
-type Participant = Database["public"]["Tables"]["assignment_participants"]["Row"];
+type Participant = Database["public"]["Tables"]["assignment_participants"]["Row"] & {
+  students: { name: string } | null;
+};
 
 type MatchStatus = "match" | "review" | "missing";
 
@@ -76,7 +78,11 @@ export default function PlanReview() {
 
   const load = useCallback(async () => {
     if (!participantId) return;
-    const { data: part } = await supabase.from("assignment_participants").select("*").eq("id", participantId).single();
+    const { data: part } = await supabase
+      .from("assignment_participants")
+      .select("*, students(name)")
+      .eq("id", participantId)
+      .single();
     if (!part) return;
     setParticipant(part);
 
@@ -115,7 +121,7 @@ export default function PlanReview() {
 
   return (
     <ScrollView style={{ backgroundColor: theme.background }} contentContainerStyle={styles.container}>
-      <Text style={[styles.title, { color: theme.text }]}>Materialplan</Text>
+      <Text style={[styles.title, { color: theme.text }]}>{participant.students?.name ? `Materialplan — ${participant.students.name}` : "Materialplan"}</Text>
       <Text style={{ color: theme.muted, marginBottom: 4 }}>
         {participant.plan_submitted_at
           ? `Inskickad ${new Date(participant.plan_submitted_at).toLocaleString("sv-SE")}`

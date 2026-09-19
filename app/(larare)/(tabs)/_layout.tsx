@@ -25,6 +25,10 @@ export default function TabsLayout() {
         name="uppdrag"
         options={{ title: "Uppdrag", headerShown: false, tabBarIcon: ({ focused }) => <TabIcon emoji="📋" focused={focused} /> }}
       />
+      <Tabs.Screen
+        name="klasser"
+        options={{ title: "Klasser", headerShown: false, tabBarIcon: ({ focused }) => <TabIcon emoji="🎓" focused={focused} /> }}
+      />
       <Tabs.Screen name="forrad" options={{ title: "Förråd", tabBarIcon: ({ focused }) => <TabIcon emoji="📦" focused={focused} /> }} />
       <Tabs.Screen
         name="bestallningar"

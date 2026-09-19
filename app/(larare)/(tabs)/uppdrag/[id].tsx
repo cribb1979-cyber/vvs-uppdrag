@@ -6,13 +6,27 @@ import { Badge, Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { useAuth } from "@/contexts/AuthContext";
+import { getErrorMessage } from "@/lib/errors";
 import { supabase } from "@/lib/supabase";
+import { sessionJoinUrl } from "@/lib/links";
 import type { Database } from "@/lib/database.types";
 
 type Assignment = Database["public"]["Tables"]["assignments"]["Row"];
 type Requirement = Database["public"]["Tables"]["material_requirements"]["Row"];
 type StudentSession = Database["public"]["Tables"]["student_sessions"]["Row"];
 type Participant = Database["public"]["Tables"]["assignment_participants"]["Row"];
+type ClassRow = Database["public"]["Tables"]["classes"]["Row"];
+type AssignmentAssignmentRow = Database["public"]["Tables"]["assignment_assignments"]["Row"];
+
+interface ParticipantWithName extends Participant {
+  students: { name: string } | null;
+}
+
+interface AssignmentAssignmentWithNames extends AssignmentAssignmentRow {
+  classes: { name: string } | null;
+  students: { name: string } | null;
+}
 
 const DURATIONS = [
   { label: "1 dag", days: 1 },
@@ -49,11 +63,15 @@ export default function AssignmentDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const theme = Colors[useColorScheme() ?? "light"];
   const router = useRouter();
+  const { org } = useAuth();
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [sessions, setSessions] = useState<StudentSession[]>([]);
-  const [participants, setParticipants] = useState<Record<string, Participant[]>>({});
+  const [allParticipants, setAllParticipants] = useState<ParticipantWithName[]>([]);
+  const [classes, setClasses] = useState<ClassRow[]>([]);
+  const [assignments, setAssignments] = useState<AssignmentAssignmentWithNames[]>([]);
+  const [assigningClass, setAssigningClass] = useState(false);
   const [creatingSession, setCreatingSession] = useState(false);
   const [customDate, setCustomDate] = useState("");
   const [newComponent, setNewComponent] = useState("");
@@ -61,34 +79,22 @@ export default function AssignmentDetail() {
   const [newQuantity, setNewQuantity] = useState("1");
 
   const load = useCallback(async () => {
-    if (!id) return;
-    const { data: a } = await supabase.from("assignments").select("*").eq("id", id).single();
-    const { data: reqs } = await supabase.from("material_requirements").select("*").eq("assignment_id", id).order("sort_order");
-    const { data: sess } = await supabase
-      .from("student_sessions")
-      .select("*")
-      .eq("assignment_id", id)
-      .order("created_at", { ascending: false });
+    if (!id || !org) return;
+    const [{ data: a }, { data: reqs }, { data: sess }, { data: parts }, { data: cls }, { data: aa }] = await Promise.all([
+      supabase.from("assignments").select("*").eq("id", id).single(),
+      supabase.from("material_requirements").select("*").eq("assignment_id", id).order("sort_order"),
+      supabase.from("student_sessions").select("*").eq("assignment_id", id).order("created_at", { ascending: false }),
+      supabase.from("assignment_participants").select("*, students(name)").eq("assignment_id", id),
+      supabase.from("classes").select("*").eq("org_id", org.id).order("name"),
+      supabase.from("assignment_assignments").select("*, classes(name), students(name)").eq("assignment_id", id),
+    ]);
     setAssignment(a ?? null);
     setRequirements(reqs ?? []);
     setSessions(sess ?? []);
-
-    if (sess && sess.length > 0) {
-      const { data: parts } = await supabase
-        .from("assignment_participants")
-        .select("*")
-        .in(
-          "session_id",
-          sess.map((s) => s.id),
-        );
-      const grouped: Record<string, Participant[]> = {};
-      for (const p of parts ?? []) {
-        if (!p.session_id) continue;
-        grouped[p.session_id] = [...(grouped[p.session_id] ?? []), p];
-      }
-      setParticipants(grouped);
-    }
-  }, [id]);
+    setAllParticipants((parts as ParticipantWithName[] | null) ?? []);
+    setClasses(cls ?? []);
+    setAssignments((aa as AssignmentAssignmentWithNames[] | null) ?? []);
+  }, [id, org]);
 
   useFocusEffect(
     useCallback(() => {
@@ -185,6 +191,28 @@ export default function AssignmentDetail() {
     load();
   }
 
+  async function assignToClass(classId: string) {
+    if (!assignment) return;
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+    const { error } = await supabase
+      .from("assignment_assignments")
+      .insert({ assignment_id: assignment.id, class_id: classId, assigned_by: user.id });
+    setAssigningClass(false);
+    if (error) {
+      Alert.alert("Kunde inte tilldela", getErrorMessage(error));
+      return;
+    }
+    load();
+  }
+
+  async function unassign(assignmentAssignmentId: string) {
+    await supabase.from("assignment_assignments").delete().eq("id", assignmentAssignmentId);
+    load();
+  }
+
   if (!assignment) return <View style={{ flex: 1, backgroundColor: theme.background }} />;
 
   const activeSessions = sessions.filter((s) => !s.revoked_at && new Date(s.expires_at).getTime() > Date.now());
@@ -215,13 +243,13 @@ export default function AssignmentDetail() {
       {activeSessions.map((s) => (
         <Card key={s.id} style={styles.sessionCard}>
           <View style={styles.qrWrap}>
-            <QRCode value={s.code} size={140} />
+            <QRCode value={sessionJoinUrl(s.code)} size={140} />
           </View>
           <Text style={[styles.code, { color: theme.text }]}>{s.code}</Text>
           <Text style={{ color: theme.muted, marginBottom: 8 }}>{timeLeftLabel(s.expires_at)}</Text>
           <Text style={{ color: theme.muted, marginBottom: 12 }}>
-            {(participants[s.id] ?? []).length} elev(er) anslutna ·{" "}
-            {(participants[s.id] ?? []).filter((p) => p.plan_submitted_at).length} har skickat in
+            {allParticipants.filter((p) => p.session_id === s.id).length} elev(er) anslutna ·{" "}
+            {allParticipants.filter((p) => p.session_id === s.id && p.plan_submitted_at).length} har skickat in
           </Text>
           <Button title="Stäng session" variant="danger" onPress={() => revokeSession(s.id)} />
         </Card>
@@ -263,6 +291,43 @@ export default function AssignmentDetail() {
         <Button title="+ Skapa elevsession" variant="secondary" onPress={() => setCreatingSession(true)} />
       )}
 
+      <SectionTitle text="Tilldelat till klasser" theme={theme} />
+      <Text style={{ color: theme.muted, fontSize: 13, marginBottom: 12 }}>
+        Elever som löst in sin personliga kod ser detta uppdrag så fort det är tilldelat och uppdraget är "Aktivt".
+      </Text>
+      {assignments.map((aa) => (
+        <View key={aa.id} style={[styles.reqRow, { borderColor: theme.border }]}>
+          <Text style={{ color: theme.text, flex: 1 }}>{aa.classes?.name ?? aa.students?.name ?? "—"}</Text>
+          <TouchableOpacity onPress={() => unassign(aa.id)}>
+            <Text style={{ color: theme.danger }}>Ta bort</Text>
+          </TouchableOpacity>
+        </View>
+      ))}
+      {assigningClass ? (
+        <Card>
+          {classes.filter((c) => !assignments.some((aa) => aa.class_id === c.id)).length === 0 ? (
+            <Text style={{ color: theme.muted, marginBottom: 12 }}>Alla klasser är redan tilldelade, eller så finns inga klasser ännu.</Text>
+          ) : (
+            classes
+              .filter((c) => !assignments.some((aa) => aa.class_id === c.id))
+              .map((c) => (
+                <TouchableOpacity
+                  key={c.id}
+                  style={[styles.reqRow, { borderColor: theme.border }]}
+                  onPress={() => assignToClass(c.id)}
+                >
+                  <Text style={{ color: theme.text, flex: 1 }}>{c.name}</Text>
+                  <Text style={{ color: theme.tint }}>Tilldela</Text>
+                </TouchableOpacity>
+              ))
+          )}
+          <View style={{ height: 8 }} />
+          <Button title="Avbryt" variant="ghost" onPress={() => setAssigningClass(false)} />
+        </Card>
+      ) : (
+        <Button title="+ Tilldela klass" variant="secondary" onPress={() => setAssigningClass(true)} />
+      )}
+
       <SectionTitle text={`Facit (${requirements.length} rader, elever ser: ${revealLabel(assignment.reveal_mode)})`} theme={theme} />
       {requirements.map((r) => (
         <View key={r.id} style={[styles.reqRow, { borderColor: theme.border }]}>
@@ -302,24 +367,17 @@ export default function AssignmentDetail() {
       </Card>
 
       <SectionTitle text="Materialplaner från elever" theme={theme} />
-      {activeSessions.flatMap((s) => participants[s.id] ?? []).length === 0 && (
-        <Text style={{ color: theme.muted }}>Inga elever har anslutit ännu.</Text>
-      )}
-      {activeSessions
-        .flatMap((s) => participants[s.id] ?? [])
-        .map((p) => (
-          <TouchableOpacity
-            key={p.id}
-            style={[styles.reqRow, { borderColor: theme.border }]}
-            onPress={() => router.push(`/(larare)/(tabs)/uppdrag/plan/${p.id}`)}
-          >
-            <Text style={{ color: theme.text, flex: 1 }}>Elev {p.id.slice(0, 8)}</Text>
-            <Badge
-              label={p.plan_submitted_at ? "Inskickad" : "Pågår"}
-              tone={p.plan_submitted_at ? "success" : "warning"}
-            />
-          </TouchableOpacity>
-        ))}
+      {allParticipants.length === 0 && <Text style={{ color: theme.muted }}>Inga elever har anslutit ännu.</Text>}
+      {allParticipants.map((p) => (
+        <TouchableOpacity
+          key={p.id}
+          style={[styles.reqRow, { borderColor: theme.border }]}
+          onPress={() => router.push(`/(larare)/(tabs)/uppdrag/plan/${p.id}`)}
+        >
+          <Text style={{ color: theme.text, flex: 1 }}>{p.students?.name ?? `Elev ${p.id.slice(0, 8)} (QR)`}</Text>
+          <Badge label={p.plan_submitted_at ? "Inskickad" : "Pågår"} tone={p.plan_submitted_at ? "success" : "warning"} />
+        </TouchableOpacity>
+      ))}
     </ScrollView>
   );
 }

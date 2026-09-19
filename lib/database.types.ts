@@ -45,6 +45,13 @@ export interface Database {
         };
         Relationships: [];
       };
+      // ---------------------------------------------------------------
+      // NB: Relationships nedan speglar migrationens FK:ar exakt (namn,
+      // kolumner, mål) -- postgrest-js använder dem för att typa embeddade
+      // selects som `.select("*, students(name)")`. Håll i synk vid
+      // schemaändringar, annars faller embed-typning tillbaka på
+      // SelectQueryError trots att anropet fungerar fint i praktiken.
+      // ---------------------------------------------------------------
       profiles: {
         Row: {
           id: string;
@@ -67,7 +74,9 @@ export interface Database {
           role?: ProfileRole;
           status?: ProfileStatus;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "profiles_org_id_fkey"; columns: ["org_id"]; isOneToOne: false; referencedRelation: "orgs"; referencedColumns: ["id"] },
+        ];
       };
       classes: {
         Row: {
@@ -93,7 +102,10 @@ export interface Database {
           year_level?: string;
           school_year?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "classes_org_id_fkey"; columns: ["org_id"]; isOneToOne: false; referencedRelation: "orgs"; referencedColumns: ["id"] },
+          { foreignKeyName: "classes_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
       };
       students: {
         Row: {
@@ -119,7 +131,9 @@ export interface Database {
           code?: string;
           revoked_at?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "students_class_id_fkey"; columns: ["class_id"]; isOneToOne: false; referencedRelation: "classes"; referencedColumns: ["id"] },
+        ];
       };
       student_links: {
         Row: {
@@ -135,7 +149,9 @@ export interface Database {
           linked_at?: string;
         };
         Update: never;
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "student_links_student_id_fkey"; columns: ["student_id"]; isOneToOne: false; referencedRelation: "students"; referencedColumns: ["id"] },
+        ];
       };
       assignments: {
         Row: {
@@ -185,7 +201,10 @@ export interface Database {
           is_template?: boolean;
           assessment_visible?: boolean;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "assignments_org_id_fkey"; columns: ["org_id"]; isOneToOne: false; referencedRelation: "orgs"; referencedColumns: ["id"] },
+          { foreignKeyName: "assignments_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
       };
       material_requirements: {
         Row: {
@@ -215,7 +234,9 @@ export interface Database {
           note?: string;
           sort_order?: number;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "material_requirements_assignment_id_fkey"; columns: ["assignment_id"]; isOneToOne: false; referencedRelation: "assignments"; referencedColumns: ["id"] },
+        ];
       };
       student_sessions: {
         Row: {
@@ -240,7 +261,10 @@ export interface Database {
           revoked_at?: string | null;
           expires_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "student_sessions_assignment_id_fkey"; columns: ["assignment_id"]; isOneToOne: false; referencedRelation: "assignments"; referencedColumns: ["id"] },
+          { foreignKeyName: "student_sessions_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
       };
       assignment_assignments: {
         Row: {
@@ -260,7 +284,12 @@ export interface Database {
           assigned_at?: string;
         };
         Update: never;
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "assignment_assignments_assignment_id_fkey"; columns: ["assignment_id"]; isOneToOne: false; referencedRelation: "assignments"; referencedColumns: ["id"] },
+          { foreignKeyName: "assignment_assignments_class_id_fkey"; columns: ["class_id"]; isOneToOne: false; referencedRelation: "classes"; referencedColumns: ["id"] },
+          { foreignKeyName: "assignment_assignments_student_id_fkey"; columns: ["student_id"]; isOneToOne: false; referencedRelation: "students"; referencedColumns: ["id"] },
+          { foreignKeyName: "assignment_assignments_assigned_by_fkey"; columns: ["assigned_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
       };
       assignment_participants: {
         Row: {
@@ -290,7 +319,11 @@ export interface Database {
           plan_submitted_at?: string | null;
           plan_locked?: boolean;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "assignment_participants_assignment_id_fkey"; columns: ["assignment_id"]; isOneToOne: false; referencedRelation: "assignments"; referencedColumns: ["id"] },
+          { foreignKeyName: "assignment_participants_session_id_fkey"; columns: ["session_id"]; isOneToOne: false; referencedRelation: "student_sessions"; referencedColumns: ["id"] },
+          { foreignKeyName: "assignment_participants_student_id_fkey"; columns: ["student_id"]; isOneToOne: false; referencedRelation: "students"; referencedColumns: ["id"] },
+        ];
       };
       material_plan_items: {
         Row: {
@@ -317,7 +350,9 @@ export interface Database {
           quantity?: number;
           comment?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "material_plan_items_participant_id_fkey"; columns: ["participant_id"]; isOneToOne: false; referencedRelation: "assignment_participants"; referencedColumns: ["id"] },
+        ];
       };
       assessment_criteria: {
         Row: {
@@ -338,7 +373,9 @@ export interface Database {
           label?: string;
           sort_order?: number;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "assessment_criteria_assignment_id_fkey"; columns: ["assignment_id"]; isOneToOne: false; referencedRelation: "assignments"; referencedColumns: ["id"] },
+        ];
       };
       assessment_results: {
         Row: {
@@ -365,7 +402,11 @@ export interface Database {
           assessed_by?: string | null;
           assessed_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "assessment_results_criteria_id_fkey"; columns: ["criteria_id"]; isOneToOne: false; referencedRelation: "assessment_criteria"; referencedColumns: ["id"] },
+          { foreignKeyName: "assessment_results_student_id_fkey"; columns: ["student_id"]; isOneToOne: false; referencedRelation: "students"; referencedColumns: ["id"] },
+          { foreignKeyName: "assessment_results_assessed_by_fkey"; columns: ["assessed_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
       };
       material_catalog: {
         Row: {
@@ -418,7 +459,10 @@ export interface Database {
           image_url?: string | null;
           note?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "material_catalog_org_id_fkey"; columns: ["org_id"]; isOneToOne: false; referencedRelation: "orgs"; referencedColumns: ["id"] },
+          { foreignKeyName: "material_catalog_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
       };
     };
     Views: Record<string, never>;

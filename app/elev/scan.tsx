@@ -9,10 +9,18 @@ import Colors from "@/constants/Colors";
 
 const LAST_CODE_KEY = "vvs-uppdrag:last-session-code";
 
+// QR-koder kan innehålla antingen ren text (lokal utveckling, ingen
+// EXPO_PUBLIC_APP_URL satt) eller en riktig länk dit telefonens vanliga
+// kamera kan skickas: https://.../elev/uppdrag/<KOD> (se lib/links.ts).
+// Stöder även ett äldre ?code=<KOD>-format som fallback.
 function extractCode(scanned: string): string {
-  const match = scanned.match(/[?&]code=([^&]+)/i);
-  const raw = match ? decodeURIComponent(match[1]) : scanned;
-  return raw.trim().toUpperCase();
+  const pathMatch = scanned.match(/\/elev\/uppdrag\/([^/?#]+)/i);
+  if (pathMatch) return decodeURIComponent(pathMatch[1]).trim().toUpperCase();
+
+  const queryMatch = scanned.match(/[?&]code=([^&]+)/i);
+  if (queryMatch) return decodeURIComponent(queryMatch[1]).trim().toUpperCase();
+
+  return scanned.trim().toUpperCase();
 }
 
 export default function Scan() {
