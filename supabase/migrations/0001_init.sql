@@ -313,7 +313,7 @@ returns public.profiles
 language sql
 stable
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
   select * from public.profiles
   where id = auth.uid() and status = 'approved'
@@ -628,7 +628,7 @@ create or replace function public.create_org_and_admin(org_name text, teacher_na
 returns public.orgs
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   new_org public.orgs;
@@ -664,7 +664,7 @@ create or replace function public.join_org(code text, teacher_name text)
 returns public.orgs
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   target public.orgs;
@@ -693,7 +693,7 @@ create or replace function public.join_session(session_code text)
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   sess public.student_sessions;
@@ -747,7 +747,7 @@ create or replace function public.redeem_student_code(p_code text)
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   target public.students;
@@ -786,7 +786,7 @@ create or replace function public.add_student(p_class_id uuid, p_name text)
 returns public.students
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   teacher public.profiles;
@@ -828,7 +828,7 @@ create or replace function public.regenerate_student_code(p_student_id uuid)
 returns public.students
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   teacher public.profiles;
@@ -864,7 +864,7 @@ create or replace function public.remove_student(p_student_id uuid)
 returns void
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   teacher public.profiles;
@@ -893,7 +893,7 @@ create or replace function public.open_assignment_as_student(p_assignment_id uui
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   my_student_id uuid;
@@ -960,7 +960,7 @@ create or replace function public.list_my_assignments()
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   my_student_id uuid;
@@ -1000,7 +1000,7 @@ create or replace function public.get_requirements_view(p_participant_id uuid)
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   part public.assignment_participants;
@@ -1044,7 +1044,7 @@ create or replace function public.submit_material_plan(p_participant_id uuid)
 returns void
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 begin
   update public.assignment_participants
@@ -1067,7 +1067,7 @@ create or replace function public.reopen_material_plan(p_participant_id uuid)
 returns void
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   allowed boolean;
