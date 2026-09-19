@@ -20,7 +20,7 @@ export default function Landing() {
   }
 
   if (session && !session.user.is_anonymous) {
-    if (profile?.status === "approved") return <Redirect href="/(larare)" />;
+    if (profile?.status === "approved") return <Redirect href="/(larare)/(tabs)" />;
     if (profile?.status === "pending") return <Redirect href="/(auth)/pending" />;
     return <Redirect href="/(auth)/complete-profile" />;
   }

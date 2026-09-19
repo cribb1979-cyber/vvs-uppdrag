@@ -514,7 +514,7 @@ begin
   end if;
 
   update public.session_participants
-  set plan_locked = false
+  set plan_locked = false, plan_submitted_at = null
   where id = p_participant_id;
 end;
 $$;

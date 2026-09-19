@@ -1,6 +1,6 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import { Badge, Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -28,9 +28,14 @@ function generateCode(title: string) {
     .replace(/Ö/g, "O")
     .replace(/[^A-Z0-9]/g, "")
     .slice(0, 10);
-  const suffix = Math.random().toString(16).slice(2, 6).toUpperCase();
+  // 6 hex-tecken (24 bitar) ger ~16 miljoner kombinationer per titel-slug --
+  // krocksannolikheten är i praktiken försumbar, men insert-anropet nedan
+  // försöker ändå igen vid en krock istället för att bara ge upp.
+  const suffix = Math.random().toString(16).slice(2, 8).toUpperCase();
   return `VVS-${slug || "UPPDRAG"}-${suffix}`;
 }
+
+const UNIQUE_VIOLATION = "23505";
 
 function timeLeftLabel(expiresAt: string) {
   const ms = new Date(expiresAt).getTime() - Date.now();
@@ -98,13 +103,18 @@ export default function AssignmentDetail() {
 
   async function addRequirement() {
     if (!assignment || !newComponent.trim()) return;
-    await supabase.from("material_requirements").insert({
+    const nextSortOrder = requirements.reduce((max, r) => Math.max(max, r.sort_order), -1) + 1;
+    const { error } = await supabase.from("material_requirements").insert({
       assignment_id: assignment.id,
       component: newComponent.trim(),
       dimension: newDimension.trim(),
       quantity: Math.max(1, Number.parseInt(newQuantity, 10) || 1),
-      sort_order: requirements.length,
+      sort_order: nextSortOrder,
     });
+    if (error) {
+      Alert.alert("Kunde inte lägga till raden", error.message);
+      return;
+    }
     setNewComponent("");
     setNewDimension("");
     setNewQuantity("1");
@@ -118,20 +128,33 @@ export default function AssignmentDetail() {
 
   async function createSession(expiresAt: string) {
     if (!assignment) return;
-    setCreatingSession(false);
-    setCustomDate("");
     const {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return;
-    const code = generateCode(assignment.title);
-    const { error } = await supabase.from("student_sessions").insert({
-      assignment_id: assignment.id,
-      code,
-      created_by: user.id,
-      expires_at: expiresAt,
-    });
-    if (!error) load();
+
+    // Försök några gånger vid en (extremt osannolik) kod-krock istället för
+    // att bara tyst misslyckas.
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const code = generateCode(assignment.title);
+      const { error } = await supabase.from("student_sessions").insert({
+        assignment_id: assignment.id,
+        code,
+        created_by: user.id,
+        expires_at: expiresAt,
+      });
+      if (!error) {
+        setCreatingSession(false);
+        setCustomDate("");
+        load();
+        return;
+      }
+      if (error.code !== UNIQUE_VIOLATION) {
+        Alert.alert("Kunde inte skapa elevsession", error.message);
+        return;
+      }
+    }
+    Alert.alert("Kunde inte skapa elevsession", "Försök igen.");
   }
 
   function createSessionWithDays(days: number) {
@@ -139,8 +162,20 @@ export default function AssignmentDetail() {
   }
 
   function createSessionWithCustomDate() {
-    const parsed = new Date(customDate);
-    if (Number.isNaN(parsed.getTime()) || parsed.getTime() <= Date.now()) return;
+    // Tolka ÅÅÅÅ-MM-DD som slutet av den dagen i lärarens LOKALA tidszon --
+    // new Date("2026-10-01") tolkas annars som UTC-midnatt, vilket gör att
+    // sessionen går ut flera timmar för tidigt lokalt (se join_session-flödet).
+    const match = customDate.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) {
+      Alert.alert("Ogiltigt datum", "Ange datum som ÅÅÅÅ-MM-DD.");
+      return;
+    }
+    const [, year, month, day] = match;
+    const parsed = new Date(Number(year), Number(month) - 1, Number(day), 23, 59, 59, 999);
+    if (Number.isNaN(parsed.getTime()) || parsed.getTime() <= Date.now()) {
+      Alert.alert("Ogiltigt datum", "Datumet måste vara i framtiden.");
+      return;
+    }
     createSession(parsed.toISOString());
   }
 

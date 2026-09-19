@@ -18,18 +18,45 @@ function norm(s: string) {
   return s.trim().toLowerCase();
 }
 
-function compare(requirements: Requirement[], items: PlanItem[]) {
-  return requirements.map((req) => {
-    const candidates = items.filter((it) => norm(it.component) === norm(req.component));
-    if (candidates.length === 0) return { req, status: "missing" as MatchStatus, found: null as PlanItem | null };
+interface ComparisonRow {
+  req: Requirement;
+  status: MatchStatus;
+  found: PlanItem | null;
+}
 
-    const exact = candidates.find(
-      (it) => norm(it.dimension) === norm(req.dimension) && it.quantity >= req.quantity,
+// Varje elev-rad får bara "användas" som bevis för EN kravrad -- annars kan
+// samma angivna komponent räknas som matchning för flera krav samtidigt
+// (t.ex. två kravrader "Rörklämma" i olika dimensioner som båda pekar på
+// elevens enda "Rörklämma"-rad). Två pass: exakt matchning (komponent +
+// dimension + tillräckligt antal) före löst matchning (bara komponent),
+// så att en exakt träff aldrig blockeras av att en annan kravrad redan
+// tagit samma elev-rad i det lösa passet.
+function compare(requirements: Requirement[], items: PlanItem[]): { rows: ComparisonRow[]; usedItemIds: Set<string> } {
+  const usedItemIds = new Set<string>();
+  const rows = new Map<string, ComparisonRow>();
+
+  for (const req of requirements) {
+    const exact = items.find(
+      (it) => !usedItemIds.has(it.id) && norm(it.component) === norm(req.component) && norm(it.dimension) === norm(req.dimension) && it.quantity >= req.quantity,
     );
-    if (exact) return { req, status: "match" as MatchStatus, found: exact };
+    if (exact) {
+      usedItemIds.add(exact.id);
+      rows.set(req.id, { req, status: "match", found: exact });
+    }
+  }
 
-    return { req, status: "review" as MatchStatus, found: candidates[0] };
-  });
+  for (const req of requirements) {
+    if (rows.has(req.id)) continue;
+    const loose = items.find((it) => !usedItemIds.has(it.id) && norm(it.component) === norm(req.component));
+    if (loose) {
+      usedItemIds.add(loose.id);
+      rows.set(req.id, { req, status: "review", found: loose });
+    } else {
+      rows.set(req.id, { req, status: "missing", found: null });
+    }
+  }
+
+  return { rows: requirements.map((req) => rows.get(req.id)!), usedItemIds };
 }
 
 const STATUS_META: Record<MatchStatus, { emoji: string; label: string; tone: "success" | "warning" | "danger" }> = {
@@ -82,8 +109,8 @@ export default function PlanReview() {
 
   if (!participant) return <View style={{ flex: 1, backgroundColor: theme.background }} />;
 
-  const results = compare(requirements, items);
-  const extras = items.filter((it) => !requirements.some((r) => norm(r.component) === norm(it.component)));
+  const { rows: results, usedItemIds } = compare(requirements, items);
+  const extras = items.filter((it) => !usedItemIds.has(it.id));
   const counts = results.reduce(
     (acc, r) => ({ ...acc, [r.status]: acc[r.status] + 1 }),
     { match: 0, review: 0, missing: 0 } as Record<MatchStatus, number>,

@@ -25,28 +25,28 @@ export default function Hem() {
 
   const load = useCallback(async () => {
     if (!org) return;
-    const { count: activeAssignments } = await supabase
-      .from("assignments")
-      .select("id", { count: "exact", head: true })
-      .eq("org_id", org.id)
-      .eq("status", "active");
-    const sessionsRes = await supabase
-      .from("student_sessions")
-      .select("id, expires_at, revoked_at, assignments!inner(org_id)")
-      .eq("assignments.org_id", org.id)
-      .is("revoked_at", null);
-    const plansRes = await supabase
-      .from("session_participants")
-      .select("id, plan_submitted_at, student_sessions!inner(assignment_id, assignments!inner(org_id))")
-      .eq("student_sessions.assignments.org_id", org.id)
-      .not("plan_submitted_at", "is", null);
-    // RLS begränsar denna till org-admins -- en vanlig lärare får alltid
-    // 0 rader tillbaka, så vi behöver ingen villkorlig gren här.
-    const teachersRes = await supabase
-      .from("profiles")
-      .select("id", { count: "exact", head: true })
-      .eq("org_id", org.id)
-      .eq("status", "pending");
+    // Fyra oberoende queries -- kör parallellt istället för sekventiellt.
+    // (En tidigare version av den här koden körde dem en i taget efter att
+    // ha stött på en separat TypeScript-bugg i Promise.all-inferensen;
+    // grundorsaken satt i lib/database.types.ts, inte här -- se den filens
+    // kommentar. Nu när den är fixad är parallellt både snabbare och lika
+    // typsäkert.)
+    const [{ count: activeAssignments }, sessionsRes, plansRes, teachersRes] = await Promise.all([
+      supabase.from("assignments").select("id", { count: "exact", head: true }).eq("org_id", org.id).eq("status", "active"),
+      supabase
+        .from("student_sessions")
+        .select("id, expires_at, revoked_at, assignments!inner(org_id)")
+        .eq("assignments.org_id", org.id)
+        .is("revoked_at", null),
+      supabase
+        .from("session_participants")
+        .select("id, plan_submitted_at, student_sessions!inner(assignment_id, assignments!inner(org_id))")
+        .eq("student_sessions.assignments.org_id", org.id)
+        .not("plan_submitted_at", "is", null),
+      // RLS begränsar denna till org-admins -- en vanlig lärare får alltid
+      // 0 rader tillbaka, så vi behöver ingen villkorlig gren här.
+      supabase.from("profiles").select("id", { count: "exact", head: true }).eq("org_id", org.id).eq("status", "pending"),
+    ]);
 
     const now = Date.now();
     const sessions = sessionsRes.data ?? [];

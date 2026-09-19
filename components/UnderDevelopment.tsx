@@ -3,7 +3,8 @@ import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 
 // Används för funktioner som INTE är kopplade till riktig data/backend
-// ännu -- vi simulerar aldrig ett lyckat resultat, se AGENTS.md/regel 27.
+// ännu -- vi simulerar aldrig ett lyckat resultat genom att visa påhittad
+// data istället.
 export function UnderDevelopment({ title, note }: { title: string; note?: string }) {
   const theme = Colors[useColorScheme() ?? "light"];
   return (
