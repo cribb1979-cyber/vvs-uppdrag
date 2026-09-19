@@ -8,7 +8,8 @@ import Colors from "@/constants/Colors";
 import { supabase } from "@/lib/supabase";
 import { TeacherSignedInError, useStudentSession } from "@/lib/useStudentSession";
 
-function timeLeftLabel(expiresAt: string) {
+function timeLeftLabel(expiresAt: string | null) {
+  if (!expiresAt) return "Ingen tidsgräns";
   const ms = new Date(expiresAt).getTime() - Date.now();
   if (ms <= 0) return "Avslutat";
   const hours = Math.floor(ms / (1000 * 60 * 60));
@@ -67,9 +68,11 @@ export default function ElevUppdrag() {
 
       <Card style={{ marginTop: 20 }}>
         <Text style={{ color: theme.text, fontWeight: "700" }}>⏳ {timeLeftLabel(data.session_expires_at)}</Text>
-        <Text style={{ color: theme.muted, fontSize: 13, marginTop: 4 }}>
-          Uppdraget stängs {new Date(data.session_expires_at).toLocaleString("sv-SE")}
-        </Text>
+        {!!data.session_expires_at && (
+          <Text style={{ color: theme.muted, fontSize: 13, marginTop: 4 }}>
+            Uppdraget stängs {new Date(data.session_expires_at).toLocaleString("sv-SE")}
+          </Text>
+        )}
       </Card>
 
       {data.assignment.ai_mode === "off" && (

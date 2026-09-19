@@ -5,7 +5,7 @@ import type { AiMode, RevealMode } from "./database.types";
 
 export interface StudentSessionData {
   participant_id: string;
-  session_expires_at: string;
+  session_expires_at: string | null;
   assignment: {
     id: string;
     title: string;
@@ -20,7 +20,7 @@ export interface StudentSessionData {
 
 export class TeacherSignedInError extends Error {}
 
-async function ensureAnonymousAuth() {
+export async function ensureAnonymousAuth() {
   const { data } = await supabase.auth.getSession();
   if (data.session && !data.session.user.is_anonymous) {
     throw new TeacherSignedInError("Du är inloggad som lärare på den här enheten. Logga ut för att gå med som elev.");

@@ -1,18 +1,17 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ActivityIndicator, View } from "react-native";
-import { Text } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 import { MaterialPlanEditor } from "@/components/MaterialPlanEditor";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
-import { useStudentSession } from "@/lib/useStudentSession";
+import { useAssignmentAsStudent } from "@/lib/useAssignmentAsStudent";
 
-export default function MaterialPlan() {
-  const { code } = useLocalSearchParams<{ code: string }>();
+export default function MinaUppdragMaterialplan() {
+  const { assignmentId } = useLocalSearchParams<{ assignmentId: string }>();
   const theme = Colors[useColorScheme() ?? "light"];
   const router = useRouter();
-  const { data: session, error: sessionError, loading: sessionLoading, refresh: refreshSession } = useStudentSession(code);
+  const { data, error, loading, refresh } = useAssignmentAsStudent(assignmentId);
 
-  if (sessionLoading) {
+  if (loading) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: theme.background }}>
         <ActivityIndicator size="large" color={theme.tint} />
@@ -20,20 +19,20 @@ export default function MaterialPlan() {
     );
   }
 
-  if (sessionError || !session) {
+  if (error || !data) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32, backgroundColor: theme.background }}>
-        <Text style={{ color: theme.text, textAlign: "center" }}>{sessionError ?? "Uppdraget är inte tillgängligt."}</Text>
+        <Text style={{ color: theme.text, textAlign: "center" }}>{error ?? "Uppdraget är inte tillgängligt."}</Text>
       </View>
     );
   }
 
   return (
     <MaterialPlanEditor
-      participantId={session.participant_id}
-      planLocked={session.plan_locked}
-      planSubmittedAt={session.plan_submitted_at}
-      onSubmitted={refreshSession}
+      participantId={data.participant_id}
+      planLocked={data.plan_locked}
+      planSubmittedAt={data.plan_submitted_at}
+      onSubmitted={refresh}
       onBack={() => router.back()}
     />
   );
