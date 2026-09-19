@@ -12,7 +12,7 @@ import type { Database } from "@/lib/database.types";
 type Assignment = Database["public"]["Tables"]["assignments"]["Row"];
 type Requirement = Database["public"]["Tables"]["material_requirements"]["Row"];
 type StudentSession = Database["public"]["Tables"]["student_sessions"]["Row"];
-type Participant = Database["public"]["Tables"]["session_participants"]["Row"];
+type Participant = Database["public"]["Tables"]["assignment_participants"]["Row"];
 
 const DURATIONS = [
   { label: "1 dag", days: 1 },
@@ -75,7 +75,7 @@ export default function AssignmentDetail() {
 
     if (sess && sess.length > 0) {
       const { data: parts } = await supabase
-        .from("session_participants")
+        .from("assignment_participants")
         .select("*")
         .in(
           "session_id",
@@ -83,6 +83,7 @@ export default function AssignmentDetail() {
         );
       const grouped: Record<string, Participant[]> = {};
       for (const p of parts ?? []) {
+        if (!p.session_id) continue;
         grouped[p.session_id] = [...(grouped[p.session_id] ?? []), p];
       }
       setParticipants(grouped);

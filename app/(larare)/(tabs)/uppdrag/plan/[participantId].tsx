@@ -10,7 +10,7 @@ import type { Database } from "@/lib/database.types";
 
 type Requirement = Database["public"]["Tables"]["material_requirements"]["Row"];
 type PlanItem = Database["public"]["Tables"]["material_plan_items"]["Row"];
-type Participant = Database["public"]["Tables"]["session_participants"]["Row"];
+type Participant = Database["public"]["Tables"]["assignment_participants"]["Row"];
 
 type MatchStatus = "match" | "review" | "missing";
 
@@ -76,17 +76,14 @@ export default function PlanReview() {
 
   const load = useCallback(async () => {
     if (!participantId) return;
-    const { data: part } = await supabase.from("session_participants").select("*").eq("id", participantId).single();
+    const { data: part } = await supabase.from("assignment_participants").select("*").eq("id", participantId).single();
     if (!part) return;
     setParticipant(part);
-
-    const { data: session } = await supabase.from("student_sessions").select("assignment_id").eq("id", part.session_id).single();
-    if (!session) return;
 
     const { data: reqs } = await supabase
       .from("material_requirements")
       .select("*")
-      .eq("assignment_id", session.assignment_id)
+      .eq("assignment_id", part.assignment_id)
       .order("sort_order");
     const { data: planItems } = await supabase.from("material_plan_items").select("*").eq("participant_id", participantId);
     setRequirements(reqs ?? []);

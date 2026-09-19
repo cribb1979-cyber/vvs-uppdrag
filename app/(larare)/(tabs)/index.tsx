@@ -39,9 +39,9 @@ export default function Hem() {
         .eq("assignments.org_id", org.id)
         .is("revoked_at", null),
       supabase
-        .from("session_participants")
-        .select("id, plan_submitted_at, student_sessions!inner(assignment_id, assignments!inner(org_id))")
-        .eq("student_sessions.assignments.org_id", org.id)
+        .from("assignment_participants")
+        .select("id, plan_submitted_at, assignments!inner(org_id)")
+        .eq("assignments.org_id", org.id)
         .not("plan_submitted_at", "is", null),
       // RLS begränsar denna till org-admins -- en vanlig lärare får alltid
       // 0 rader tillbaka, så vi behöver ingen villkorlig gren här.
