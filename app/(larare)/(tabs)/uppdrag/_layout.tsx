@@ -9,6 +9,7 @@ export default function UppdragLayout() {
       <Stack.Screen name="index" options={{ title: "Uppdrag" }} />
       <Stack.Screen name="new" options={{ title: "Nytt uppdrag", presentation: "modal" }} />
       <Stack.Screen name="[id]" options={{ title: "Uppdrag" }} />
+      <Stack.Screen name="bedomning/[id]" options={{ title: "Bedömning" }} />
     </Stack>
   );
 }

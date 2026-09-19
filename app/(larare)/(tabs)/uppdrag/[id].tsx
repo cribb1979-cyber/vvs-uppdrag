@@ -291,6 +291,12 @@ export default function AssignmentDetail() {
         <Button title="+ Skapa elevsession" variant="secondary" onPress={() => setCreatingSession(true)} />
       )}
 
+      <Button
+        title="📋 Bedömning"
+        variant="secondary"
+        onPress={() => router.push(`/(larare)/(tabs)/uppdrag/bedomning/${assignment.id}`)}
+      />
+
       <SectionTitle text="Tilldelat till klasser" theme={theme} />
       <Text style={{ color: theme.muted, fontSize: 13, marginBottom: 12 }}>
         Elever som löst in sin personliga kod ser detta uppdrag så fort det är tilldelat och uppdraget är "Aktivt".
