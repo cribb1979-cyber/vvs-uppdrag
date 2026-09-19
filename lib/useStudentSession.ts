@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { getErrorMessage } from "./errors";
 import { supabase } from "./supabase";
 import type { AiMode, RevealMode } from "./database.types";
 
@@ -50,8 +51,9 @@ export function useStudentSession(code: string | undefined) {
       const result = await joinSession(code);
       setData(result);
     } catch (e) {
+      console.error("Kunde inte ansluta till uppdraget:", e);
       setData(null);
-      setError(e instanceof Error ? e.message : "Kunde inte ansluta till uppdraget.");
+      setError(getErrorMessage(e, "Kunde inte ansluta till uppdraget."));
     } finally {
       setLoading(false);
     }

@@ -6,6 +6,7 @@ import { Field } from "@/components/ui/Field";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { useAuth } from "@/contexts/AuthContext";
+import { getErrorMessage } from "@/lib/errors";
 import { supabase } from "@/lib/supabase";
 
 // Visas efter att en lärare har en giltig Supabase-session men saknar
@@ -44,7 +45,8 @@ export function OrgChooser({ fullName }: { fullName: string }) {
       await refresh();
       router.replace("/");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Något gick fel.");
+      console.error("OrgChooser submit failed:", e);
+      setError(getErrorMessage(e));
     } finally {
       setLoading(false);
     }

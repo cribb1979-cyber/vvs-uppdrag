@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { useAuth } from "@/contexts/AuthContext";
+import { getErrorMessage } from "@/lib/errors";
 import { supabase } from "@/lib/supabase";
 import type { RevealMode } from "@/lib/database.types";
 
@@ -89,7 +90,8 @@ export default function NewAssignment() {
 
       router.replace(`/(larare)/(tabs)/uppdrag/${assignment.id}`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Kunde inte spara uppdraget.");
+      console.error("Kunde inte spara uppdraget:", e);
+      setError(getErrorMessage(e, "Kunde inte spara uppdraget."));
     } finally {
       setSaving(false);
     }
