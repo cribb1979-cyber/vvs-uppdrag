@@ -18,6 +18,7 @@ type StudentSession = Database["public"]["Tables"]["student_sessions"]["Row"];
 type Participant = Database["public"]["Tables"]["assignment_participants"]["Row"];
 type ClassRow = Database["public"]["Tables"]["classes"]["Row"];
 type AssignmentAssignmentRow = Database["public"]["Tables"]["assignment_assignments"]["Row"];
+type QuizResult = Database["public"]["Functions"]["get_quiz_results"]["Returns"][number];
 
 interface ParticipantWithName extends Participant {
   students: { name: string } | null;
@@ -71,6 +72,7 @@ export default function AssignmentDetail() {
   const [allParticipants, setAllParticipants] = useState<ParticipantWithName[]>([]);
   const [classes, setClasses] = useState<ClassRow[]>([]);
   const [assignments, setAssignments] = useState<AssignmentAssignmentWithNames[]>([]);
+  const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
   const [assigningClass, setAssigningClass] = useState(false);
   const [creatingSession, setCreatingSession] = useState(false);
   const [customDate, setCustomDate] = useState("");
@@ -94,6 +96,13 @@ export default function AssignmentDetail() {
     setAllParticipants((parts as ParticipantWithName[] | null) ?? []);
     setClasses(cls ?? []);
     setAssignments((aa as AssignmentAssignmentWithNames[] | null) ?? []);
+
+    if (a?.kind === "quiz") {
+      const { data: results } = await supabase.rpc("get_quiz_results", { p_assignment_id: id });
+      setQuizResults(results ?? []);
+    } else {
+      setQuizResults([]);
+    }
   }, [id, org]);
 
   useFocusEffect(
@@ -248,8 +257,9 @@ export default function AssignmentDetail() {
           <Text style={[styles.code, { color: theme.text }]}>{s.code}</Text>
           <Text style={{ color: theme.muted, marginBottom: 8 }}>{timeLeftLabel(s.expires_at)}</Text>
           <Text style={{ color: theme.muted, marginBottom: 12 }}>
-            {allParticipants.filter((p) => p.session_id === s.id).length} elev(er) anslutna ·{" "}
-            {allParticipants.filter((p) => p.session_id === s.id && p.plan_submitted_at).length} har skickat in
+            {allParticipants.filter((p) => p.session_id === s.id).length} elev(er) anslutna
+            {assignment.kind === "uppdrag" &&
+              ` · ${allParticipants.filter((p) => p.session_id === s.id && p.plan_submitted_at).length} har skickat in`}
           </Text>
           <Button title="Stäng session" variant="danger" onPress={() => revokeSession(s.id)} />
         </Card>
@@ -291,11 +301,19 @@ export default function AssignmentDetail() {
         <Button title="+ Skapa elevsession" variant="secondary" onPress={() => setCreatingSession(true)} />
       )}
 
-      <Button
-        title="📋 Bedömning"
-        variant="secondary"
-        onPress={() => router.push(`/(larare)/(tabs)/uppdrag/bedomning/${assignment.id}`)}
-      />
+      {assignment.kind === "uppdrag" ? (
+        <Button
+          title="📋 Bedömning"
+          variant="secondary"
+          onPress={() => router.push(`/(larare)/(tabs)/uppdrag/bedomning/${assignment.id}`)}
+        />
+      ) : (
+        <Button
+          title="🖼 Quiz-frågor"
+          variant="secondary"
+          onPress={() => router.push(`/(larare)/(tabs)/uppdrag/quiz-fragor/${assignment.id}`)}
+        />
+      )}
 
       <SectionTitle text="Tilldelat till klasser" theme={theme} />
       <Text style={{ color: theme.muted, fontSize: 13, marginBottom: 12 }}>
@@ -334,56 +352,76 @@ export default function AssignmentDetail() {
         <Button title="+ Tilldela klass" variant="secondary" onPress={() => setAssigningClass(true)} />
       )}
 
-      <SectionTitle text={`Facit (${requirements.length} rader, elever ser: ${revealLabel(assignment.reveal_mode)})`} theme={theme} />
-      {requirements.map((r) => (
-        <View key={r.id} style={[styles.reqRow, { borderColor: theme.border }]}>
-          <Text style={{ color: theme.text, flex: 1 }}>
-            {r.component} {r.dimension ? `· ${r.dimension}` : ""}
-          </Text>
-          <Text style={{ color: theme.muted, marginRight: 12 }}>{r.quantity} st</Text>
-          <TouchableOpacity onPress={() => removeRequirement(r.id)}>
-            <Text style={{ color: theme.danger }}>Ta bort</Text>
-          </TouchableOpacity>
-        </View>
-      ))}
-      <Card style={{ marginTop: 8 }}>
-        <View style={styles.addReqRow}>
-          <TextInput
-            style={[styles.input, { flex: 2, color: theme.text, borderColor: theme.border }]}
-            placeholder="Komponent"
-            placeholderTextColor={theme.muted}
-            value={newComponent}
-            onChangeText={setNewComponent}
-          />
-          <TextInput
-            style={[styles.input, { flex: 1, color: theme.text, borderColor: theme.border }]}
-            placeholder="Dim"
-            placeholderTextColor={theme.muted}
-            value={newDimension}
-            onChangeText={setNewDimension}
-          />
-          <TextInput
-            style={[styles.input, { width: 50, textAlign: "center", color: theme.text, borderColor: theme.border }]}
-            keyboardType="number-pad"
-            value={newQuantity}
-            onChangeText={setNewQuantity}
-          />
-        </View>
-        <Button title="Lägg till rad" variant="ghost" onPress={addRequirement} />
-      </Card>
+      {assignment.kind === "uppdrag" && (
+        <>
+          <SectionTitle text={`Facit (${requirements.length} rader, elever ser: ${revealLabel(assignment.reveal_mode)})`} theme={theme} />
+          {requirements.map((r) => (
+            <View key={r.id} style={[styles.reqRow, { borderColor: theme.border }]}>
+              <Text style={{ color: theme.text, flex: 1 }}>
+                {r.component} {r.dimension ? `· ${r.dimension}` : ""}
+              </Text>
+              <Text style={{ color: theme.muted, marginRight: 12 }}>{r.quantity} st</Text>
+              <TouchableOpacity onPress={() => removeRequirement(r.id)}>
+                <Text style={{ color: theme.danger }}>Ta bort</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+          <Card style={{ marginTop: 8 }}>
+            <View style={styles.addReqRow}>
+              <TextInput
+                style={[styles.input, { flex: 2, color: theme.text, borderColor: theme.border }]}
+                placeholder="Komponent"
+                placeholderTextColor={theme.muted}
+                value={newComponent}
+                onChangeText={setNewComponent}
+              />
+              <TextInput
+                style={[styles.input, { flex: 1, color: theme.text, borderColor: theme.border }]}
+                placeholder="Dim"
+                placeholderTextColor={theme.muted}
+                value={newDimension}
+                onChangeText={setNewDimension}
+              />
+              <TextInput
+                style={[styles.input, { width: 50, textAlign: "center", color: theme.text, borderColor: theme.border }]}
+                keyboardType="number-pad"
+                value={newQuantity}
+                onChangeText={setNewQuantity}
+              />
+            </View>
+            <Button title="Lägg till rad" variant="ghost" onPress={addRequirement} />
+          </Card>
 
-      <SectionTitle text="Materialplaner från elever" theme={theme} />
-      {allParticipants.length === 0 && <Text style={{ color: theme.muted }}>Inga elever har anslutit ännu.</Text>}
-      {allParticipants.map((p) => (
-        <TouchableOpacity
-          key={p.id}
-          style={[styles.reqRow, { borderColor: theme.border }]}
-          onPress={() => router.push(`/(larare)/(tabs)/uppdrag/plan/${p.id}`)}
-        >
-          <Text style={{ color: theme.text, flex: 1 }}>{p.students?.name ?? `Elev ${p.id.slice(0, 8)} (QR)`}</Text>
-          <Badge label={p.plan_submitted_at ? "Inskickad" : "Pågår"} tone={p.plan_submitted_at ? "success" : "warning"} />
-        </TouchableOpacity>
-      ))}
+          <SectionTitle text="Materialplaner från elever" theme={theme} />
+          {allParticipants.length === 0 && <Text style={{ color: theme.muted }}>Inga elever har anslutit ännu.</Text>}
+          {allParticipants.map((p) => (
+            <TouchableOpacity
+              key={p.id}
+              style={[styles.reqRow, { borderColor: theme.border }]}
+              onPress={() => router.push(`/(larare)/(tabs)/uppdrag/plan/${p.id}`)}
+            >
+              <Text style={{ color: theme.text, flex: 1 }}>{p.students?.name ?? `Elev ${p.id.slice(0, 8)} (QR)`}</Text>
+              <Badge label={p.plan_submitted_at ? "Inskickad" : "Pågår"} tone={p.plan_submitted_at ? "success" : "warning"} />
+            </TouchableOpacity>
+          ))}
+        </>
+      )}
+
+      {assignment.kind === "quiz" && (
+        <>
+          <SectionTitle text="Resultat" theme={theme} />
+          {quizResults.length === 0 && <Text style={{ color: theme.muted }}>Inga elever har anslutit ännu.</Text>}
+          {quizResults.map((r) => (
+            <View key={r.participant_id} style={[styles.reqRow, { borderColor: theme.border }]}>
+              <Text style={{ color: theme.text, flex: 1 }}>{r.student_name ?? `Elev ${r.participant_id.slice(0, 8)} (QR)`}</Text>
+              <Badge
+                label={r.answered_count < r.total_questions ? `${r.answered_count}/${r.total_questions} pågår` : `${r.correct_count}/${r.total_questions} rätt`}
+                tone={r.answered_count < r.total_questions ? "warning" : r.correct_count === r.total_questions ? "success" : "muted"}
+              />
+            </View>
+          ))}
+        </>
+      )}
     </ScrollView>
   );
 }

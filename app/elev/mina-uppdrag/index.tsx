@@ -12,6 +12,7 @@ interface MyAssignment {
   id: string;
   title: string;
   description: string;
+  kind: "uppdrag" | "quiz";
 }
 
 export default function MinaUppdrag() {
@@ -94,7 +95,10 @@ export default function MinaUppdrag() {
       {items.map((a) => (
         <TouchableOpacity key={a.id} onPress={() => router.push(`/elev/mina-uppdrag/${a.id}`)}>
           <Card style={styles.row}>
-            <Text style={{ color: theme.text, fontWeight: "700", fontSize: 16 }}>{a.title}</Text>
+            <Text style={{ color: theme.text, fontWeight: "700", fontSize: 16 }}>
+              {a.kind === "quiz" ? "🖼 " : ""}
+              {a.title}
+            </Text>
             {!!a.description && (
               <Text style={{ color: theme.muted, marginTop: 4 }} numberOfLines={2}>
                 {a.description}

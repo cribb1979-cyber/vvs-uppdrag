@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { getErrorMessage } from "./errors";
 import { supabase } from "./supabase";
-import type { AiMode, RevealMode } from "./database.types";
+import type { AiMode, AssignmentKind, RevealMode } from "./database.types";
 
 export interface StudentSessionData {
   participant_id: string;
@@ -10,6 +10,7 @@ export interface StudentSessionData {
     id: string;
     title: string;
     description: string;
+    kind: AssignmentKind;
     reveal_mode: RevealMode;
     ai_mode: AiMode;
     steps: { key: string; label: string; open: boolean }[];

@@ -9,7 +9,7 @@ import Colors from "@/constants/Colors";
 import { useAuth } from "@/contexts/AuthContext";
 import { getErrorMessage } from "@/lib/errors";
 import { supabase } from "@/lib/supabase";
-import type { RevealMode } from "@/lib/database.types";
+import type { AssignmentKind, RevealMode } from "@/lib/database.types";
 
 interface DraftRequirement {
   key: string;
@@ -24,11 +24,17 @@ const REVEAL_OPTIONS: { value: RevealMode; label: string; hint: string }[] = [
   { value: "full", label: "Allt", hint: "Eleven ser hela facit" },
 ];
 
+const KIND_OPTIONS: { value: AssignmentKind; label: string; hint: string }[] = [
+  { value: "uppdrag", label: "📋 Uppdrag", hint: "Praktiskt uppdrag med materialplan" },
+  { value: "quiz", label: "🖼 Materialquiz", hint: "Bildfrågor eleven svarar flerval på" },
+];
+
 export default function NewAssignment() {
   const theme = Colors[useColorScheme() ?? "light"];
   const router = useRouter();
   const { org, profile } = useAuth();
 
+  const [kind, setKind] = useState<AssignmentKind>("uppdrag");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [revealMode, setRevealMode] = useState<RevealMode>("hidden");
@@ -66,6 +72,7 @@ export default function NewAssignment() {
           created_by: profile.id,
           title: title.trim(),
           description: description.trim(),
+          kind,
           reveal_mode: revealMode,
           status: "draft",
         })
@@ -73,21 +80,29 @@ export default function NewAssignment() {
         .single();
       if (assignErr) throw assignErr;
 
-      const validRequirements = requirements
-        .filter((r) => r.component.trim())
-        .map((r, i) => ({
-          assignment_id: assignment.id,
-          component: r.component.trim(),
-          dimension: r.dimension.trim(),
-          quantity: Math.max(1, Number.parseInt(r.quantity, 10) || 1),
-          sort_order: i,
-        }));
+      if (kind === "uppdrag") {
+        const validRequirements = requirements
+          .filter((r) => r.component.trim())
+          .map((r, i) => ({
+            assignment_id: assignment.id,
+            component: r.component.trim(),
+            dimension: r.dimension.trim(),
+            quantity: Math.max(1, Number.parseInt(r.quantity, 10) || 1),
+            sort_order: i,
+          }));
 
-      if (validRequirements.length > 0) {
-        const { error: reqErr } = await supabase.from("material_requirements").insert(validRequirements);
-        if (reqErr) throw reqErr;
+        if (validRequirements.length > 0) {
+          const { error: reqErr } = await supabase.from("material_requirements").insert(validRequirements);
+          if (reqErr) throw reqErr;
+        }
       }
 
+      // Samma mål oavsett typ -- uppdragets detaljsida. Därifrån når
+      // läraren "🖼 Quiz-frågor" för att lägga till bildfrågor, precis som
+      // Facit/Bedömning för ett vanligt uppdrag. Går man direkt till
+      // frågeredigeraren istället finns ingen väg tillbaka till
+      // detaljsidan för att sätta uppdraget aktivt eller tilldela en klass
+      // utan att först gå via uppdragslistan.
       router.replace(`/(larare)/(tabs)/uppdrag/${assignment.id}`);
     } catch (e) {
       console.error("Kunde inte spara uppdraget:", e);
@@ -100,6 +115,21 @@ export default function NewAssignment() {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1, backgroundColor: theme.background }}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <Text style={[styles.label, { color: theme.muted }]}>TYP AV UPPDRAG</Text>
+        <View style={styles.revealRow}>
+          {KIND_OPTIONS.map((opt) => (
+            <TouchableOpacity
+              key={opt.value}
+              style={[styles.revealOption, { borderColor: kind === opt.value ? theme.accent : theme.border, backgroundColor: theme.card }]}
+              onPress={() => setKind(opt.value)}
+            >
+              <Text style={{ color: kind === opt.value ? theme.accent : theme.text, fontWeight: "700" }}>{opt.label}</Text>
+              <Text style={{ color: theme.muted, fontSize: 12, marginTop: 2 }}>{opt.hint}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <View style={{ height: 8 }} />
         <Field label="Titel" placeholder="t.ex. Slutprov – Komplett badrumsinstallation" value={title} onChangeText={setTitle} />
         <Field
           label="Beskrivning"
@@ -111,65 +141,75 @@ export default function NewAssignment() {
           onChangeText={setDescription}
         />
 
-        <Text style={[styles.label, { color: theme.muted }]}>FACIT-SYNLIGHET FÖR ELEVEN</Text>
-        <View style={styles.revealRow}>
-          {REVEAL_OPTIONS.map((opt) => (
-            <TouchableOpacity
-              key={opt.value}
-              style={[
-                styles.revealOption,
-                { borderColor: revealMode === opt.value ? theme.accent : theme.border, backgroundColor: theme.card },
-              ]}
-              onPress={() => setRevealMode(opt.value)}
-            >
-              <Text style={{ color: revealMode === opt.value ? theme.accent : theme.text, fontWeight: "700" }}>{opt.label}</Text>
-              <Text style={{ color: theme.muted, fontSize: 12, marginTop: 2 }}>{opt.hint}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <Text style={[styles.label, { color: theme.muted, marginTop: 20 }]}>MATERIALKRAV (DITT DOLDA FACIT)</Text>
-        <Text style={[styles.hint, { color: theme.muted }]}>
-          Eleven ser aldrig denna lista direkt — bara det du valt ovan. Den används för att jämföra mot elevens egen materialplan.
-        </Text>
-
-        {requirements.map((r) => (
-          <Card key={r.key} style={styles.reqCard}>
-            <View style={styles.reqRow}>
-              <TextInput
-                style={[styles.reqInput, { flex: 2, color: theme.text, borderColor: theme.border }]}
-                placeholder="Komponent, t.ex. Kulventil"
-                placeholderTextColor={theme.muted}
-                value={r.component}
-                onChangeText={(v) => updateRequirement(r.key, "component", v)}
-              />
-              <TextInput
-                style={[styles.reqInput, { flex: 1, color: theme.text, borderColor: theme.border }]}
-                placeholder="Dim, t.ex. 22 mm"
-                placeholderTextColor={theme.muted}
-                value={r.dimension}
-                onChangeText={(v) => updateRequirement(r.key, "dimension", v)}
-              />
-              <TextInput
-                style={[styles.reqInput, { width: 56, textAlign: "center", color: theme.text, borderColor: theme.border }]}
-                placeholder="Antal"
-                placeholderTextColor={theme.muted}
-                keyboardType="number-pad"
-                value={r.quantity}
-                onChangeText={(v) => updateRequirement(r.key, "quantity", v)}
-              />
+        {kind === "uppdrag" && (
+          <>
+            <Text style={[styles.label, { color: theme.muted }]}>FACIT-SYNLIGHET FÖR ELEVEN</Text>
+            <View style={styles.revealRow}>
+              {REVEAL_OPTIONS.map((opt) => (
+                <TouchableOpacity
+                  key={opt.value}
+                  style={[
+                    styles.revealOption,
+                    { borderColor: revealMode === opt.value ? theme.accent : theme.border, backgroundColor: theme.card },
+                  ]}
+                  onPress={() => setRevealMode(opt.value)}
+                >
+                  <Text style={{ color: revealMode === opt.value ? theme.accent : theme.text, fontWeight: "700" }}>{opt.label}</Text>
+                  <Text style={{ color: theme.muted, fontSize: 12, marginTop: 2 }}>{opt.hint}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
-            {requirements.length > 1 && (
-              <TouchableOpacity onPress={() => removeRequirement(r.key)}>
-                <Text style={{ color: theme.danger, marginTop: 10, fontSize: 13 }}>Ta bort rad</Text>
-              </TouchableOpacity>
-            )}
-          </Card>
-        ))}
 
-        <TouchableOpacity onPress={addRequirement} style={styles.addRow}>
-          <Text style={{ color: theme.tint, fontWeight: "700" }}>+ Lägg till materialrad</Text>
-        </TouchableOpacity>
+            <Text style={[styles.label, { color: theme.muted, marginTop: 20 }]}>MATERIALKRAV (DITT DOLDA FACIT)</Text>
+            <Text style={[styles.hint, { color: theme.muted }]}>
+              Eleven ser aldrig denna lista direkt — bara det du valt ovan. Den används för att jämföra mot elevens egen materialplan.
+            </Text>
+
+            {requirements.map((r) => (
+              <Card key={r.key} style={styles.reqCard}>
+                <View style={styles.reqRow}>
+                  <TextInput
+                    style={[styles.reqInput, { flex: 2, color: theme.text, borderColor: theme.border }]}
+                    placeholder="Komponent, t.ex. Kulventil"
+                    placeholderTextColor={theme.muted}
+                    value={r.component}
+                    onChangeText={(v) => updateRequirement(r.key, "component", v)}
+                  />
+                  <TextInput
+                    style={[styles.reqInput, { flex: 1, color: theme.text, borderColor: theme.border }]}
+                    placeholder="Dim, t.ex. 22 mm"
+                    placeholderTextColor={theme.muted}
+                    value={r.dimension}
+                    onChangeText={(v) => updateRequirement(r.key, "dimension", v)}
+                  />
+                  <TextInput
+                    style={[styles.reqInput, { width: 56, textAlign: "center", color: theme.text, borderColor: theme.border }]}
+                    placeholder="Antal"
+                    placeholderTextColor={theme.muted}
+                    keyboardType="number-pad"
+                    value={r.quantity}
+                    onChangeText={(v) => updateRequirement(r.key, "quantity", v)}
+                  />
+                </View>
+                {requirements.length > 1 && (
+                  <TouchableOpacity onPress={() => removeRequirement(r.key)}>
+                    <Text style={{ color: theme.danger, marginTop: 10, fontSize: 13 }}>Ta bort rad</Text>
+                  </TouchableOpacity>
+                )}
+              </Card>
+            ))}
+
+            <TouchableOpacity onPress={addRequirement} style={styles.addRow}>
+              <Text style={{ color: theme.tint, fontWeight: "700" }}>+ Lägg till materialrad</Text>
+            </TouchableOpacity>
+          </>
+        )}
+
+        {kind === "quiz" && (
+          <Text style={[styles.hint, { color: theme.muted, marginTop: 20 }]}>
+            Du lägger till bildfrågorna i nästa steg, efter att uppdraget skapats.
+          </Text>
+        )}
 
         {error && <Text style={[styles.error, { color: theme.danger }]}>{error}</Text>}
 

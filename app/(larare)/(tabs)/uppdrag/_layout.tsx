@@ -10,6 +10,7 @@ export default function UppdragLayout() {
       <Stack.Screen name="new" options={{ title: "Nytt uppdrag", presentation: "modal" }} />
       <Stack.Screen name="[id]" options={{ title: "Uppdrag" }} />
       <Stack.Screen name="bedomning/[id]" options={{ title: "Bedömning" }} />
+      <Stack.Screen name="quiz-fragor/[id]" options={{ title: "Quiz-frågor" }} />
     </Stack>
   );
 }

@@ -75,21 +75,27 @@ export default function ElevUppdrag() {
         )}
       </Card>
 
-      {data.assignment.ai_mode === "off" && (
+      {data.assignment.kind === "uppdrag" && data.assignment.ai_mode === "off" && (
         <Card style={{ marginTop: 12 }}>
           <Text style={{ color: theme.muted, fontSize: 13 }}>🔒 Provläge: AI-hjälp för uppgiften är avstängd under detta uppdrag.</Text>
         </Card>
       )}
 
       <View style={{ height: 28 }} />
-      <Button
-        title={data.plan_locked ? "Se min materialplan" : "Skapa din materialplan"}
-        onPress={() => router.push(`/elev/materialplan/${encodeURIComponent(code!)}`)}
-      />
-      {data.plan_submitted_at && (
-        <Text style={{ color: theme.success, textAlign: "center", marginTop: 12, fontWeight: "600" }}>
-          ✓ Inskickad {new Date(data.plan_submitted_at).toLocaleString("sv-SE")}
-        </Text>
+      {data.assignment.kind === "quiz" ? (
+        <Button title="Starta quiz" onPress={() => router.push(`/elev/uppdrag/quiz/${encodeURIComponent(code!)}`)} />
+      ) : (
+        <>
+          <Button
+            title={data.plan_locked ? "Se min materialplan" : "Skapa din materialplan"}
+            onPress={() => router.push(`/elev/materialplan/${encodeURIComponent(code!)}`)}
+          />
+          {data.plan_submitted_at && (
+            <Text style={{ color: theme.success, textAlign: "center", marginTop: 12, fontWeight: "600" }}>
+              ✓ Inskickad {new Date(data.plan_submitted_at).toLocaleString("sv-SE")}
+            </Text>
+          )}
+        </>
       )}
     </ScrollView>
   );

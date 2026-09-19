@@ -14,6 +14,7 @@ export type AssignmentStatus = "draft" | "active" | "archived";
 export type RevealMode = "hidden" | "count" | "full";
 export type AiMode = "off" | "app_help_only" | "general" | "full";
 export type AssessmentStatus = "ej_bedomd" | "uppfyller" | "behover_kompletteras";
+export type AssignmentKind = "uppdrag" | "quiz";
 
 export interface AssignmentStep {
   key: string;
@@ -161,6 +162,7 @@ export interface Database {
           title: string;
           description: string;
           status: AssignmentStatus;
+          kind: AssignmentKind;
           reveal_mode: RevealMode;
           ai_mode: AiMode;
           steps: AssignmentStep[];
@@ -178,6 +180,7 @@ export interface Database {
           title: string;
           description?: string;
           status?: AssignmentStatus;
+          kind?: AssignmentKind;
           reveal_mode?: RevealMode;
           ai_mode?: AiMode;
           steps?: AssignmentStep[];
@@ -192,6 +195,7 @@ export interface Database {
           title?: string;
           description?: string;
           status?: AssignmentStatus;
+          kind?: AssignmentKind;
           reveal_mode?: RevealMode;
           ai_mode?: AiMode;
           steps?: AssignmentStep[];
@@ -464,6 +468,65 @@ export interface Database {
           { foreignKeyName: "material_catalog_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ];
       };
+      quiz_questions: {
+        Row: {
+          id: string;
+          assignment_id: string;
+          image_path: string;
+          prompt: string;
+          correct_answer: string;
+          wrong_answers: string[];
+          sort_order: number;
+          created_at: string;
+        };
+        // Ingen SELECT-policy för elevrollen -- se kommentaren högst upp i
+        // 0002_quiz.sql. Eleven når frågorna enbart via get_quiz_view.
+        Insert: {
+          id?: string;
+          assignment_id: string;
+          image_path: string;
+          prompt?: string;
+          correct_answer: string;
+          wrong_answers: string[];
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: {
+          image_path?: string;
+          prompt?: string;
+          correct_answer?: string;
+          wrong_answers?: string[];
+          sort_order?: number;
+        };
+        Relationships: [
+          { foreignKeyName: "quiz_questions_assignment_id_fkey"; columns: ["assignment_id"]; isOneToOne: false; referencedRelation: "assignments"; referencedColumns: ["id"] },
+        ];
+      };
+      quiz_answers: {
+        Row: {
+          id: string;
+          participant_id: string;
+          question_id: string;
+          selected_answer: string;
+          is_correct: boolean;
+          answered_at: string;
+        };
+        // Skrivs bara via submit_quiz_answer (SECURITY DEFINER) -- klienten
+        // insertar aldrig direkt hit.
+        Insert: {
+          id?: string;
+          participant_id: string;
+          question_id: string;
+          selected_answer: string;
+          is_correct: boolean;
+          answered_at?: string;
+        };
+        Update: never;
+        Relationships: [
+          { foreignKeyName: "quiz_answers_participant_id_fkey"; columns: ["participant_id"]; isOneToOne: false; referencedRelation: "assignment_participants"; referencedColumns: ["id"] },
+          { foreignKeyName: "quiz_answers_question_id_fkey"; columns: ["question_id"]; isOneToOne: false; referencedRelation: "quiz_questions"; referencedColumns: ["id"] },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -484,6 +547,7 @@ export interface Database {
             id: string;
             title: string;
             description: string;
+            kind: AssignmentKind;
             reveal_mode: RevealMode;
             ai_mode: AiMode;
             steps: AssignmentStep[];
@@ -522,6 +586,7 @@ export interface Database {
             id: string;
             title: string;
             description: string;
+            kind: AssignmentKind;
             reveal_mode: RevealMode;
             ai_mode: AiMode;
             steps: AssignmentStep[];
@@ -532,7 +597,7 @@ export interface Database {
       };
       list_my_assignments: {
         Args: Record<string, never>;
-        Returns: Array<{ id: string; title: string; description: string }>;
+        Returns: Array<{ id: string; title: string; description: string; kind: AssignmentKind }>;
       };
       get_requirements_view: {
         Args: { p_participant_id: string };
@@ -547,6 +612,33 @@ export interface Database {
       reopen_material_plan: {
         Args: { p_participant_id: string };
         Returns: undefined;
+      };
+      get_quiz_view: {
+        Args: { p_participant_id: string };
+        Returns: {
+          assignment_title: string;
+          questions: Array<{
+            id: string;
+            image_path: string;
+            prompt: string;
+            options: string[];
+            answered_correct: boolean | null;
+          }>;
+        };
+      };
+      submit_quiz_answer: {
+        Args: { p_participant_id: string; p_question_id: string; p_selected_answer: string };
+        Returns: { correct: boolean; correct_answer: string };
+      };
+      get_quiz_results: {
+        Args: { p_assignment_id: string };
+        Returns: Array<{
+          participant_id: string;
+          student_name: string | null;
+          answered_count: number;
+          correct_count: number;
+          total_questions: number;
+        }>;
       };
     };
   };

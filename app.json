@@ -45,6 +45,13 @@
         {
           "cameraPermission": "Kameran används för att skanna QR-koder till uppdrag och hyllor."
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Väljer bilder till quizfrågor och materialregistret.",
+          "cameraPermission": "Fotograferar rördelar till quizfrågor och materialregistret."
+        }
       ]
     ],
     "experiments": {

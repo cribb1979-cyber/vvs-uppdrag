@@ -6,6 +6,8 @@
 -- 0001_init.sql redan skapat tabeller/funktioner, t.ex. felet
 -- "relation ... already exists".
 
+drop table if exists public.quiz_answers cascade;
+drop table if exists public.quiz_questions cascade;
 drop table if exists public.material_plan_items cascade;
 drop table if exists public.assignment_participants cascade;
 drop table if exists public.session_participants cascade; -- äldre tabellnamn, ifall en tidigare version kördes
@@ -35,5 +37,19 @@ drop function if exists public.list_my_assignments() cascade;
 drop function if exists public.get_requirements_view(uuid) cascade;
 drop function if exists public.submit_material_plan(uuid) cascade;
 drop function if exists public.reopen_material_plan(uuid) cascade;
+drop function if exists public.get_quiz_view(uuid) cascade;
+drop function if exists public.submit_quiz_answer(uuid, uuid, text) cascade;
+drop function if exists public.get_quiz_results(uuid) cascade;
 
-select 'Nollställt -- kör nu 0001_init.sql på nytt.' as status;
+-- 0002_quiz.sql skapar RLS-policyer med vanlig create policy (Postgres
+-- saknar "create or replace policy") -- måste droppas explicit annars
+-- misslyckas en omkörning av 0002 med "policy already exists". Själva
+-- Storage-bucketen ("quiz-images") och eventuella redan uppladdade bilder
+-- rörs INTE här -- insert...on conflict do nothing i 0002 är redan
+-- idempotent för bucketen, och den här filen ska aldrig radera riktiga
+-- uppladdade filer.
+drop policy if exists "quiz-images: lärare i org laddar upp" on storage.objects;
+drop policy if exists "quiz-images: lärare i org tar bort egna" on storage.objects;
+drop policy if exists "quiz-images: publik läsning" on storage.objects;
+
+select 'Nollställt -- kör nu 0001_init.sql (och ev. 0002_quiz.sql) på nytt.' as status;

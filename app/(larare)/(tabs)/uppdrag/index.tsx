@@ -82,7 +82,10 @@ export default function UppdragList() {
           onPress={() => router.push(`/(larare)/(tabs)/uppdrag/${item.id}`)}
         >
           <View style={{ flex: 1 }}>
-            <Text style={[styles.rowTitle, { color: theme.text }]}>{item.title}</Text>
+            <Text style={[styles.rowTitle, { color: theme.text }]}>
+              {item.kind === "quiz" ? "🖼 " : ""}
+              {item.title}
+            </Text>
             {!!item.description && (
               <Text style={[styles.rowDesc, { color: theme.muted }]} numberOfLines={1}>
                 {item.description}
