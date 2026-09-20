@@ -1,10 +1,11 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { quizImageUrl } from "@/lib/quizImages";
 import { supabase } from "@/lib/supabase";
 import { TeacherSignedInError, useStudentSession } from "@/lib/useStudentSession";
 
@@ -77,8 +78,17 @@ export default function ElevUppdrag() {
 
       {data.assignment.kind === "uppdrag" && data.assignment.ai_mode === "off" && (
         <Card style={{ marginTop: 12 }}>
-          <Text style={{ color: theme.muted, fontSize: 13 }}>🔒 Provläge: AI-hjälp för uppgiften är avstängd under detta uppdrag.</Text>
+          <Text style={{ color: theme.muted, fontSize: 13 }}>
+            🔒 Provläge: facit, referensbild och AI-hjälp är avstängda under detta uppdrag.
+          </Text>
         </Card>
+      )}
+
+      {data.assignment.kind === "uppdrag" && !!data.assignment.reference_image_path && (
+        <>
+          <Text style={{ color: theme.muted, fontSize: 13, fontWeight: "700", marginTop: 16, marginBottom: 8 }}>REFERENSBILD</Text>
+          <Image source={{ uri: quizImageUrl(data.assignment.reference_image_path) }} style={styles.referenceImage} />
+        </>
       )}
 
       <View style={{ height: 28 }} />
@@ -108,4 +118,5 @@ const styles = StyleSheet.create({
   eyebrow: { fontSize: 13, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 },
   title: { fontSize: 24, fontWeight: "800", marginBottom: 10, textAlign: "center" },
   body: { fontSize: 15, lineHeight: 21, textAlign: "center" },
+  referenceImage: { width: "100%", height: 200, borderRadius: 12, backgroundColor: "#eee" },
 });

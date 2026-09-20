@@ -42,6 +42,10 @@ drop function if exists public.submit_quiz_answer(uuid, uuid, text) cascade;
 drop function if exists public.get_quiz_results(uuid) cascade;
 drop function if exists public.get_my_assessment_view(uuid) cascade;
 
+-- 0004_ovning_provlage.sql lägger bara till en kolumn (assignments.reference_image_path)
+-- och gör om join_session/open_assignment_as_student -- inget extra att droppa här,
+-- create or replace + drop table cascade (assignments) täcker båda.
+
 -- 0002_quiz.sql skapar RLS-policyer med vanlig create policy (Postgres
 -- saknar "create or replace policy") -- måste droppas explicit annars
 -- misslyckas en omkörning av 0002 med "policy already exists". Själva

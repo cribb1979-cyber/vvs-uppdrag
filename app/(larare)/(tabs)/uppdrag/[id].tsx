@@ -1,13 +1,16 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
+import type * as ImagePicker from "expo-image-picker";
 import { Badge, Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { useAuth } from "@/contexts/AuthContext";
+import { MODE_OPTIONS, modeFromFields, modeToFields } from "@/lib/assignmentMode";
 import { getErrorMessage } from "@/lib/errors";
+import { pickQuizImage, quizImageUrl, uploadQuizImage } from "@/lib/quizImages";
 import { supabase } from "@/lib/supabase";
 import { sessionJoinUrl } from "@/lib/links";
 import type { Database } from "@/lib/database.types";
@@ -79,6 +82,8 @@ export default function AssignmentDetail() {
   const [newComponent, setNewComponent] = useState("");
   const [newDimension, setNewDimension] = useState("");
   const [newQuantity, setNewQuantity] = useState("1");
+  const [pickingReference, setPickingReference] = useState<"camera" | "library" | null>(null);
+  const [savingReference, setSavingReference] = useState(false);
 
   const load = useCallback(async () => {
     if (!id || !org) return;
@@ -114,6 +119,42 @@ export default function AssignmentDetail() {
   async function setStatus(status: Assignment["status"]) {
     if (!assignment) return;
     const { error } = await supabase.from("assignments").update({ status }).eq("id", assignment.id);
+    if (!error) load();
+  }
+
+  async function toggleMode() {
+    if (!assignment) return;
+    const nextMode = modeFromFields(assignment.reveal_mode) === "ovning" ? "prov" : "ovning";
+    const { error } = await supabase.from("assignments").update(modeToFields(nextMode)).eq("id", assignment.id);
+    if (error) {
+      Alert.alert("Kunde inte ändra läge", getErrorMessage(error));
+      return;
+    }
+    load();
+  }
+
+  async function pickAndSaveReference(source: "camera" | "library") {
+    if (!assignment || !org) return;
+    setPickingReference(source);
+    try {
+      const asset = await pickQuizImage(source);
+      if (!asset) return;
+      setSavingReference(true);
+      const path = await uploadQuizImage(org.id, asset as ImagePicker.ImagePickerAsset);
+      const { error } = await supabase.from("assignments").update({ reference_image_path: path }).eq("id", assignment.id);
+      if (error) throw error;
+      load();
+    } catch (e) {
+      Alert.alert("Kunde inte spara referensbilden", getErrorMessage(e));
+    } finally {
+      setPickingReference(null);
+      setSavingReference(false);
+    }
+  }
+
+  async function removeReferenceImage() {
+    if (!assignment) return;
+    const { error } = await supabase.from("assignments").update({ reference_image_path: null }).eq("id", assignment.id);
     if (!error) load();
   }
 
@@ -354,7 +395,59 @@ export default function AssignmentDetail() {
 
       {assignment.kind === "uppdrag" && (
         <>
-          <SectionTitle text={`Facit (${requirements.length} rader, elever ser: ${revealLabel(assignment.reveal_mode)})`} theme={theme} />
+          <SectionTitle text="Läge" theme={theme} />
+          <Card style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 8 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: theme.text, fontWeight: "700" }}>
+                {MODE_OPTIONS.find((o) => o.value === modeFromFields(assignment.reveal_mode))?.label}
+              </Text>
+              <Text style={{ color: theme.muted, fontSize: 12, marginTop: 2 }}>
+                {MODE_OPTIONS.find((o) => o.value === modeFromFields(assignment.reveal_mode))?.hint}
+              </Text>
+              <Text style={{ color: theme.muted, fontSize: 12, marginTop: 4 }}>
+                Elever som redan är anslutna ser ändringen direkt -- ingen ny QR-kod behövs.
+              </Text>
+            </View>
+            <Button
+              title={modeFromFields(assignment.reveal_mode) === "ovning" ? "Byt till prov" : "Byt till övning"}
+              variant="secondary"
+              onPress={toggleMode}
+            />
+          </Card>
+
+          <Text style={[styles.label, { color: theme.muted }]}>REFERENSBILD (SYNS BARA I ÖVNINGSLÄGE)</Text>
+          {assignment.reference_image_path ? (
+            <Image source={{ uri: quizImageUrl(assignment.reference_image_path) }} style={styles.referencePreview} />
+          ) : (
+            <View style={[styles.referencePreview, styles.referencePlaceholder, { borderColor: theme.border }]}>
+              <Text style={{ color: theme.muted }}>Ingen bild vald</Text>
+            </View>
+          )}
+          <View style={styles.imageBtnRow}>
+            <View style={{ flex: 1 }}>
+              <Button
+                title="📷 Ta foto"
+                variant="secondary"
+                onPress={() => pickAndSaveReference("camera")}
+                loading={pickingReference === "camera" || savingReference}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Button
+                title="🖼 Välj bild"
+                variant="secondary"
+                onPress={() => pickAndSaveReference("library")}
+                loading={pickingReference === "library" || savingReference}
+              />
+            </View>
+          </View>
+          {!!assignment.reference_image_path && (
+            <TouchableOpacity onPress={removeReferenceImage} style={{ marginBottom: 12 }}>
+              <Text style={{ color: theme.danger }}>Ta bort referensbild</Text>
+            </TouchableOpacity>
+          )}
+
+          <SectionTitle text={`Facit (${requirements.length} rader)`} theme={theme} />
           {requirements.map((r) => (
             <View key={r.id} style={[styles.reqRow, { borderColor: theme.border }]}>
               <Text style={{ color: theme.text, flex: 1 }}>
@@ -426,10 +519,6 @@ export default function AssignmentDetail() {
   );
 }
 
-function revealLabel(mode: Assignment["reveal_mode"]) {
-  return mode === "hidden" ? "inget facit" : mode === "count" ? "antal saknade" : "allt facit";
-}
-
 function SectionTitle({ text, theme }: { text: string; theme: (typeof Colors)["light"] }) {
   return <Text style={[styles.sectionTitle, { color: theme.text }]}>{text}</Text>;
 }
@@ -449,4 +538,8 @@ const styles = StyleSheet.create({
   reqRow: { flexDirection: "row", alignItems: "center", paddingVertical: 12, borderBottomWidth: 1 },
   addReqRow: { flexDirection: "row", gap: 8, marginBottom: 12 },
   input: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 },
+  label: { fontSize: 13, fontWeight: "700", marginBottom: 8, letterSpacing: 0.3 },
+  referencePreview: { width: "100%", height: 160, borderRadius: 12, marginBottom: 10, backgroundColor: "#eee" },
+  referencePlaceholder: { alignItems: "center", justifyContent: "center", borderWidth: 1, borderStyle: "dashed" },
+  imageBtnRow: { flexDirection: "row", gap: 8, marginBottom: 8 },
 });

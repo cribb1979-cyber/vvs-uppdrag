@@ -14,6 +14,7 @@ export interface StudentSessionData {
     reveal_mode: RevealMode;
     ai_mode: AiMode;
     steps: { key: string; label: string; open: boolean }[];
+    reference_image_path: string | null;
   };
   plan_locked: boolean;
   plan_submitted_at: string | null;

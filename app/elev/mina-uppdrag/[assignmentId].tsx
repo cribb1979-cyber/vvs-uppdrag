@@ -1,16 +1,26 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect } from "react";
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { quizImageUrl } from "@/lib/quizImages";
 import { useAssignmentAsStudent } from "@/lib/useAssignmentAsStudent";
 
 export default function MinaUppdragDetail() {
   const { assignmentId } = useLocalSearchParams<{ assignmentId: string }>();
   const theme = Colors[useColorScheme() ?? "light"];
   const router = useRouter();
-  const { data, error, loading } = useAssignmentAsStudent(assignmentId);
+  const { data, error, loading, refresh } = useAssignmentAsStudent(assignmentId);
+
+  // Samma live-uppdatering som QR-engångsflödet (app/elev/uppdrag/[code].tsx):
+  // byter läraren mellan Övningsläge/Provläge medan eleven har skärmen öppen
+  // ska det synas utan att eleven behöver logga in på nytt.
+  useEffect(() => {
+    const interval = setInterval(refresh, 30_000);
+    return () => clearInterval(interval);
+  }, [refresh]);
 
   if (loading) {
     return (
@@ -35,8 +45,17 @@ export default function MinaUppdragDetail() {
 
       {data.assignment.kind === "uppdrag" && data.assignment.ai_mode === "off" && (
         <Card style={{ marginTop: 16 }}>
-          <Text style={{ color: theme.muted, fontSize: 13 }}>🔒 Provläge: AI-hjälp för uppgiften är avstängd under detta uppdrag.</Text>
+          <Text style={{ color: theme.muted, fontSize: 13 }}>
+            🔒 Provläge: facit, referensbild och AI-hjälp är avstängda under detta uppdrag.
+          </Text>
         </Card>
+      )}
+
+      {data.assignment.kind === "uppdrag" && !!data.assignment.reference_image_path && (
+        <>
+          <Text style={{ color: theme.muted, fontSize: 13, fontWeight: "700", marginTop: 16, marginBottom: 8 }}>REFERENSBILD</Text>
+          <Image source={{ uri: quizImageUrl(data.assignment.reference_image_path) }} style={styles.referenceImage} />
+        </>
       )}
 
       <View style={{ height: 28 }} />
@@ -70,4 +89,5 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 },
   title: { fontSize: 24, fontWeight: "800", marginBottom: 10, textAlign: "center" },
   body: { fontSize: 15, lineHeight: 21, textAlign: "center" },
+  referenceImage: { width: "100%", height: 200, borderRadius: 12, backgroundColor: "#eee" },
 });

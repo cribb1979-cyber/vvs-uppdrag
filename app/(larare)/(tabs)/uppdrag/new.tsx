@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import type * as ImagePicker from "expo-image-picker";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Card } from "@/components/ui/Card";
@@ -8,8 +9,10 @@ import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { useAuth } from "@/contexts/AuthContext";
 import { getErrorMessage } from "@/lib/errors";
+import { MODE_OPTIONS, modeToFields, type AssignmentMode } from "@/lib/assignmentMode";
+import { pickQuizImage, uploadQuizImage } from "@/lib/quizImages";
 import { supabase } from "@/lib/supabase";
-import type { AssignmentKind, RevealMode } from "@/lib/database.types";
+import type { AssignmentKind } from "@/lib/database.types";
 
 interface DraftRequirement {
   key: string;
@@ -17,12 +20,6 @@ interface DraftRequirement {
   dimension: string;
   quantity: string;
 }
-
-const REVEAL_OPTIONS: { value: RevealMode; label: string; hint: string }[] = [
-  { value: "hidden", label: "Dolt", hint: "Eleven ser inget av facit" },
-  { value: "count", label: "Antal", hint: "Eleven ser bara hur många rader som saknas" },
-  { value: "full", label: "Allt", hint: "Eleven ser hela facit" },
-];
 
 const KIND_OPTIONS: { value: AssignmentKind; label: string; hint: string }[] = [
   { value: "uppdrag", label: "📋 Uppdrag", hint: "Praktiskt uppdrag med materialplan" },
@@ -37,12 +34,26 @@ export default function NewAssignment() {
   const [kind, setKind] = useState<AssignmentKind>("uppdrag");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [revealMode, setRevealMode] = useState<RevealMode>("hidden");
+  const [mode, setMode] = useState<AssignmentMode>("prov");
+  const [referenceAsset, setReferenceAsset] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [pickingReference, setPickingReference] = useState<"camera" | "library" | null>(null);
   const [requirements, setRequirements] = useState<DraftRequirement[]>([
     { key: String(Date.now()), component: "", dimension: "", quantity: "1" },
   ]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  async function pickReferenceImage(source: "camera" | "library") {
+    setPickingReference(source);
+    try {
+      const asset = await pickQuizImage(source);
+      if (asset) setReferenceAsset(asset);
+    } catch (e) {
+      Alert.alert("Kunde inte öppna kameran/bilderna", getErrorMessage(e));
+    } finally {
+      setPickingReference(null);
+    }
+  }
 
   function updateRequirement(key: string, field: keyof DraftRequirement, value: string) {
     setRequirements((prev) => prev.map((r) => (r.key === key ? { ...r, [field]: value } : r)));
@@ -65,6 +76,8 @@ export default function NewAssignment() {
     setError(null);
     setSaving(true);
     try {
+      const referenceImagePath = referenceAsset ? await uploadQuizImage(org.id, referenceAsset) : null;
+
       const { data: assignment, error: assignErr } = await supabase
         .from("assignments")
         .insert({
@@ -73,7 +86,8 @@ export default function NewAssignment() {
           title: title.trim(),
           description: description.trim(),
           kind,
-          reveal_mode: revealMode,
+          ...modeToFields(mode),
+          reference_image_path: referenceImagePath,
           status: "draft",
         })
         .select()
@@ -143,21 +157,51 @@ export default function NewAssignment() {
 
         {kind === "uppdrag" && (
           <>
-            <Text style={[styles.label, { color: theme.muted }]}>FACIT-SYNLIGHET FÖR ELEVEN</Text>
+            <Text style={[styles.label, { color: theme.muted }]}>LÄGE</Text>
             <View style={styles.revealRow}>
-              {REVEAL_OPTIONS.map((opt) => (
+              {MODE_OPTIONS.map((opt) => (
                 <TouchableOpacity
                   key={opt.value}
                   style={[
                     styles.revealOption,
-                    { borderColor: revealMode === opt.value ? theme.accent : theme.border, backgroundColor: theme.card },
+                    { borderColor: mode === opt.value ? theme.accent : theme.border, backgroundColor: theme.card },
                   ]}
-                  onPress={() => setRevealMode(opt.value)}
+                  onPress={() => setMode(opt.value)}
                 >
-                  <Text style={{ color: revealMode === opt.value ? theme.accent : theme.text, fontWeight: "700" }}>{opt.label}</Text>
+                  <Text style={{ color: mode === opt.value ? theme.accent : theme.text, fontWeight: "700" }}>{opt.label}</Text>
                   <Text style={{ color: theme.muted, fontSize: 12, marginTop: 2 }}>{opt.hint}</Text>
                 </TouchableOpacity>
               ))}
+            </View>
+            <Text style={[styles.hint, { color: theme.muted }]}>
+              Du kan växla läge senare från uppdragets detaljsida -- eleven ser ändringen direkt, ingen ny QR-kod behövs.
+            </Text>
+
+            <Text style={[styles.label, { color: theme.muted, marginTop: 8 }]}>REFERENSBILD (VALFRI, VISAS BARA I ÖVNINGSLÄGE)</Text>
+            {referenceAsset ? (
+              <Image source={{ uri: referenceAsset.uri }} style={styles.referencePreview} />
+            ) : (
+              <View style={[styles.referencePreview, styles.referencePlaceholder, { borderColor: theme.border }]}>
+                <Text style={{ color: theme.muted }}>Ingen bild vald</Text>
+              </View>
+            )}
+            <View style={styles.imageBtnRow}>
+              <View style={{ flex: 1 }}>
+                <Button
+                  title="📷 Ta foto"
+                  variant="secondary"
+                  onPress={() => pickReferenceImage("camera")}
+                  loading={pickingReference === "camera"}
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Button
+                  title="🖼 Välj bild"
+                  variant="secondary"
+                  onPress={() => pickReferenceImage("library")}
+                  loading={pickingReference === "library"}
+                />
+              </View>
             </View>
 
             <Text style={[styles.label, { color: theme.muted, marginTop: 20 }]}>MATERIALKRAV (DITT DOLDA FACIT)</Text>
@@ -231,4 +275,7 @@ const styles = StyleSheet.create({
   reqInput: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 15 },
   addRow: { paddingVertical: 12, marginBottom: 10 },
   error: { marginTop: 8, marginBottom: 4 },
+  referencePreview: { width: "100%", height: 160, borderRadius: 12, marginBottom: 10, backgroundColor: "#eee" },
+  referencePlaceholder: { alignItems: "center", justifyContent: "center", borderWidth: 1, borderStyle: "dashed" },
+  imageBtnRow: { flexDirection: "row", gap: 8, marginBottom: 16 },
 });

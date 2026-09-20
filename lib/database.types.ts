@@ -171,6 +171,7 @@ export interface Database {
           skolverket_ref: string;
           is_template: boolean;
           assessment_visible: boolean;
+          reference_image_path: string | null;
           created_at: string;
         };
         Insert: {
@@ -189,6 +190,7 @@ export interface Database {
           skolverket_ref?: string;
           is_template?: boolean;
           assessment_visible?: boolean;
+          reference_image_path?: string | null;
           created_at?: string;
         };
         Update: {
@@ -204,6 +206,7 @@ export interface Database {
           skolverket_ref?: string;
           is_template?: boolean;
           assessment_visible?: boolean;
+          reference_image_path?: string | null;
         };
         Relationships: [
           { foreignKeyName: "assignments_org_id_fkey"; columns: ["org_id"]; isOneToOne: false; referencedRelation: "orgs"; referencedColumns: ["id"] },
@@ -551,6 +554,7 @@ export interface Database {
             reveal_mode: RevealMode;
             ai_mode: AiMode;
             steps: AssignmentStep[];
+            reference_image_path: string | null;
           };
           plan_locked: boolean;
           plan_submitted_at: string | null;
@@ -590,6 +594,7 @@ export interface Database {
             reveal_mode: RevealMode;
             ai_mode: AiMode;
             steps: AssignmentStep[];
+            reference_image_path: string | null;
           };
           plan_locked: boolean;
           plan_submitted_at: string | null;
