@@ -78,6 +78,12 @@ export default function MinaUppdragDetail() {
             variant="secondary"
             onPress={() => router.push(`/elev/mina-uppdrag/bedomning/${assignmentId}`)}
           />
+          <View style={{ height: 12 }} />
+          <Button
+            title="⏱ Tidrapport"
+            variant="secondary"
+            onPress={() => router.push(`/elev/mina-uppdrag/tidrapport/${assignmentId}`)}
+          />
         </>
       )}
     </ScrollView>

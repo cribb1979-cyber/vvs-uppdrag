@@ -361,6 +361,32 @@ export interface Database {
           { foreignKeyName: "material_plan_items_participant_id_fkey"; columns: ["participant_id"]; isOneToOne: false; referencedRelation: "assignment_participants"; referencedColumns: ["id"] },
         ];
       };
+      time_entries: {
+        Row: {
+          id: string;
+          participant_id: string;
+          work_date: string;
+          minutes: number;
+          comment: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          participant_id: string;
+          work_date?: string;
+          minutes: number;
+          comment?: string;
+          created_at?: string;
+        };
+        Update: {
+          work_date?: string;
+          minutes?: number;
+          comment?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "time_entries_participant_id_fkey"; columns: ["participant_id"]; isOneToOne: false; referencedRelation: "assignment_participants"; referencedColumns: ["id"] },
+        ];
+      };
       assessment_criteria: {
         Row: {
           id: string;

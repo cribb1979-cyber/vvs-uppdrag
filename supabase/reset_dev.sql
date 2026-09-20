@@ -6,6 +6,7 @@
 -- 0001_init.sql redan skapat tabeller/funktioner, t.ex. felet
 -- "relation ... already exists".
 
+drop table if exists public.time_entries cascade;
 drop table if exists public.quiz_answers cascade;
 drop table if exists public.quiz_questions cascade;
 drop table if exists public.material_plan_items cascade;

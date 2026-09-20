@@ -10,9 +10,18 @@ import type { Database } from "@/lib/database.types";
 
 type Requirement = Database["public"]["Tables"]["material_requirements"]["Row"];
 type PlanItem = Database["public"]["Tables"]["material_plan_items"]["Row"];
+type TimeEntry = Database["public"]["Tables"]["time_entries"]["Row"];
 type Participant = Database["public"]["Tables"]["assignment_participants"]["Row"] & {
   students: { name: string } | null;
 };
+
+function formatMinutes(total: number) {
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  if (h === 0) return `${m} min`;
+  if (m === 0) return `${h} h`;
+  return `${h} h ${m} min`;
+}
 
 type MatchStatus = "match" | "review" | "missing";
 
@@ -74,6 +83,7 @@ export default function PlanReview() {
   const [participant, setParticipant] = useState<Participant | null>(null);
   const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [items, setItems] = useState<PlanItem[]>([]);
+  const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
@@ -92,8 +102,14 @@ export default function PlanReview() {
       .eq("assignment_id", part.assignment_id)
       .order("sort_order");
     const { data: planItems } = await supabase.from("material_plan_items").select("*").eq("participant_id", participantId);
+    const { data: entries } = await supabase
+      .from("time_entries")
+      .select("*")
+      .eq("participant_id", participantId)
+      .order("work_date", { ascending: false });
     setRequirements(reqs ?? []);
     setItems(planItems ?? []);
+    setTimeEntries(entries ?? []);
   }, [participantId]);
 
   useFocusEffect(
@@ -166,6 +182,21 @@ export default function PlanReview() {
           ))}
         </>
       )}
+
+      <Text style={[styles.sectionTitle, { color: theme.text }]}>
+        Tidrapport ({formatMinutes(timeEntries.reduce((sum, e) => sum + e.minutes, 0))})
+      </Text>
+      {timeEntries.length === 0 && <Text style={{ color: theme.muted }}>Inga arbetspass loggade ännu.</Text>}
+      {timeEntries.map((e) => (
+        <Card key={e.id} style={styles.row}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: theme.text, fontWeight: "700" }}>
+              {e.work_date} · {formatMinutes(e.minutes)}
+            </Text>
+            {!!e.comment && <Text style={{ color: theme.muted, fontSize: 13, marginTop: 2 }}>{e.comment}</Text>}
+          </View>
+        </Card>
+      ))}
 
       {participant.plan_locked && (
         <>
