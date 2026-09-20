@@ -40,6 +40,7 @@ drop function if exists public.reopen_material_plan(uuid) cascade;
 drop function if exists public.get_quiz_view(uuid) cascade;
 drop function if exists public.submit_quiz_answer(uuid, uuid, text) cascade;
 drop function if exists public.get_quiz_results(uuid) cascade;
+drop function if exists public.get_my_assessment_view(uuid) cascade;
 
 -- 0002_quiz.sql skapar RLS-policyer med vanlig create policy (Postgres
 -- saknar "create or replace policy") -- måste droppas explicit annars

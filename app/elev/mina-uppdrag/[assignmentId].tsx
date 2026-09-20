@@ -53,6 +53,12 @@ export default function MinaUppdragDetail() {
               ✓ Inskickad {new Date(data.plan_submitted_at).toLocaleString("sv-SE")}
             </Text>
           )}
+          <View style={{ height: 12 }} />
+          <Button
+            title="Se min bedömning"
+            variant="secondary"
+            onPress={() => router.push(`/elev/mina-uppdrag/bedomning/${assignmentId}`)}
+          />
         </>
       )}
     </ScrollView>

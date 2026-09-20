@@ -640,6 +640,13 @@ export interface Database {
           total_questions: number;
         }>;
       };
+      get_my_assessment_view: {
+        Args: { p_participant_id: string };
+        Returns: {
+          visible: boolean;
+          results: Array<{ criteria_label: string; status: AssessmentStatus; comment: string }>;
+        };
+      };
     };
   };
 }

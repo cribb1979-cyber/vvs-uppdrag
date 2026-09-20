@@ -141,6 +141,16 @@ export default function Bedomning() {
     load();
   }
 
+  async function toggleVisible() {
+    if (!id || !assignment) return;
+    const { error } = await supabase.from("assignments").update({ assessment_visible: !assignment.assessment_visible }).eq("id", id);
+    if (error) {
+      Alert.alert("Kunde inte ändra synlighet", getErrorMessage(error));
+      return;
+    }
+    load();
+  }
+
   if (!assignment) return <View style={{ flex: 1, backgroundColor: theme.background }} />;
 
   const selectedStudent = selected ? students.find((s) => s.id === selected.studentId) : null;
@@ -150,6 +160,20 @@ export default function Bedomning() {
     <ScrollView style={{ backgroundColor: theme.background }} contentContainerStyle={styles.container}>
       <Text style={[styles.title, { color: theme.text }]}>{assignment.title}</Text>
       <Text style={{ color: theme.muted, marginBottom: 4 }}>Bedömning</Text>
+
+      <Card style={{ marginTop: 12, flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: theme.text, fontWeight: "700" }}>
+            {assignment.assessment_visible ? "🔓 Synlig för eleverna" : "🔒 Dold för eleverna"}
+          </Text>
+          <Text style={{ color: theme.muted, fontSize: 12, marginTop: 2 }}>
+            {assignment.assessment_visible
+              ? "Eleverna ser sin bedömning under \"Mina uppdrag\"."
+              : "Fyll i kriterierna klart innan du publicerar."}
+          </Text>
+        </View>
+        <Button title={assignment.assessment_visible ? "Dölj" : "Publicera"} variant="secondary" onPress={toggleVisible} />
+      </Card>
 
       <Text style={[styles.sectionTitle, { color: theme.text }]}>Kriterier</Text>
       {criteria.map((c) => (
