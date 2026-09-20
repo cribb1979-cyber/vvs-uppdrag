@@ -24,11 +24,29 @@ export async function pickQuizImage(source: "camera" | "library"): Promise<Image
 
   const result =
     source === "camera"
-      ? await ImagePicker.launchCameraAsync({ quality: 0.7, mediaTypes: ["images"] })
-      : await ImagePicker.launchImageLibraryAsync({ quality: 0.7, mediaTypes: ["images"] });
+      ? await ImagePicker.launchCameraAsync({ quality: 0.7, mediaTypes: ["images"], base64: true })
+      : await ImagePicker.launchImageLibraryAsync({ quality: 0.7, mediaTypes: ["images"], base64: true });
 
   if (result.canceled) return undefined;
   return result.assets[0];
+}
+
+export type MaterialSuggestion = { name: string; wrongAnswers: string[] };
+
+// Skickar den precis tagna/valda bilden till identify-material-funktionen,
+// som frågar Claude vad rördelen heter. Kräver att asset.base64 finns (satt
+// av base64:true ovan) -- funkar alltså bara för en NYSS vald bild, inte en
+// redan uppladdad bild man bara har sökvägen till.
+export async function suggestMaterialName(asset: ImagePicker.ImagePickerAsset): Promise<MaterialSuggestion> {
+  if (!asset.base64) throw new Error("Bilden saknar data för AI-analys.");
+
+  const { data, error } = await supabase.functions.invoke("identify-material", {
+    body: { imageBase64: asset.base64, mimeType: asset.mimeType || "image/jpeg" },
+  });
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+
+  return { name: data.name as string, wrongAnswers: (data.wrong_answers as string[]) ?? [] };
 }
 
 // Laddar upp en vald bild till lärarens egen org-mapp i Storage (RLS

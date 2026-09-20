@@ -9,7 +9,7 @@ import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { useAuth } from "@/contexts/AuthContext";
 import { getErrorMessage } from "@/lib/errors";
-import { pickQuizImage, quizImageUrl, uploadQuizImage } from "@/lib/quizImages";
+import { pickQuizImage, quizImageUrl, suggestMaterialName, uploadQuizImage } from "@/lib/quizImages";
 import { supabase } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
 
@@ -31,6 +31,7 @@ export default function QuizFragor() {
   const [correctAnswer, setCorrectAnswer] = useState("");
   const [wrongAnswers, setWrongAnswers] = useState<string[]>([""]);
   const [picking, setPicking] = useState<"camera" | "library" | null>(null);
+  const [suggesting, setSuggesting] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
@@ -76,6 +77,20 @@ export default function QuizFragor() {
       Alert.alert("Kunde inte öppna kameran/bilderna", getErrorMessage(e));
     } finally {
       setPicking(null);
+    }
+  }
+
+  async function suggestFromImage() {
+    if (!pickedAsset) return;
+    setSuggesting(true);
+    try {
+      const suggestion = await suggestMaterialName(pickedAsset);
+      setCorrectAnswer(suggestion.name);
+      if (suggestion.wrongAnswers.length > 0) setWrongAnswers(suggestion.wrongAnswers);
+    } catch (e) {
+      Alert.alert("Kunde inte föreslå svar", getErrorMessage(e));
+    } finally {
+      setSuggesting(false);
     }
   }
 
@@ -199,6 +214,18 @@ export default function QuizFragor() {
             <Button title="🖼 Välj bild" variant="secondary" onPress={() => pickImage("library")} loading={picking === "library"} />
           </View>
         </View>
+
+        {pickedAsset && (
+          <>
+            <View style={{ height: 8 }} />
+            <Button
+              title="🤖 Föreslå svar med AI"
+              variant="secondary"
+              onPress={suggestFromImage}
+              loading={suggesting}
+            />
+          </>
+        )}
 
         <View style={{ height: 8 }} />
         <Field label="Fråga" value={prompt} onChangeText={setPrompt} />
