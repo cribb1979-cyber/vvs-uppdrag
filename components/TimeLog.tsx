@@ -10,8 +10,16 @@ import type { Database } from "@/lib/database.types";
 
 type TimeEntry = Database["public"]["Tables"]["time_entries"]["Row"];
 
+// new Date().toISOString() ger UTC-datum, inte enhetens lokala datum -- en
+// elev som loggar tid efter midnatt UTC (dvs efter ca kl 01-02 svensk tid)
+// skulle annars få gårdagens datum förifyllt. Bygg strängen av lokala
+// datumdelar istället.
 function todayIso() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
 }
 
 function formatMinutes(total: number) {
