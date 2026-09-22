@@ -6,6 +6,7 @@
 -- 0001_init.sql redan skapat tabeller/funktioner, t.ex. felet
 -- "relation ... already exists".
 
+drop table if exists public.material_orders cascade;
 drop table if exists public.time_entries cascade;
 drop table if exists public.quiz_answers cascade;
 drop table if exists public.quiz_questions cascade;
@@ -44,6 +45,10 @@ drop function if exists public.get_quiz_results(uuid) cascade;
 drop function if exists public.get_my_assessment_view(uuid) cascade;
 drop function if exists public.submit_time_report(uuid) cascade;
 drop function if exists public.reopen_time_report(uuid) cascade;
+drop function if exists public.set_participant_display_name(uuid, text) cascade;
+drop function if exists public.set_teacher_comment(uuid, text) cascade;
+drop function if exists public.set_student_note(uuid, text) cascade;
+drop function if exists public.set_quiz_answer_feedback(uuid, text, boolean) cascade;
 
 -- 0004_ovning_provlage.sql lägger bara till en kolumn (assignments.reference_image_path)
 -- och gör om join_session/open_assignment_as_student -- inget extra att droppa här,
@@ -52,6 +57,12 @@ drop function if exists public.reopen_time_report(uuid) cascade;
 -- 0005/0006 (time_entries + assignment_participants.time_locked/time_submitted_at)
 -- kräver inga extra drops -- drop table ... cascade på time_entries/
 -- assignment_participants ovan tar med sig alla deras policyer automatiskt.
+
+-- 0007 (display_name/teacher_comment/student_note-kolumner + quiz_answers-
+-- kolumner + material_orders) kräver inga extra drops av samma skäl --
+-- material_orders har sina policyer och droppas komplett ovan, och de nya
+-- kolumnerna på assignment_participants/quiz_answers försvinner med
+-- respektive tabell.
 
 -- 0002_quiz.sql skapar RLS-policyer med vanlig create policy (Postgres
 -- saknar "create or replace policy") -- måste droppas explicit annars

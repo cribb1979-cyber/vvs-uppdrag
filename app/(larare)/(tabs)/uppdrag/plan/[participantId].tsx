@@ -1,5 +1,5 @@
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Badge, Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -94,6 +94,8 @@ export default function PlanReview() {
   const [newDate, setNewDate] = useState("");
   const [newMinutes, setNewMinutes] = useState("");
   const [newComment, setNewComment] = useState("");
+  const [teacherCommentDraft, setTeacherCommentDraft] = useState("");
+  const [savingComment, setSavingComment] = useState(false);
 
   const load = useCallback(async () => {
     if (!participantId) return;
@@ -126,6 +128,28 @@ export default function PlanReview() {
       load();
     }, [load]),
   );
+
+  // Sätts bara en gång per elevsida (när participant.id först dyker upp) --
+  // annars skulle draften nollställas varje gång useFocusEffect kör om
+  // load() och skriva över det läraren just höll på att skriva.
+  useEffect(() => {
+    if (participant) setTeacherCommentDraft(participant.teacher_comment);
+  }, [participant?.id]);
+
+  async function saveTeacherComment() {
+    if (!participant) return;
+    setSavingComment(true);
+    const { error } = await supabase.rpc("set_teacher_comment", {
+      p_participant_id: participant.id,
+      p_comment: teacherCommentDraft.trim(),
+    });
+    setSavingComment(false);
+    if (error) {
+      Alert.alert("Kunde inte spara", getErrorMessage(error));
+      return;
+    }
+    load();
+  }
 
   async function reopen() {
     if (!participant) return;
@@ -235,12 +259,44 @@ export default function PlanReview() {
 
   return (
     <ScrollView style={{ backgroundColor: theme.background }} contentContainerStyle={styles.container}>
-      <Text style={[styles.title, { color: theme.text }]}>{participant.students?.name ? `Materialplan — ${participant.students.name}` : "Materialplan"}</Text>
+      <Text style={[styles.title, { color: theme.text }]}>
+        {(() => {
+          const name = participant.students?.name ?? participant.display_name;
+          return name ? `Materialplan — ${name}` : "Materialplan";
+        })()}
+      </Text>
       <Text style={{ color: theme.muted, marginBottom: 4 }}>
         {participant.plan_submitted_at
           ? `Inskickad ${new Date(participant.plan_submitted_at).toLocaleString("sv-SE")}`
           : "Ej inskickad ännu — eleven arbetar fortfarande"}
       </Text>
+
+      {!!participant.student_note && (
+        <Card style={{ marginTop: 10, borderColor: theme.warning }}>
+          <Text style={{ color: theme.muted, fontSize: 13, fontWeight: "700", marginBottom: 4 }}>ELEVENS ANTECKNING</Text>
+          <Text style={{ color: theme.text }}>{participant.student_note}</Text>
+        </Card>
+      )}
+
+      <Card style={{ marginTop: 10 }}>
+        <Text style={{ color: theme.muted, fontSize: 13, fontWeight: "700", marginBottom: 8 }}>DIN KOMMENTAR TILL ELEVEN</Text>
+        <TextInput
+          style={[styles.input, { color: theme.text, borderColor: theme.border, minHeight: 70, textAlignVertical: "top" }]}
+          placeholder="Skriv en kommentar, rättning eller tillägg som eleven ser..."
+          placeholderTextColor={theme.muted}
+          value={teacherCommentDraft}
+          onChangeText={setTeacherCommentDraft}
+          multiline
+        />
+        <View style={{ height: 8 }} />
+        <Button
+          title="Spara kommentar"
+          variant="secondary"
+          onPress={saveTeacherComment}
+          loading={savingComment}
+          disabled={teacherCommentDraft.trim() === participant.teacher_comment}
+        />
+      </Card>
 
       <View style={styles.summaryRow}>
         <Text style={{ color: theme.success, fontWeight: "700" }}>🟢 {counts.match}</Text>

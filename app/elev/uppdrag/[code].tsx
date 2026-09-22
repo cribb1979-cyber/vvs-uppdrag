@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect } from "react";
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useColorScheme } from "@/components/useColorScheme";
@@ -25,6 +25,36 @@ export default function ElevUppdrag() {
   const theme = Colors[useColorScheme() ?? "light"];
   const router = useRouter();
   const { data, error, loading, refresh } = useStudentSession(code);
+
+  const [name, setName] = useState("");
+  const [savedName, setSavedName] = useState<string | null>(null);
+  const [savingName, setSavingName] = useState(false);
+
+  const loadName = useCallback(async () => {
+    if (!data?.participant_id) return;
+    const { data: row } = await supabase
+      .from("assignment_participants")
+      .select("display_name")
+      .eq("id", data.participant_id)
+      .single();
+    setSavedName(row?.display_name ?? null);
+    setName(row?.display_name ?? "");
+  }, [data?.participant_id]);
+
+  useEffect(() => {
+    loadName();
+  }, [loadName]);
+
+  async function saveName() {
+    if (!data?.participant_id || !name.trim()) return;
+    setSavingName(true);
+    const { error: saveError } = await supabase.rpc("set_participant_display_name", {
+      p_participant_id: data.participant_id,
+      p_name: name.trim(),
+    });
+    setSavingName(false);
+    if (!saveError) setSavedName(name.trim());
+  }
 
   // Kontrollera utgång live medan eleven tittar på skärmen -- inte bara
   // vid navigering. Går sessionen ut medan skärmen är öppen ska den bli
@@ -68,6 +98,20 @@ export default function ElevUppdrag() {
       {!!data.assignment.description && <Text style={[styles.body, { color: theme.muted }]}>{data.assignment.description}</Text>}
 
       <Card style={{ marginTop: 20 }}>
+        <Text style={{ color: theme.muted, fontSize: 13, fontWeight: "700", marginBottom: 8 }}>DITT NAMN (VISAS FÖR LÄRAREN)</Text>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <TextInput
+            style={[styles.nameInput, { flex: 1, color: theme.text, borderColor: theme.border }]}
+            placeholder="T.ex. Förnamn Efternamn"
+            placeholderTextColor={theme.muted}
+            value={name}
+            onChangeText={setName}
+          />
+          <Button title={savedName ? "Spara" : "Spara namn"} onPress={saveName} loading={savingName} disabled={!name.trim() || name.trim() === savedName} />
+        </View>
+      </Card>
+
+      <Card style={{ marginTop: 12 }}>
         <Text style={{ color: theme.text, fontWeight: "700" }}>⏳ {timeLeftLabel(data.session_expires_at)}</Text>
         {!!data.session_expires_at && (
           <Text style={{ color: theme.muted, fontSize: 13, marginTop: 4 }}>
@@ -125,4 +169,5 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: "800", marginBottom: 10, textAlign: "center" },
   body: { fontSize: 15, lineHeight: 21, textAlign: "center" },
   referenceImage: { width: "100%", height: 200, borderRadius: 12, backgroundColor: "#eee" },
+  nameInput: { minHeight: 46, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, fontSize: 15 },
 });

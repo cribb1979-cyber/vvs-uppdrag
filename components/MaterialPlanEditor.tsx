@@ -40,21 +40,40 @@ export function MaterialPlanEditor({
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [loadingItems, setLoadingItems] = useState(true);
+  const [teacherComment, setTeacherComment] = useState("");
+  const [noteDraft, setNoteDraft] = useState("");
+  const [savedNote, setSavedNote] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
 
   const loadItems = useCallback(async () => {
     setLoadingItems(true);
-    const [{ data: planItems }, { data: view }] = await Promise.all([
+    const [{ data: planItems }, { data: view }, { data: part }] = await Promise.all([
       supabase.from("material_plan_items").select("*").eq("participant_id", participantId).order("created_at"),
       supabase.rpc("get_requirements_view", { p_participant_id: participantId }),
+      supabase.from("assignment_participants").select("teacher_comment, student_note").eq("id", participantId).single(),
     ]);
     setItems(planItems ?? []);
     setRequirementsView((view as RequirementsView) ?? null);
+    setTeacherComment(part?.teacher_comment ?? "");
+    setNoteDraft(part?.student_note ?? "");
+    setSavedNote(part?.student_note ?? "");
     setLoadingItems(false);
   }, [participantId]);
 
   useEffect(() => {
     loadItems();
   }, [loadItems]);
+
+  async function saveNote() {
+    setSavingNote(true);
+    const { error } = await supabase.rpc("set_student_note", { p_participant_id: participantId, p_note: noteDraft.trim() });
+    setSavingNote(false);
+    if (error) {
+      Alert.alert("Kunde inte spara", getErrorMessage(error));
+      return;
+    }
+    setSavedNote(noteDraft.trim());
+  }
 
   async function addItem() {
     if (!component.trim()) return;
@@ -107,6 +126,13 @@ export function MaterialPlanEditor({
   return (
     <ScrollView style={{ backgroundColor: theme.background }} contentContainerStyle={styles.container}>
       <Text style={[styles.title, { color: theme.text }]}>Min materialplan</Text>
+
+      {!!teacherComment && (
+        <Card style={{ marginBottom: 16, borderColor: theme.accent }}>
+          <Text style={{ color: theme.muted, fontSize: 13, fontWeight: "700", marginBottom: 4 }}>KOMMENTAR FRÅN LÄRAREN</Text>
+          <Text style={{ color: theme.text }}>{teacherComment}</Text>
+        </Card>
+      )}
 
       {requirementsView && !Array.isArray(requirementsView) && requirementsView.count !== null && (
         <Card style={{ marginBottom: 16, borderColor: theme.warning }}>
@@ -185,6 +211,20 @@ export function MaterialPlanEditor({
           <Button title="+ Lägg till rad" variant="ghost" onPress={addItem} disabled={!component.trim()} />
         </Card>
       )}
+
+      <Card style={{ marginTop: 8 }}>
+        <Text style={{ color: theme.muted, fontSize: 13, fontWeight: "700", marginBottom: 10 }}>DINA EGNA ANTECKNINGAR</Text>
+        <TextInput
+          style={[styles.input, { color: theme.text, borderColor: theme.border, minHeight: 70, textAlignVertical: "top" }]}
+          placeholder="Reflektion, frågor eller annat du vill skriva om uppdraget..."
+          placeholderTextColor={theme.muted}
+          value={noteDraft}
+          onChangeText={setNoteDraft}
+          multiline
+        />
+        <View style={{ height: 8 }} />
+        <Button title="Spara anteckning" variant="ghost" onPress={saveNote} loading={savingNote} disabled={noteDraft.trim() === savedNote} />
+      </Card>
 
       <View style={{ height: 24 }} />
       {planLocked ? (

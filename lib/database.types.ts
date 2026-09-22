@@ -15,6 +15,7 @@ export type RevealMode = "hidden" | "count" | "full";
 export type AiMode = "off" | "app_help_only" | "general" | "full";
 export type AssessmentStatus = "ej_bedomd" | "uppfyller" | "behover_kompletteras";
 export type AssignmentKind = "uppdrag" | "quiz";
+export type MaterialOrderStatus = "att_bestalla" | "bestalld" | "mottagen";
 
 export interface AssignmentStep {
   key: string;
@@ -310,10 +311,14 @@ export interface Database {
           plan_locked: boolean;
           time_submitted_at: string | null;
           time_locked: boolean;
+          display_name: string | null;
+          teacher_comment: string;
+          student_note: string;
         };
         // Skrivs bara via RPC (join_session/open_assignment_as_student/
         // submit_material_plan/reopen_material_plan/submit_time_report/
-        // reopen_time_report) -- ingen direkt klient-insert/update, se
+        // reopen_time_report/set_participant_display_name/set_teacher_comment/
+        // set_student_note) -- ingen direkt klient-insert/update, se
         // RLS-kommentaren i migrationen.
         Insert: {
           id?: string;
@@ -326,12 +331,18 @@ export interface Database {
           plan_locked?: boolean;
           time_submitted_at?: string | null;
           time_locked?: boolean;
+          display_name?: string | null;
+          teacher_comment?: string;
+          student_note?: string;
         };
         Update: {
           plan_submitted_at?: string | null;
           plan_locked?: boolean;
           time_submitted_at?: string | null;
           time_locked?: boolean;
+          display_name?: string | null;
+          teacher_comment?: string;
+          student_note?: string;
         };
         Relationships: [
           { foreignKeyName: "assignment_participants_assignment_id_fkey"; columns: ["assignment_id"]; isOneToOne: false; referencedRelation: "assignments"; referencedColumns: ["id"] },
@@ -546,9 +557,12 @@ export interface Database {
           selected_answer: string;
           is_correct: boolean;
           answered_at: string;
+          teacher_comment: string;
+          teacher_override: boolean | null;
         };
         // Skrivs bara via submit_quiz_answer (SECURITY DEFINER) -- klienten
-        // insertar aldrig direkt hit.
+        // insertar aldrig direkt hit. teacher_comment/teacher_override skrivs
+        // bara via set_quiz_answer_feedback.
         Insert: {
           id?: string;
           participant_id: string;
@@ -556,11 +570,52 @@ export interface Database {
           selected_answer: string;
           is_correct: boolean;
           answered_at?: string;
+          teacher_comment?: string;
+          teacher_override?: boolean | null;
         };
         Update: never;
         Relationships: [
           { foreignKeyName: "quiz_answers_participant_id_fkey"; columns: ["participant_id"]; isOneToOne: false; referencedRelation: "assignment_participants"; referencedColumns: ["id"] },
           { foreignKeyName: "quiz_answers_question_id_fkey"; columns: ["question_id"]; isOneToOne: false; referencedRelation: "quiz_questions"; referencedColumns: ["id"] },
+        ];
+      };
+      material_orders: {
+        Row: {
+          id: string;
+          org_id: string;
+          material_id: string | null;
+          material_name: string;
+          quantity: number;
+          status: MaterialOrderStatus;
+          note: string;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id: string;
+          material_id?: string | null;
+          material_name: string;
+          quantity?: number;
+          status?: MaterialOrderStatus;
+          note?: string;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          material_id?: string | null;
+          material_name?: string;
+          quantity?: number;
+          status?: MaterialOrderStatus;
+          note?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "material_orders_org_id_fkey"; columns: ["org_id"]; isOneToOne: false; referencedRelation: "orgs"; referencedColumns: ["id"] },
+          { foreignKeyName: "material_orders_material_id_fkey"; columns: ["material_id"]; isOneToOne: false; referencedRelation: "material_catalog"; referencedColumns: ["id"] },
+          { foreignKeyName: "material_orders_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ];
       };
     };
@@ -692,6 +747,22 @@ export interface Database {
           visible: boolean;
           results: Array<{ criteria_label: string; status: AssessmentStatus; comment: string }>;
         };
+      };
+      set_participant_display_name: {
+        Args: { p_participant_id: string; p_name: string };
+        Returns: undefined;
+      };
+      set_teacher_comment: {
+        Args: { p_participant_id: string; p_comment: string };
+        Returns: undefined;
+      };
+      set_student_note: {
+        Args: { p_participant_id: string; p_note: string };
+        Returns: undefined;
+      };
+      set_quiz_answer_feedback: {
+        Args: { p_answer_id: string; p_comment: string; p_override: boolean | null };
+        Returns: undefined;
       };
     };
   };

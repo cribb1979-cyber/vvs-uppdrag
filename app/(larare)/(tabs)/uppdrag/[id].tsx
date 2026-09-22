@@ -493,7 +493,7 @@ export default function AssignmentDetail() {
               style={[styles.reqRow, { borderColor: theme.border }]}
               onPress={() => router.push(`/(larare)/(tabs)/uppdrag/plan/${p.id}`)}
             >
-              <Text style={{ color: theme.text, flex: 1 }}>{p.students?.name ?? `Elev ${p.id.slice(0, 8)} (QR)`}</Text>
+              <Text style={{ color: theme.text, flex: 1 }}>{p.students?.name ?? p.display_name ?? `Elev ${p.id.slice(0, 8)} (QR)`}</Text>
               <Badge label={p.plan_submitted_at ? "Inskickad" : "Pågår"} tone={p.plan_submitted_at ? "success" : "warning"} />
             </TouchableOpacity>
           ))}
@@ -505,13 +505,17 @@ export default function AssignmentDetail() {
           <SectionTitle text="Resultat" theme={theme} />
           {quizResults.length === 0 && <Text style={{ color: theme.muted }}>Inga elever har anslutit ännu.</Text>}
           {quizResults.map((r) => (
-            <View key={r.participant_id} style={[styles.reqRow, { borderColor: theme.border }]}>
+            <TouchableOpacity
+              key={r.participant_id}
+              style={[styles.reqRow, { borderColor: theme.border }]}
+              onPress={() => router.push(`/(larare)/(tabs)/uppdrag/quiz-svar/${r.participant_id}`)}
+            >
               <Text style={{ color: theme.text, flex: 1 }}>{r.student_name ?? `Elev ${r.participant_id.slice(0, 8)} (QR)`}</Text>
               <Badge
                 label={r.answered_count < r.total_questions ? `${r.answered_count}/${r.total_questions} pågår` : `${r.correct_count}/${r.total_questions} rätt`}
                 tone={r.answered_count < r.total_questions ? "warning" : r.correct_count === r.total_questions ? "success" : "muted"}
               />
-            </View>
+            </TouchableOpacity>
           ))}
         </>
       )}
