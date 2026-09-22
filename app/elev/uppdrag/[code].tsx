@@ -1,10 +1,11 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { getErrorMessage } from "@/lib/errors";
 import { quizImageUrl } from "@/lib/quizImages";
 import { supabase } from "@/lib/supabase";
 import { TeacherSignedInError, useStudentSession } from "@/lib/useStudentSession";
@@ -53,7 +54,11 @@ export default function ElevUppdrag() {
       p_name: name.trim(),
     });
     setSavingName(false);
-    if (!saveError) setSavedName(name.trim());
+    if (saveError) {
+      Alert.alert("Kunde inte spara namnet", getErrorMessage(saveError));
+      return;
+    }
+    setSavedName(name.trim());
   }
 
   // Kontrollera utgång live medan eleven tittar på skärmen -- inte bara

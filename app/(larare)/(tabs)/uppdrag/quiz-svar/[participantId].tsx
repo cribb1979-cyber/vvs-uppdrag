@@ -1,10 +1,11 @@
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Badge, Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { getErrorMessage } from "@/lib/errors";
 import { quizImageUrl } from "@/lib/quizImages";
 import { supabase } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
@@ -29,8 +30,16 @@ function AnswerRow({ row, onSaved }: { row: Row; onSaved: () => void }) {
   async function saveFeedback(override: boolean | null) {
     if (!answer) return;
     setSaving(true);
-    await supabase.rpc("set_quiz_answer_feedback", { p_answer_id: answer.id, p_comment: comment.trim(), p_override: override });
+    const { error } = await supabase.rpc("set_quiz_answer_feedback", {
+      p_answer_id: answer.id,
+      p_comment: comment.trim(),
+      p_override: override,
+    });
     setSaving(false);
+    if (error) {
+      Alert.alert("Kunde inte spara", getErrorMessage(error));
+      return;
+    }
     onSaved();
   }
 

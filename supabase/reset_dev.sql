@@ -64,6 +64,10 @@ drop function if exists public.set_quiz_answer_feedback(uuid, text, boolean) cas
 -- kolumnerna på assignment_participants/quiz_answers försvinner med
 -- respektive tabell.
 
+-- 0008 lägger bara till ytterligare en policy på time_entries (bugfix:
+-- läraren saknade INSERT-behörighet) -- täcks av drop table ... cascade
+-- på time_entries ovan.
+
 -- 0002_quiz.sql skapar RLS-policyer med vanlig create policy (Postgres
 -- saknar "create or replace policy") -- måste droppas explicit annars
 -- misslyckas en omkörning av 0002 med "policy already exists". Själva
