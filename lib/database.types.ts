@@ -308,10 +308,13 @@ export interface Database {
           joined_at: string;
           plan_submitted_at: string | null;
           plan_locked: boolean;
+          time_submitted_at: string | null;
+          time_locked: boolean;
         };
         // Skrivs bara via RPC (join_session/open_assignment_as_student/
-        // submit_material_plan/reopen_material_plan) -- ingen direkt
-        // klient-insert/update, se RLS-kommentaren i migrationen.
+        // submit_material_plan/reopen_material_plan/submit_time_report/
+        // reopen_time_report) -- ingen direkt klient-insert/update, se
+        // RLS-kommentaren i migrationen.
         Insert: {
           id?: string;
           assignment_id: string;
@@ -321,10 +324,14 @@ export interface Database {
           joined_at?: string;
           plan_submitted_at?: string | null;
           plan_locked?: boolean;
+          time_submitted_at?: string | null;
+          time_locked?: boolean;
         };
         Update: {
           plan_submitted_at?: string | null;
           plan_locked?: boolean;
+          time_submitted_at?: string | null;
+          time_locked?: boolean;
         };
         Relationships: [
           { foreignKeyName: "assignment_participants_assignment_id_fkey"; columns: ["assignment_id"]; isOneToOne: false; referencedRelation: "assignments"; referencedColumns: ["id"] },
@@ -641,6 +648,14 @@ export interface Database {
         Returns: undefined;
       };
       reopen_material_plan: {
+        Args: { p_participant_id: string };
+        Returns: undefined;
+      };
+      submit_time_report: {
+        Args: { p_participant_id: string };
+        Returns: undefined;
+      };
+      reopen_time_report: {
         Args: { p_participant_id: string };
         Returns: undefined;
       };

@@ -1,10 +1,11 @@
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Badge, Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { getErrorMessage } from "@/lib/errors";
 import { supabase } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
 
@@ -85,6 +86,14 @@ export default function PlanReview() {
   const [items, setItems] = useState<PlanItem[]>([]);
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [busy, setBusy] = useState(false);
+  const [timeBusy, setTimeBusy] = useState(false);
+  const [editingTimeId, setEditingTimeId] = useState<string | null>(null);
+  const [editDate, setEditDate] = useState("");
+  const [editMinutes, setEditMinutes] = useState("");
+  const [editComment, setEditComment] = useState("");
+  const [newDate, setNewDate] = useState("");
+  const [newMinutes, setNewMinutes] = useState("");
+  const [newComment, setNewComment] = useState("");
 
   const load = useCallback(async () => {
     if (!participantId) return;
@@ -124,6 +133,95 @@ export default function PlanReview() {
     const { error } = await supabase.rpc("reopen_material_plan", { p_participant_id: participant.id });
     setBusy(false);
     if (!error) load();
+  }
+
+  async function reopenTime() {
+    if (!participant) return;
+    setTimeBusy(true);
+    const { error } = await supabase.rpc("reopen_time_report", { p_participant_id: participant.id });
+    setTimeBusy(false);
+    if (!error) load();
+  }
+
+  function startEditTime(e: TimeEntry) {
+    setEditingTimeId(e.id);
+    setEditDate(e.work_date);
+    setEditMinutes(String(e.minutes));
+    setEditComment(e.comment);
+  }
+
+  function cancelEditTime() {
+    setEditingTimeId(null);
+  }
+
+  async function saveEditTime() {
+    if (!editingTimeId) return;
+    const match = editDate.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) {
+      Alert.alert("Ogiltigt datum", "Ange datum som ÅÅÅÅ-MM-DD.");
+      return;
+    }
+    const parsedMinutes = Number.parseInt(editMinutes, 10);
+    if (!Number.isFinite(parsedMinutes) || parsedMinutes <= 0) {
+      Alert.alert("Ange antal minuter", "Skriv hur många minuter det gäller.");
+      return;
+    }
+    setTimeBusy(true);
+    const { error } = await supabase
+      .from("time_entries")
+      .update({ work_date: editDate.trim(), minutes: parsedMinutes, comment: editComment.trim() })
+      .eq("id", editingTimeId);
+    setTimeBusy(false);
+    if (error) {
+      Alert.alert("Kunde inte spara", getErrorMessage(error));
+      return;
+    }
+    setEditingTimeId(null);
+    load();
+  }
+
+  function deleteTimeEntry(id: string) {
+    Alert.alert("Ta bort raden?", undefined, [
+      { text: "Avbryt", style: "cancel" },
+      {
+        text: "Ta bort",
+        style: "destructive",
+        onPress: async () => {
+          await supabase.from("time_entries").delete().eq("id", id);
+          load();
+        },
+      },
+    ]);
+  }
+
+  async function addTimeEntry() {
+    if (!participant) return;
+    const match = newDate.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) {
+      Alert.alert("Ogiltigt datum", "Ange datum som ÅÅÅÅ-MM-DD.");
+      return;
+    }
+    const parsedMinutes = Number.parseInt(newMinutes, 10);
+    if (!Number.isFinite(parsedMinutes) || parsedMinutes <= 0) {
+      Alert.alert("Ange antal minuter", "Skriv hur många minuter det gäller.");
+      return;
+    }
+    setTimeBusy(true);
+    const { error } = await supabase.from("time_entries").insert({
+      participant_id: participant.id,
+      work_date: newDate.trim(),
+      minutes: parsedMinutes,
+      comment: newComment.trim(),
+    });
+    setTimeBusy(false);
+    if (error) {
+      Alert.alert("Kunde inte spara", getErrorMessage(error));
+      return;
+    }
+    setNewDate("");
+    setNewMinutes("");
+    setNewComment("");
+    load();
   }
 
   if (!participant) return <View style={{ flex: 1, backgroundColor: theme.background }} />;
@@ -186,17 +284,95 @@ export default function PlanReview() {
       <Text style={[styles.sectionTitle, { color: theme.text }]}>
         Tidrapport ({formatMinutes(timeEntries.reduce((sum, e) => sum + e.minutes, 0))})
       </Text>
+      <Text style={{ color: theme.muted, marginBottom: 10 }}>
+        {participant.time_submitted_at
+          ? `Inskickad ${new Date(participant.time_submitted_at).toLocaleString("sv-SE")}${participant.time_locked ? " — låst för elev" : ""}`
+          : "Ej inskickad ännu — eleven loggar fortfarande"}
+      </Text>
+
       {timeEntries.length === 0 && <Text style={{ color: theme.muted }}>Inga arbetspass loggade ännu.</Text>}
-      {timeEntries.map((e) => (
-        <Card key={e.id} style={styles.row}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: theme.text, fontWeight: "700" }}>
-              {e.work_date} · {formatMinutes(e.minutes)}
-            </Text>
-            {!!e.comment && <Text style={{ color: theme.muted, fontSize: 13, marginTop: 2 }}>{e.comment}</Text>}
-          </View>
-        </Card>
-      ))}
+      {timeEntries.map((e) =>
+        editingTimeId === e.id ? (
+          <Card key={e.id} style={{ marginBottom: 10 }}>
+            <TextInput
+              style={[styles.input, { color: theme.text, borderColor: theme.border, marginBottom: 8 }]}
+              placeholder="Datum (ÅÅÅÅ-MM-DD)"
+              placeholderTextColor={theme.muted}
+              value={editDate}
+              onChangeText={setEditDate}
+            />
+            <TextInput
+              style={[styles.input, { color: theme.text, borderColor: theme.border, marginBottom: 8 }]}
+              placeholder="Minuter"
+              placeholderTextColor={theme.muted}
+              keyboardType="number-pad"
+              value={editMinutes}
+              onChangeText={setEditMinutes}
+            />
+            <TextInput
+              style={[styles.input, { color: theme.text, borderColor: theme.border, marginBottom: 12 }]}
+              placeholder="Kommentar (valfritt)"
+              placeholderTextColor={theme.muted}
+              value={editComment}
+              onChangeText={setEditComment}
+            />
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <View style={{ flex: 1 }}>
+                <Button title="Spara" onPress={saveEditTime} loading={timeBusy} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Button title="Avbryt" variant="secondary" onPress={cancelEditTime} />
+              </View>
+            </View>
+          </Card>
+        ) : (
+          <Card key={e.id} style={styles.row}>
+            <TouchableOpacity style={{ flex: 1 }} onPress={() => startEditTime(e)}>
+              <Text style={{ color: theme.text, fontWeight: "700" }}>
+                {e.work_date} · {formatMinutes(e.minutes)}
+              </Text>
+              {!!e.comment && <Text style={{ color: theme.muted, fontSize: 13, marginTop: 2 }}>{e.comment}</Text>}
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => deleteTimeEntry(e.id)}>
+              <Text style={{ color: theme.danger }}>Ta bort</Text>
+            </TouchableOpacity>
+          </Card>
+        ),
+      )}
+
+      <Card style={{ marginTop: 4 }}>
+        <Text style={{ color: theme.muted, fontSize: 13, fontWeight: "700", marginBottom: 10 }}>+ LÄGG TILL RAD</Text>
+        <TextInput
+          style={[styles.input, { color: theme.text, borderColor: theme.border, marginBottom: 8 }]}
+          placeholder="Datum (ÅÅÅÅ-MM-DD)"
+          placeholderTextColor={theme.muted}
+          value={newDate}
+          onChangeText={setNewDate}
+        />
+        <TextInput
+          style={[styles.input, { color: theme.text, borderColor: theme.border, marginBottom: 8 }]}
+          placeholder="Minuter"
+          placeholderTextColor={theme.muted}
+          keyboardType="number-pad"
+          value={newMinutes}
+          onChangeText={setNewMinutes}
+        />
+        <TextInput
+          style={[styles.input, { color: theme.text, borderColor: theme.border, marginBottom: 12 }]}
+          placeholder="Kommentar (valfritt)"
+          placeholderTextColor={theme.muted}
+          value={newComment}
+          onChangeText={setNewComment}
+        />
+        <Button title="+ Lägg till rad" onPress={addTimeEntry} loading={timeBusy} disabled={!newDate.trim() || !newMinutes.trim()} />
+      </Card>
+
+      {participant.time_locked && (
+        <>
+          <View style={{ height: 12 }} />
+          <Button title="Öppna tidrapport för komplettering" variant="secondary" onPress={reopenTime} loading={timeBusy} />
+        </>
+      )}
 
       {participant.plan_locked && (
         <>
@@ -214,4 +390,5 @@ const styles = StyleSheet.create({
   summaryRow: { flexDirection: "row", gap: 16, marginVertical: 16 },
   row: { flexDirection: "row", alignItems: "center", marginBottom: 10, gap: 12 },
   sectionTitle: { fontSize: 16, fontWeight: "800", marginTop: 20, marginBottom: 10 },
+  input: { minHeight: 46, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, fontSize: 15 },
 });

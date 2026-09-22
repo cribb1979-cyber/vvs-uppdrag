@@ -30,28 +30,38 @@ function formatMinutes(total: number) {
   return `${h} h ${m} min`;
 }
 
-// Fristående från materialplanen (aldrig låst av plan_locked) -- det
-// praktiska verkstadsarbetet, och därmed tidsloggningen, fortsätter
-// normalt även efter att materialplanen skickats in.
+// Fristående från materialplanen (eget lås, time_locked) -- det praktiska
+// verkstadsarbetet, och därmed tidsloggningen, fortsätter normalt även
+// efter att materialplanen skickats in. Samma inskicksmönster som
+// materialplanen: eleven loggar fritt tills "Skicka in tidrapport", då låses
+// raderna och läraren ser tydligt att den är klar (kan ändå alltid rätta).
 export function TimeLog({ participantId, onBack }: { participantId: string; onBack: () => void }) {
   const theme = Colors[useColorScheme() ?? "light"];
 
   const [entries, setEntries] = useState<TimeEntry[]>([]);
+  const [locked, setLocked] = useState(false);
+  const [submittedAt, setSubmittedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [date, setDate] = useState(todayIso());
   const [minutes, setMinutes] = useState("");
   const [comment, setComment] = useState("");
   const [saving, setSaving] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("time_entries")
-      .select("*")
-      .eq("participant_id", participantId)
-      .order("work_date", { ascending: false })
-      .order("created_at", { ascending: false });
-    setEntries(data ?? []);
+    const [{ data: participant }, { data: timeEntries }] = await Promise.all([
+      supabase.from("assignment_participants").select("time_locked, time_submitted_at").eq("id", participantId).single(),
+      supabase
+        .from("time_entries")
+        .select("*")
+        .eq("participant_id", participantId)
+        .order("work_date", { ascending: false })
+        .order("created_at", { ascending: false }),
+    ]);
+    setLocked(participant?.time_locked ?? false);
+    setSubmittedAt(participant?.time_submitted_at ?? null);
+    setEntries(timeEntries ?? []);
     setLoading(false);
   }, [participantId]);
 
@@ -101,6 +111,21 @@ export function TimeLog({ participantId, onBack }: { participantId: string; onBa
     ]);
   }
 
+  async function submit() {
+    if (entries.length === 0) {
+      Alert.alert("Inga arbetspass loggade", "Lägg till minst ett arbetspass innan du skickar in.");
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await supabase.rpc("submit_time_report", { p_participant_id: participantId });
+    setSubmitting(false);
+    if (error) {
+      Alert.alert("Kunde inte skicka in", getErrorMessage(error));
+      return;
+    }
+    load();
+  }
+
   if (loading) return <View style={{ flex: 1, backgroundColor: theme.background }} />;
 
   const total = entries.reduce((sum, e) => sum + e.minutes, 0);
@@ -110,32 +135,40 @@ export function TimeLog({ participantId, onBack }: { participantId: string; onBa
       <Text style={[styles.title, { color: theme.text }]}>Tidrapport</Text>
       <Text style={{ color: theme.muted, marginBottom: 16 }}>Totalt: {formatMinutes(total)}</Text>
 
-      <Card>
-        <Text style={{ color: theme.muted, fontSize: 13, fontWeight: "700", marginBottom: 10 }}>NYTT ARBETSPASS</Text>
-        <TextInput
-          style={[styles.input, { color: theme.text, borderColor: theme.border, marginBottom: 8 }]}
-          placeholder="Datum (ÅÅÅÅ-MM-DD)"
-          placeholderTextColor={theme.muted}
-          value={date}
-          onChangeText={setDate}
-        />
-        <TextInput
-          style={[styles.input, { color: theme.text, borderColor: theme.border, marginBottom: 8 }]}
-          placeholder="Minuter, t.ex. 45"
-          placeholderTextColor={theme.muted}
-          keyboardType="number-pad"
-          value={minutes}
-          onChangeText={setMinutes}
-        />
-        <TextInput
-          style={[styles.input, { color: theme.text, borderColor: theme.border, marginBottom: 12 }]}
-          placeholder="Vad gjorde du? (valfritt)"
-          placeholderTextColor={theme.muted}
-          value={comment}
-          onChangeText={setComment}
-        />
-        <Button title="+ Lägg till" onPress={addEntry} loading={saving} disabled={!minutes.trim()} />
-      </Card>
+      {locked ? (
+        <Card style={{ marginBottom: 16, borderColor: theme.success }}>
+          <Text style={{ color: theme.success, fontWeight: "700" }}>
+            ✓ Inskickad{submittedAt ? ` ${new Date(submittedAt).toLocaleString("sv-SE")}` : ""} — låst för redigering
+          </Text>
+        </Card>
+      ) : (
+        <Card>
+          <Text style={{ color: theme.muted, fontSize: 13, fontWeight: "700", marginBottom: 10 }}>NYTT ARBETSPASS</Text>
+          <TextInput
+            style={[styles.input, { color: theme.text, borderColor: theme.border, marginBottom: 8 }]}
+            placeholder="Datum (ÅÅÅÅ-MM-DD)"
+            placeholderTextColor={theme.muted}
+            value={date}
+            onChangeText={setDate}
+          />
+          <TextInput
+            style={[styles.input, { color: theme.text, borderColor: theme.border, marginBottom: 8 }]}
+            placeholder="Minuter, t.ex. 45"
+            placeholderTextColor={theme.muted}
+            keyboardType="number-pad"
+            value={minutes}
+            onChangeText={setMinutes}
+          />
+          <TextInput
+            style={[styles.input, { color: theme.text, borderColor: theme.border, marginBottom: 12 }]}
+            placeholder="Vad gjorde du? (valfritt)"
+            placeholderTextColor={theme.muted}
+            value={comment}
+            onChangeText={setComment}
+          />
+          <Button title="+ Lägg till" onPress={addEntry} loading={saving} disabled={!minutes.trim()} />
+        </Card>
+      )}
 
       <View style={{ height: 20 }} />
       {entries.length === 0 && <Text style={{ color: theme.muted }}>Inga arbetspass loggade ännu.</Text>}
@@ -147,13 +180,17 @@ export function TimeLog({ participantId, onBack }: { participantId: string; onBa
             </Text>
             {!!e.comment && <Text style={{ color: theme.muted, fontSize: 13, marginTop: 2 }}>{e.comment}</Text>}
           </View>
-          <TouchableOpacity onPress={() => removeEntry(e.id)}>
-            <Text style={{ color: theme.danger }}>Ta bort</Text>
-          </TouchableOpacity>
+          {!locked && (
+            <TouchableOpacity onPress={() => removeEntry(e.id)}>
+              <Text style={{ color: theme.danger }}>Ta bort</Text>
+            </TouchableOpacity>
+          )}
         </Card>
       ))}
 
       <View style={{ height: 20 }} />
+      {!locked && <Button title="Skicka in tidrapport" onPress={submit} loading={submitting} />}
+      <View style={{ height: 8 }} />
       <Button title="Tillbaka" variant="secondary" onPress={onBack} />
     </ScrollView>
   );
