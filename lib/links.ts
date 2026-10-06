@@ -7,10 +7,12 @@
 // satt, så QR-koder/länkar alltid blir riktiga länkar där. I mobilappen krävs
 // EXPO_PUBLIC_APP_URL.
 const ENV_APP_URL = process.env.EXPO_PUBLIC_APP_URL?.replace(/\/+$/, "") || "";
-const APP_URL = ENV_APP_URL ||
-  (typeof window !== "undefined" && window.location?.origin
-    ? window.location.origin.replace(/\/+$/, "")
-    : "");
+const WEBB_URL = (typeof window !== "undefined" && window.location?.origin)
+  ? window.location.origin.replace(/\/+$/, "") : "";
+// Känd produktionsadress. Används i mobilappen om varken EXPO_PUBLIC_APP_URL
+// eller en webbadress finns, så att QR-koder/länkar ändå blir riktiga länkar.
+const PROD_URL = "https://vvs-uppdrag.vercel.app";
+const APP_URL = ENV_APP_URL || WEBB_URL || PROD_URL;
 
 export function sessionJoinUrl(code: string): string {
   if (!APP_URL) return code;
