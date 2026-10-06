@@ -1,12 +1,14 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { RefreshControl, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import QRCode from "react-native-qrcode-svg";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { larareInbjudanUrl } from "@/lib/links";
 
 interface Stats {
   activeAssignments: number;
@@ -107,14 +109,34 @@ export default function Hem() {
         </TouchableOpacity>
       )}
 
-      <Text style={[styles.sectionTitle, { color: theme.text }]}>Skolans kod</Text>
-      <TouchableOpacity onPress={() => router.push("/(larare)/installningar")}>
-        <Card>
-          <Text style={{ color: theme.muted, marginBottom: 4 }}>Dela med kollegor för att bjuda in fler lärare:</Text>
-          <Text style={[styles.code, { color: theme.tint }]}>{org?.join_code}</Text>
-          <Text style={{ color: theme.muted, marginTop: 8, fontSize: 13 }}>Inställningar & väntande lärare →</Text>
-        </Card>
-      </TouchableOpacity>
+      <Text style={[styles.sectionTitle, { color: theme.text }]}>Bjud in lärare</Text>
+      <Card>
+        <Text style={{ color: theme.muted, marginBottom: 12 }}>
+          Visa QR:en för en kollega — den öppnar appen med skolans kod ifylld. Eller dela koden.
+        </Text>
+        {!!org?.join_code && (
+          <View style={{ alignItems: "center", marginBottom: 14 }}>
+            <View style={{ backgroundColor: "#fff", padding: 14, borderRadius: 14 }}>
+              <QRCode value={larareInbjudanUrl(org.join_code)} size={170} color="#0F1B24" backgroundColor="#ffffff" />
+            </View>
+          </View>
+        )}
+        <Text style={{ color: theme.muted, marginBottom: 4 }}>Skolkod:</Text>
+        <Text style={[styles.code, { color: theme.tint }]}>{org?.join_code}</Text>
+        <View style={{ height: 12 }} />
+        <Button
+          title="Dela inbjudan"
+          onPress={() => {
+            const lank = larareInbjudanUrl(org?.join_code || "");
+            const med = `Gå med i ${org?.name || "skolan"} på VVS Uppdrag. Skolkod: ${org?.join_code}` +
+              (lank.startsWith("http") ? `\n${lank}` : "");
+            Share.share({ message: med });
+          }}
+        />
+        <TouchableOpacity onPress={() => router.push("/(larare)/installningar")}>
+          <Text style={{ color: theme.muted, marginTop: 12, fontSize: 13 }}>Inställningar & väntande lärare →</Text>
+        </TouchableOpacity>
+      </Card>
     </ScrollView>
   );
 }

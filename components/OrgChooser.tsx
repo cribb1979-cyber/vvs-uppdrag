@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import * as Linking from "expo-linking";
 import { StyleSheet, Text, View } from "react-native";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
@@ -22,6 +23,24 @@ export function OrgChooser({ fullName }: { fullName: string }) {
   const [joinCode, setJoinCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Kom in man via en inbjudningslänk (?lk=SKOLKOD)? Fyll i koden och välj "gå med".
+  useEffect(() => {
+    (async () => {
+      try {
+        const url = await Linking.getInitialURL();
+        if (!url) return;
+        const { queryParams } = Linking.parse(url);
+        const lk = queryParams?.lk;
+        if (typeof lk === "string" && lk.trim()) {
+          setMode("join");
+          setJoinCode(lk.trim().toUpperCase());
+        }
+      } catch {
+        /* ingen länk – inget att göra */
+      }
+    })();
+  }, []);
 
   async function submit() {
     setError(null);
