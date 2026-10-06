@@ -1,10 +1,11 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import type * as ImagePicker from "expo-image-picker";
 import { Badge, Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { useAuth } from "@/contexts/AuthContext";
@@ -82,19 +83,30 @@ export default function AssignmentDetail() {
   const [newComponent, setNewComponent] = useState("");
   const [newDimension, setNewDimension] = useState("");
   const [newQuantity, setNewQuantity] = useState("1");
+  const [goal, setGoal] = useState("");
+  const [selfItems, setSelfItems] = useState("");
+  const [reflItems, setReflItems] = useState("");
+  const [savingMal, setSavingMal] = useState(false);
+  const [svar, setSvar] = useState<{
+    self_check_items: string[];
+    reflection_questions: string[];
+    deltagare: { namn: string; self_check: Record<string, boolean>; self_check_at: string | null; reflection: Record<string, string>; reflection_at: string | null }[];
+  } | null>(null);
   const [pickingReference, setPickingReference] = useState<"camera" | "library" | null>(null);
   const [savingReference, setSavingReference] = useState(false);
 
   const load = useCallback(async () => {
     if (!id || !org) return;
-    const [{ data: a }, { data: reqs }, { data: sess }, { data: parts }, { data: cls }, { data: aa }] = await Promise.all([
+    const [{ data: a }, { data: reqs }, { data: sess }, { data: parts }, { data: cls }, { data: aa }, { data: sv }] = await Promise.all([
       supabase.from("assignments").select("*").eq("id", id).single(),
       supabase.from("material_requirements").select("*").eq("assignment_id", id).order("sort_order"),
       supabase.from("student_sessions").select("*").eq("assignment_id", id).order("created_at", { ascending: false }),
       supabase.from("assignment_participants").select("*, students(name)").eq("assignment_id", id),
       supabase.from("classes").select("*").eq("org_id", org.id).order("name"),
       supabase.from("assignment_assignments").select("*, classes(name), students(name)").eq("assignment_id", id),
+      supabase.rpc("get_uppdrag_svar", { p_assignment_id: id }),
     ]);
+    setSvar((sv as unknown as typeof svar) ?? null);
     setAssignment(a ?? null);
     setRequirements(reqs ?? []);
     setSessions(sess ?? []);
@@ -115,6 +127,34 @@ export default function AssignmentDetail() {
       load();
     }, [load]),
   );
+
+  useEffect(() => {
+    if (assignment) {
+      setGoal(assignment.goal ?? "");
+      setSelfItems((assignment.self_check_items ?? []).join("\n"));
+      setReflItems((assignment.reflection_questions ?? []).join("\n"));
+    }
+  }, [assignment]);
+
+  async function saveMal() {
+    if (!assignment) return;
+    setSavingMal(true);
+    const { error } = await supabase
+      .from("assignments")
+      .update({
+        goal: goal.trim(),
+        self_check_items: selfItems.split("\n").map((s) => s.trim()).filter(Boolean),
+        reflection_questions: reflItems.split("\n").map((s) => s.trim()).filter(Boolean),
+      })
+      .eq("id", assignment.id);
+    setSavingMal(false);
+    if (error) {
+      Alert.alert("Kunde inte spara", getErrorMessage(error));
+      return;
+    }
+    load();
+    Alert.alert("Sparat ✓", "Målet, checklistan och reflektionsfrågorna sparades.");
+  }
 
   async function setStatus(status: Assignment["status"]) {
     if (!assignment) return;
@@ -288,6 +328,65 @@ export default function AssignmentDetail() {
           </TouchableOpacity>
         ))}
       </View>
+
+      <SectionTitle text="🎯 Mål, egen kontroll & reflektion" theme={theme} />
+      <Card>
+        <Field
+          label="Dagens mål"
+          placeholder="t.ex. Idag: kunna stänga en krets säkert"
+          value={goal}
+          onChangeText={setGoal}
+        />
+        <Field
+          label="Egen kontroll (en punkt per rad)"
+          multiline
+          numberOfLines={6}
+          style={{ minHeight: 120, textAlignVertical: "top" }}
+          value={selfItems}
+          onChangeText={setSelfItems}
+        />
+        <Field
+          label="💬 Reflektionsfrågor (en per rad)"
+          multiline
+          numberOfLines={4}
+          style={{ minHeight: 100, textAlignVertical: "top" }}
+          value={reflItems}
+          onChangeText={setReflItems}
+        />
+        <Button title="Spara" onPress={saveMal} loading={savingMal} />
+      </Card>
+
+      {svar && (
+        <>
+          <SectionTitle text="📥 Insamlat (egen kontroll & reflektion)" theme={theme} />
+          {svar.deltagare.length === 0 ? (
+            <Text style={{ color: theme.muted, marginBottom: 12 }}>Ingen har lämnat in än.</Text>
+          ) : (
+            svar.deltagare.map((d, i) => (
+              <Card key={i} style={{ marginBottom: 10 }}>
+                <Text style={{ color: theme.text, fontWeight: "700", fontSize: 16, marginBottom: 8 }}>{d.namn}</Text>
+                <Text style={{ color: theme.muted, fontSize: 12, fontWeight: "700", marginBottom: 4 }}>
+                  EGEN KONTROLL {d.self_check_at ? "✓" : "(inte inlämnad)"}
+                </Text>
+                {(svar.self_check_items ?? []).map((it, j) => (
+                  <Text key={j} style={{ color: d.self_check?.[String(j)] ? theme.success : theme.muted, fontSize: 14 }}>
+                    {d.self_check?.[String(j)] ? "✓ " : "☐ "}{it}
+                  </Text>
+                ))}
+                <Text style={{ color: theme.muted, fontSize: 12, fontWeight: "700", marginTop: 10, marginBottom: 4 }}>
+                  REFLEKTION {d.reflection_at ? "✓" : "(inte inlämnad)"}
+                </Text>
+                {(svar.reflection_questions ?? []).map((q, j) => (
+                  <View key={j} style={{ marginBottom: 6 }}>
+                    <Text style={{ color: theme.text, fontSize: 14, fontWeight: "600" }}>{q}</Text>
+                    <Text style={{ color: theme.muted, fontSize: 14 }}>{d.reflection?.[String(j)] || "–"}</Text>
+                  </View>
+                ))}
+              </Card>
+            ))
+          )}
+        </>
+      )}
 
       <SectionTitle text="Elevsessioner (QR)" theme={theme} />
       {activeSessions.map((s) => (

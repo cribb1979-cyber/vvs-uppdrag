@@ -173,6 +173,9 @@ export interface Database {
           is_template: boolean;
           assessment_visible: boolean;
           reference_image_path: string | null;
+          goal: string;
+          self_check_items: string[];
+          reflection_questions: string[];
           created_at: string;
         };
         Insert: {
@@ -192,6 +195,9 @@ export interface Database {
           is_template?: boolean;
           assessment_visible?: boolean;
           reference_image_path?: string | null;
+          goal?: string;
+          self_check_items?: string[];
+          reflection_questions?: string[];
           created_at?: string;
         };
         Update: {
@@ -208,6 +214,9 @@ export interface Database {
           is_template?: boolean;
           assessment_visible?: boolean;
           reference_image_path?: string | null;
+          goal?: string;
+          self_check_items?: string[];
+          reflection_questions?: string[];
         };
         Relationships: [
           { foreignKeyName: "assignments_org_id_fkey"; columns: ["org_id"]; isOneToOne: false; referencedRelation: "orgs"; referencedColumns: ["id"] },
@@ -308,6 +317,10 @@ export interface Database {
           student_id: string | null;
           joined_at: string;
           plan_submitted_at: string | null;
+          self_check: Record<string, boolean>;
+          self_check_submitted_at: string | null;
+          reflection: Record<string, string>;
+          reflection_submitted_at: string | null;
           plan_locked: boolean;
           time_submitted_at: string | null;
           time_locked: boolean;
@@ -328,6 +341,10 @@ export interface Database {
           student_id?: string | null;
           joined_at?: string;
           plan_submitted_at?: string | null;
+          self_check?: Record<string, boolean>;
+          self_check_submitted_at?: string | null;
+          reflection?: Record<string, string>;
+          reflection_submitted_at?: string | null;
           plan_locked?: boolean;
           time_submitted_at?: string | null;
           time_locked?: boolean;
@@ -337,6 +354,10 @@ export interface Database {
         };
         Update: {
           plan_submitted_at?: string | null;
+          self_check?: Record<string, boolean>;
+          self_check_submitted_at?: string | null;
+          reflection?: Record<string, string>;
+          reflection_submitted_at?: string | null;
           plan_locked?: boolean;
           time_submitted_at?: string | null;
           time_locked?: boolean;
@@ -713,6 +734,36 @@ export interface Database {
       reopen_time_report: {
         Args: { p_participant_id: string };
         Returns: undefined;
+      };
+      submit_self_check: {
+        Args: { p_participant_id: string; p_answers: Record<string, boolean> };
+        Returns: { ok: boolean; self_check_submitted_at: string };
+      };
+      reopen_self_check: {
+        Args: { p_participant_id: string };
+        Returns: { ok: boolean };
+      };
+      submit_reflection: {
+        Args: { p_participant_id: string; p_answers: Record<string, string> };
+        Returns: { ok: boolean; reflection_submitted_at: string };
+      };
+      reopen_reflection: {
+        Args: { p_participant_id: string };
+        Returns: { ok: boolean };
+      };
+      get_uppdrag_svar: {
+        Args: { p_assignment_id: string };
+        Returns: {
+          self_check_items: string[];
+          reflection_questions: string[];
+          deltagare: Array<{
+            namn: string;
+            self_check: Record<string, boolean>;
+            self_check_at: string | null;
+            reflection: Record<string, string>;
+            reflection_at: string | null;
+          }>;
+        };
       };
       get_quiz_view: {
         Args: { p_participant_id: string };

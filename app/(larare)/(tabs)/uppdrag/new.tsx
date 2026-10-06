@@ -34,6 +34,13 @@ export default function NewAssignment() {
   const [kind, setKind] = useState<AssignmentKind>("uppdrag");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [goal, setGoal] = useState("");
+  const [selfItems, setSelfItems] = useState(
+    "Rätt dimension på rör och kopplingar\nAlla kopplingar täta (tryckprov)\nRätt fall mot avloppet\nIsolering och upphängning klar\nMärkning och dokumentation gjord\nStädat och sorterat",
+  );
+  const [reflItems, setReflItems] = useState(
+    "Vad gick lätt?\nVad var svårast?\nVad gör vi annorlunda nästa gång?\nVad lärde jag mig?",
+  );
   const [mode, setMode] = useState<AssignmentMode>("prov");
   const [referenceAsset, setReferenceAsset] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [pickingReference, setPickingReference] = useState<"camera" | "library" | null>(null);
@@ -87,6 +94,9 @@ export default function NewAssignment() {
           description: description.trim(),
           kind,
           ...modeToFields(mode),
+          goal: goal.trim(),
+          self_check_items: selfItems.split("\n").map((s) => s.trim()).filter(Boolean),
+          reflection_questions: reflItems.split("\n").map((s) => s.trim()).filter(Boolean),
           reference_image_path: referenceImagePath,
           status: "draft",
         })
@@ -154,6 +164,37 @@ export default function NewAssignment() {
           value={description}
           onChangeText={setDescription}
         />
+
+        <Field
+          label="🎯 Dagens mål"
+          placeholder="t.ex. Idag: kunna stänga en krets säkert"
+          value={goal}
+          onChangeText={setGoal}
+        />
+
+        {kind === "uppdrag" && (
+          <>
+            <Field
+              label="✅ Egen kontroll (en punkt per rad)"
+              multiline
+              numberOfLines={6}
+              style={{ minHeight: 120, textAlignVertical: "top" }}
+              value={selfItems}
+              onChangeText={setSelfItems}
+            />
+            <Text style={{ color: theme.muted, fontSize: 12, marginTop: -8, marginBottom: 12 }}>
+              Det här bockar eleven av själv innan hen lämnar uppdraget.
+            </Text>
+            <Field
+              label="💬 Reflektionsfrågor (en per rad)"
+              multiline
+              numberOfLines={4}
+              style={{ minHeight: 100, textAlignVertical: "top" }}
+              value={reflItems}
+              onChangeText={setReflItems}
+            />
+          </>
+        )}
 
         {kind === "uppdrag" && (
           <>

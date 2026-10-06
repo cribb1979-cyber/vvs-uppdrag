@@ -2,15 +2,15 @@ import { StyleSheet, Text, TextInput, View, type TextInputProps } from "react-na
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 
-export function Field({ label, ...props }: { label: string } & TextInputProps) {
+export function Field({ label, style, ...props }: { label: string } & TextInputProps) {
   const theme = Colors[useColorScheme() ?? "light"];
   return (
     <View style={styles.wrap}>
       <Text style={[styles.label, { color: theme.muted }]}>{label}</Text>
       <TextInput
         placeholderTextColor={theme.muted}
-        style={[styles.input, { backgroundColor: theme.card, borderColor: theme.border, color: theme.text }]}
         {...props}
+        style={[styles.input, { backgroundColor: theme.card, borderColor: theme.border, color: theme.text }, style]}
       />
     </View>
   );

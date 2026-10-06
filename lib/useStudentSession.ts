@@ -15,9 +15,16 @@ export interface StudentSessionData {
     ai_mode: AiMode;
     steps: { key: string; label: string; open: boolean }[];
     reference_image_path: string | null;
+    goal: string;
+    self_check_items: string[];
+    reflection_questions: string[];
   };
   plan_locked: boolean;
   plan_submitted_at: string | null;
+  self_check: Record<string, boolean>;
+  self_check_submitted_at: string | null;
+  reflection: Record<string, string>;
+  reflection_submitted_at: string | null;
 }
 
 export class TeacherSignedInError extends Error {}
