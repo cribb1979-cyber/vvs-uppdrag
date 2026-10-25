@@ -52,3 +52,22 @@ EXPO_PUBLIC_APP_URL=https://vvs-uppdrag.vercel.app
 ```
 
 På webben används webbläsarens adress automatiskt om variabeln är tom.
+
+## Infobank (QR i verkstaden)
+
+Fliken **📷 Infobank** kopplar en QR-kod till en fysisk installation. Den som
+scannar får funktion, driftsättning och flödesschema – **utan inloggning**, med
+telefonens vanliga kamera.
+
+* Adressen är `https://vvs-uppdrag.vercel.app/i/<token>` och ligger kvar så
+  länge du vill; en utskriven QR blir aldrig ogiltig av sig själv.
+* Läraren kan **stänga av visningen** direkt, sätta **visas från/till**, eller
+  ta bort installationen (då svarar koden "hittades inte").
+* Token är 16 slumpade hextecken, aldrig löpnummer – ingen kan gissa sig till
+  en annan installations sida.
+* Flödesschemat laddas upp som bild (fota CAD-ritningen eller exportera
+  PNG/SVG från Cadverkstaden).
+
+Kräver migrationen `supabase/migrations/0011_infobank.sql` (tabellen
+`installations`, publik läsfunktion `installation_public` och bucketen
+`installationer`).

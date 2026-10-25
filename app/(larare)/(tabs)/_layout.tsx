@@ -30,6 +30,10 @@ export default function TabsLayout() {
         options={{ title: "Examensprov", headerShown: false, tabBarIcon: ({ focused }) => <TabIcon emoji="🎓" focused={focused} /> }}
       />
       <Tabs.Screen
+        name="infobank"
+        options={{ title: "Infobank", headerShown: false, tabBarIcon: ({ focused }) => <TabIcon emoji="📷" focused={focused} /> }}
+      />
+      <Tabs.Screen
         name="klasser"
         options={{ title: "Klasser", headerShown: false, tabBarIcon: ({ focused }) => <TabIcon emoji="🎓" focused={focused} /> }}
       />

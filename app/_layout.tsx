@@ -71,6 +71,8 @@ function RootStack() {
   return (
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
+      {/* Publik informationssida för QR-koder i verkstaden – ingen inloggning. */}
+      <Stack.Screen name="i/[token]" options={{ headerShown: false }} />
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       <Stack.Protected guard={isTeacher}>
         <Stack.Screen name="(larare)" options={{ headerShown: false }} />

@@ -155,6 +155,62 @@ export interface Database {
           { foreignKeyName: "student_links_student_id_fkey"; columns: ["student_id"]; isOneToOne: false; referencedRelation: "students"; referencedColumns: ["id"] },
         ];
       };
+      installations: {
+        Row: {
+          id: string;
+          org_id: string;
+          created_by: string;
+          token: string;
+          titel: string;
+          plats: string;
+          funktion: string;
+          driftsattning: string[];
+          foto_path: string | null;
+          schema_path: string | null;
+          publicerad: boolean;
+          visas_fran: string | null;
+          visas_till: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id: string;
+          created_by: string;
+          token: string;
+          titel: string;
+          plats?: string;
+          funktion?: string;
+          driftsattning?: string[];
+          foto_path?: string | null;
+          schema_path?: string | null;
+          publicerad?: boolean;
+          visas_fran?: string | null;
+          visas_till?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          org_id?: string;
+          created_by?: string;
+          token?: string;
+          titel?: string;
+          plats?: string;
+          funktion?: string;
+          driftsattning?: string[];
+          foto_path?: string | null;
+          schema_path?: string | null;
+          publicerad?: boolean;
+          visas_fran?: string | null;
+          visas_till?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "installations_org_id_fkey"; columns: ["org_id"]; isOneToOne: false; referencedRelation: "orgs"; referencedColumns: ["id"] },
+        ];
+      };
       assignments: {
         Row: {
           id: string;
@@ -642,6 +698,21 @@ export interface Database {
     };
     Views: Record<string, never>;
     Functions: {
+      installation_public: {
+        Args: { p_token: string };
+        Returns: {
+          status: "ok" | "avstangd" | "saknas" | "planerad" | "utgangen";
+          titel?: string;
+          plats?: string;
+          funktion?: string;
+          driftsattning?: string[];
+          foto?: string | null;
+          schema?: string | null;
+          uppdaterad?: string;
+          fran?: string;
+          till?: string;
+        };
+      };
       create_org_and_admin: {
         Args: { org_name: string; teacher_name: string };
         Returns: Database["public"]["Tables"]["orgs"]["Row"];
