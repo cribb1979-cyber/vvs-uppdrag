@@ -5,6 +5,8 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { ExamClock, useExamClock } from "@/components/ExamClock";
+import { examInfo } from "@/lib/examMode";
 import { quizImageUrl } from "@/lib/quizImages";
 import { useAssignmentAsStudent } from "@/lib/useAssignmentAsStudent";
 
@@ -13,6 +15,10 @@ export default function MinaUppdragDetail() {
   const theme = Colors[useColorScheme() ?? "light"];
   const router = useRouter();
   const { data, error, loading, refresh } = useAssignmentAsStudent(assignmentId);
+
+  const exam = examInfo(data?.assignment.steps);
+  const examNyckel = data?.participant_id ? `vvsuppdrag.exam.${data.participant_id}` : null;
+  const klocka = useExamClock(examNyckel, exam.minutes, exam.lage === "prov");
 
   // Samma live-uppdatering som QR-engångsflödet (app/elev/uppdrag/[code].tsx):
   // byter läraren mellan Övningsläge/Provläge medan eleven har skärmen öppen
@@ -51,6 +57,8 @@ export default function MinaUppdragDetail() {
         </Card>
       )}
 
+      <ExamClock steps={data.assignment.steps} storageKey={examNyckel} />
+
       {data.assignment.kind === "uppdrag" && !!data.assignment.reference_image_path && (
         <>
           <Text style={{ color: theme.muted, fontSize: 13, fontWeight: "700", marginTop: 16, marginBottom: 8 }}>REFERENSBILD</Text>
@@ -60,12 +68,13 @@ export default function MinaUppdragDetail() {
 
       <View style={{ height: 28 }} />
       {data.assignment.kind === "quiz" ? (
-        <Button title="Starta quiz" onPress={() => router.push(`/elev/mina-uppdrag/quiz/${assignmentId}`)} />
+        <Button title="Starta quiz" onPress={() => router.push(`/elev/mina-uppdrag/quiz/${assignmentId}`)} disabled={klocka.slut} />
       ) : (
         <>
           <Button
             title={data.plan_locked ? "Se min materialplan" : "Skapa din materialplan"}
             onPress={() => router.push(`/elev/mina-uppdrag/materialplan/${assignmentId}`)}
+            disabled={klocka.slut}
           />
           {data.plan_submitted_at && (
             <Text style={{ color: theme.success, textAlign: "center", marginTop: 12, fontWeight: "600" }}>
@@ -83,6 +92,7 @@ export default function MinaUppdragDetail() {
             title="⏱ Tidrapport"
             variant="secondary"
             onPress={() => router.push(`/elev/mina-uppdrag/tidrapport/${assignmentId}`)}
+            disabled={klocka.slut}
           />
         </>
       )}

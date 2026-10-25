@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { getErrorMessage } from "@/lib/errors";
+import { ExamClock, useExamClock } from "@/components/ExamClock";
+import { examInfo } from "@/lib/examMode";
 import { quizImageUrl } from "@/lib/quizImages";
 import { supabase } from "@/lib/supabase";
 import { TeacherSignedInError, useStudentSession } from "@/lib/useStudentSession";
@@ -34,6 +36,12 @@ export default function ElevUppdrag() {
   const [savingSelf, setSavingSelf] = useState(false);
   const [reflection, setReflection] = useState<Record<string, string>>({});
   const [savingRefl, setSavingRefl] = useState(false);
+
+  // Skarpt läge: klockan startar när eleven först öppnar uppdraget.
+  const exam = examInfo(data?.assignment.steps);
+  const skarpt = exam.lage === "prov";
+  const examNyckel = data?.participant_id ? `vvsuppdrag.exam.${data.participant_id}` : null;
+  const klocka = useExamClock(examNyckel, exam.minutes, skarpt);
 
   const loadName = useCallback(async () => {
     if (!data?.participant_id) return;
@@ -170,6 +178,8 @@ export default function ElevUppdrag() {
         </View>
       </Card>
 
+      <ExamClock steps={data.assignment.steps} storageKey={examNyckel} />
+
       <Card style={{ marginTop: 12 }}>
         <Text style={{ color: theme.text, fontWeight: "700" }}>⏳ {timeLeftLabel(data.session_expires_at)}</Text>
         {!!data.session_expires_at && (
@@ -196,12 +206,13 @@ export default function ElevUppdrag() {
 
       <View style={{ height: 28 }} />
       {data.assignment.kind === "quiz" ? (
-        <Button title="Starta quiz" onPress={() => router.push(`/elev/uppdrag/quiz/${encodeURIComponent(code!)}`)} />
+        <Button title="Starta quiz" onPress={() => router.push(`/elev/uppdrag/quiz/${encodeURIComponent(code!)}`)} disabled={klocka.slut} />
       ) : (
         <>
           <Button
             title={data.plan_locked ? "Se min materialplan" : "Skapa din materialplan"}
             onPress={() => router.push(`/elev/materialplan/${encodeURIComponent(code!)}`)}
+            disabled={klocka.slut}
           />
           {data.plan_submitted_at && (
             <Text style={{ color: theme.success, textAlign: "center", marginTop: 12, fontWeight: "600" }}>
@@ -213,6 +224,7 @@ export default function ElevUppdrag() {
             title="⏱ Tidrapport"
             variant="secondary"
             onPress={() => router.push(`/elev/tidrapport/${encodeURIComponent(code!)}`)}
+            disabled={klocka.slut}
           />
 
           {selfItems.length > 0 && (
@@ -239,7 +251,7 @@ export default function ElevUppdrag() {
                 );
               })}
               <View style={{ height: 12 }} />
-              <Button title="Spara egen kontroll" onPress={saveSelfCheck} loading={savingSelf} />
+              <Button title="Spara egen kontroll" onPress={saveSelfCheck} loading={savingSelf} disabled={klocka.slut} />
               {!!data.self_check_submitted_at && (
                 <Text style={{ color: theme.success, textAlign: "center", marginTop: 10, fontWeight: "600" }}>
                   ✓ Sparad {new Date(data.self_check_submitted_at).toLocaleString("sv-SE")}
@@ -268,7 +280,7 @@ export default function ElevUppdrag() {
                   />
                 </View>
               ))}
-              <Button title="Spara reflektionen" onPress={saveReflection} loading={savingRefl} />
+              <Button title="Spara reflektionen" onPress={saveReflection} loading={savingRefl} disabled={klocka.slut} />
               {!!data.reflection_submitted_at && (
                 <Text style={{ color: theme.success, textAlign: "center", marginTop: 10, fontWeight: "600" }}>
                   ✓ Sparad {new Date(data.reflection_submitted_at).toLocaleString("sv-SE")}
