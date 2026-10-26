@@ -2,7 +2,7 @@
 // över Web Bluetooth. Tre källor: förrådets artiklar, examensprovets
 // stationer och helt fri text. Stilen gäller alla etiketter i kön.
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { ActivityIndicator, Image, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Image, Linking, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Badge, Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
@@ -75,6 +75,8 @@ export default function LabelStudio({
 
   const arWebb = Platform.OS === "web";
   const stods = arWebb && bluetoothSupported();
+  const arFirefox =
+    arWebb && typeof navigator !== "undefined" && /firefox/i.test(navigator.userAgent ?? "");
 
   useEffect(() => {
     if (!org) return;
@@ -279,6 +281,29 @@ export default function LabelStudio({
 
   return (
     <View>
+      {!stods && (
+        <Card style={{ marginBottom: 12, borderColor: theme.danger }}>
+          <Text style={{ color: theme.text, fontWeight: "800", fontSize: 16 }}>
+            Webbläsaren kan inte prata Bluetooth
+          </Text>
+          <Text style={{ color: theme.muted, marginTop: 6, lineHeight: 20 }}>
+            {arFirefox
+              ? "Du använder Firefox, som saknar Web Bluetooth. Öppna appen i Chrome eller Edge i stället."
+              : "Web Bluetooth saknas i den här webbläsaren. Använd Chrome eller Edge på dator – eller Chrome på Android."}
+          </Text>
+          <Text style={{ color: theme.muted, marginTop: 6, lineHeight: 20 }}>
+            Allt annat i appen fungerar som vanligt; det är bara utskriften som behöver Chrome.
+          </Text>
+          <Rad>
+            <Button
+              title="Hämta Chrome"
+              variant="secondary"
+              onPress={() => void Linking.openURL("https://www.google.com/chrome/")}
+            />
+          </Rad>
+        </Card>
+      )}
+
       {/* Skrivare */}
       <Card style={{ marginBottom: 12 }}>
         <View style={styles.mellanrum}>
@@ -489,11 +514,6 @@ export default function LabelStudio({
           />
         </Rad>
         {busy && <ActivityIndicator style={{ marginTop: 10 }} color={theme.tint} />}
-        {!stods && (
-          <Text style={{ color: theme.danger, fontSize: 13, marginTop: 10 }}>
-            Den här webbläsaren stöder inte Web Bluetooth. Använd Chrome eller Edge på dator.
-          </Text>
-        )}
       </Card>
     </View>
   );
