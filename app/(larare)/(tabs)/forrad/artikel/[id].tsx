@@ -98,8 +98,13 @@ export default function ArtikelDetail() {
     ]);
   }
 
+  // Öppnar etikettstudion med just den här artikeln förvald, så utskriften går
+  // till etikettskrivaren i stället för webbläsarens utskriftsdialog.
   function print() {
-    if (Platform.OS === "web" && typeof window !== "undefined") window.print();
+    router.push({
+      pathname: "/(larare)/(tabs)/forrad/skriv-ut",
+      params: { kalla: "forrad", artikel: item?.id ?? "" },
+    });
   }
 
   if (!item) return <View style={{ flex: 1, backgroundColor: theme.background }} />;

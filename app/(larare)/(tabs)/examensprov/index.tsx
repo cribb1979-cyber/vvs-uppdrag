@@ -68,6 +68,22 @@ export default function Examensprov() {
         Byggt på VVS-Branschens Yrkesnämnds gymnasiearbete. {EXAM_TASKS.length} delmoment, cirka {timmar(totalt)} totalt.
       </Text>
 
+      <View style={{ marginBottom: 16 }}>
+        <Button
+          title="🏷 Skriv ut stationsetiketter"
+          variant="secondary"
+          onPress={() =>
+            router.push({
+              pathname: "/(larare)/(tabs)/forrad/skriv-ut",
+              params: { kalla: "examensprov" },
+            })
+          }
+        />
+        <Text style={{ color: theme.muted, fontSize: 12, marginTop: 6 }}>
+          QR-kod på varje station som öppnar momentet – skrivs direkt på etikettskrivaren.
+        </Text>
+      </View>
+
       <View style={styles.modes}>
         <Card style={{ flex: 1, borderColor: theme.accent }}>
           <Text style={{ color: theme.accent, fontWeight: "800" }}>🎓 Övning</Text>

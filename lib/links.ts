@@ -35,3 +35,10 @@ export function materialArticleUrl(articleId: string): string {
   if (!APP_URL) return articleId;
   return `${APP_URL}/forrad/artikel/${encodeURIComponent(articleId)}`;
 }
+
+// QR-mål för ett examensprovs delmoment. Sidan är publik (ingen inloggning)
+// så att en etikett på en station kan scannas av vem som helst med kameran.
+export function examTaskUrl(taskId: string): string {
+  if (!APP_URL) return taskId;
+  return `${APP_URL}/examensprov/${encodeURIComponent(taskId)}`;
+}
