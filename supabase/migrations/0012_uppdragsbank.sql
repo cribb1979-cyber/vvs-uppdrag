@@ -92,7 +92,8 @@ alter table public.uppdragsbank_granskningar enable row level security;
 -- Godkända mallar är läsbara för alla lärare. Egna skolans mallar är
 -- läsbara även medan de granskas, så att kollegorna kan se dem.
 drop policy if exists "uppdragsbank: läsa godkända eller egen org" on public.uppdragsbank_mallar;
-create policy "uppdragsbank: läsa godkända eller egen org" for select
+create policy "uppdragsbank: läsa godkända eller egen org"
+on public.uppdragsbank_mallar for select
 to authenticated
 using (
   status = 'godkand'
@@ -100,7 +101,8 @@ using (
 );
 
 drop policy if exists "uppdragsbank: lärare skapar i egen org" on public.uppdragsbank_mallar;
-create policy "uppdragsbank: lärare skapar i egen org" for insert
+create policy "uppdragsbank: lärare skapar i egen org"
+on public.uppdragsbank_mallar for insert
 to authenticated
 with check (
   agare_org_id = (select org_id from public.current_teacher())
@@ -115,7 +117,8 @@ with check (
 -- (eller göra den till utkast igen via RPC). Author/admin får uppdatera
 -- utkast, granskning och avslagen.
 drop policy if exists "uppdragsbank: ägare/admin uppdaterar ej godkänd" on public.uppdragsbank_mallar;
-create policy "uppdragsbank: ägare/admin uppdaterar ej godkänd" for update
+create policy "uppdragsbank: ägare/admin uppdaterar ej godkänd"
+on public.uppdragsbank_mallar for update
 to authenticated
 using (
   status <> 'godkand'
@@ -131,7 +134,8 @@ with check (
 );
 
 drop policy if exists "uppdragsbank: ägare/admin tar bort" on public.uppdragsbank_mallar;
-create policy "uppdragsbank: ägare/admin tar bort" for delete
+create policy "uppdragsbank: ägare/admin tar bort"
+on public.uppdragsbank_mallar for delete
 to authenticated
 using (
   agare_org_id = (select org_id from public.current_teacher())
@@ -145,7 +149,8 @@ using (
 -- granskning skapas bara via RPC:n nedan, så att man inte kan godkänna sin
 -- egen mall eller skriva en granskning på en osynlig mall.
 drop policy if exists "uppdragsbank: granskningar läses med mallen" on public.uppdragsbank_granskningar;
-create policy "uppdragsbank: granskningar läses med mallen" for select
+create policy "uppdragsbank: granskningar läses med mallen"
+on public.uppdragsbank_granskningar for select
 to authenticated
 using (mall_id in (select id from public.uppdragsbank_mallar));
 
