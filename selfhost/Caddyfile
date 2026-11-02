@@ -1,0 +1,34 @@
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	# Publik väg via Tailscale Funnel: https://<nod>:8443/vvs/...
+	handle_path /vvs/auth/v1/* {
+		reverse_proxy auth:9999
+	}
+	handle_path /vvs/rest/v1/* {
+		reverse_proxy rest:3000
+	}
+	handle /vvs/storage/v1/* {
+		uri strip_prefix /vvs
+		reverse_proxy storage:5001
+	}
+	handle_path /vvs/functions/v1/* {
+		reverse_proxy functions:9000
+	}
+
+	# Lokal testning utan /vvs-prefix
+	handle_path /auth/v1/* {
+		reverse_proxy auth:9999
+	}
+	handle_path /rest/v1/* {
+		reverse_proxy rest:3000
+	}
+	handle /storage/v1/* {
+		reverse_proxy storage:5001
+	}
+	handle_path /functions/v1/* {
+		reverse_proxy functions:9000
+	}
+
+	respond /healthz 200
+}

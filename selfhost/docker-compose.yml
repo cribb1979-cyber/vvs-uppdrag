@@ -1,0 +1,143 @@
+# VVS Uppdrag – egen backend på Y900.
+#
+# Start:
+#   cp .env.example .env   # fyll i / kör scripts/gen-keys.py
+#   docker compose up -d --build
+#
+# Allt ligger i egna containrar, egna volymer och en egen port (8082).
+# Inget rör den befintliga vilda-stacken.
+
+name: vvs-supabase
+
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?saknas i .env}
+      POSTGRES_DB: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./sql/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  auth:
+    image: supabase/gotrue:v2.197.0
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      PORT: "9999"
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD}@db:5432/postgres?sslmode=disable
+      GOTRUE_DB_NAMESPACE: auth
+      API_EXTERNAL_URL: ${PUBLIC_URL}
+      GOTRUE_API_EXTERNAL_URL: ${PUBLIC_URL}
+      GOTRUE_SITE_URL: ${APP_URL}
+      GOTRUE_URI_ALLOW_LIST: ${APP_URL}
+      GOTRUE_JWT_SECRET: ${JWT_SECRET}
+      GOTRUE_JWT_EXP: "3600"
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_DISABLE_SIGNUP: "false"
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_MAILER_AUTOCONFIRM: "true"
+      GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED: "true"
+      GOTRUE_LOG_LEVEL: info
+
+  migrate:
+    image: postgres:17
+    depends_on:
+      db:
+        condition: service_healthy
+      auth:
+        condition: service_started
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      DB_URL: postgres://postgres:${POSTGRES_PASSWORD}@db:5432/postgres
+    volumes:
+      - ./sql/vvs:/vvs/migrations:ro
+      - ./scripts:/vvs/scripts:ro
+    entrypoint: ["/bin/sh", "/vvs/scripts/migrate-vvs.sh"]
+    restart: "no"
+
+  rest:
+    image: postgrest/postgrest:v13.0.8
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      PGRST_DB_URI: postgres://authenticator:${POSTGRES_PASSWORD}@db:5432/postgres
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      PGRST_SERVER_PORT: "3000"
+      PGRST_LOG_LEVEL: info
+
+  storage:
+    build:
+      context: .
+      dockerfile: Dockerfile.storage
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      PORT: "5001"
+      DB_URL: postgres://authenticator:${POSTGRES_PASSWORD}@db:5432/postgres
+      JWT_SECRET: ${JWT_SECRET}
+      FILE_DIR: /data
+      MAX_UPLOAD_BYTES: "20000000"
+    volumes:
+      - ./data/storage:/data
+
+  functions:
+    build:
+      context: .
+      dockerfile: Dockerfile.functions
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      PORT: "9000"
+      DB_URL: postgres://authenticator:${POSTGRES_PASSWORD}@db:5432/postgres
+      JWT_SECRET: ${JWT_SECRET}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-haiku-4-5-20251001}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:9000/healthz >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      auth:
+        condition: service_started
+      rest:
+        condition: service_started
+      storage:
+        condition: service_started
+      functions:
+        condition: service_started
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./data/caddy/data:/data
+      - ./data/caddy/config:/config
+
+volumes:
+  pgdata:

@@ -1,0 +1,9 @@
+{
+  "name": "vvs-supabase",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Egen Supabase-lik backend för VVS Uppdrag: Postgres, GoTrue, PostgREST, storage och AI-funktion.",
+  "dependencies": {
+    "pg": "^8.13.1"
+  }
+}
