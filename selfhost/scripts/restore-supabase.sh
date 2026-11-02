@@ -5,7 +5,7 @@ set -eu
 cd "$(dirname "$0")/.."
 M=migrering
 
-for f in "$M/auth-users.sql" "$M/auth-identities.sql" "$M/public.sql"; do
+for f in "$M/auth-users.sql" "$M/auth-identities.sql" "$M/public.sql" "$M/storage-objects.sql"; do
   [ -f "$f" ] || { echo "Saknar $f"; exit 1; }
 done
 
@@ -36,6 +36,9 @@ echo "== tömmer public och återställer appens schema + data =="
 docker compose exec -T db psql -U postgres -d postgres -c "drop schema public cascade; create schema public;"
 docker compose exec -T db psql -U postgres -d postgres -c "create extension if not exists \"uuid-ossp\" with schema public; create extension if not exists pgcrypto with schema public; create extension if not exists citext with schema public;"
 docker compose exec -T db psql -U postgres -d postgres < "$M/public.sql"
+
+echo "== storage-rader =="
+docker compose exec -T db psql -U postgres -d postgres < "$M/storage-objects.sql"
 
 echo "== nyare migrationer som dumpen kan sakna =="
 docker compose exec -T db psql -U postgres -d postgres < sql/vvs/0012_uppdragsbank.sql

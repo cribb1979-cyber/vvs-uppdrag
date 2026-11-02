@@ -31,5 +31,7 @@ docker run --rm --env-file "$TMP" \
     pg_dump --data-only --table=auth.users --file=/out/auth-users.sql
     echo "== auth.identities"
     pg_dump --data-only --table=auth.identities --file=/out/auth-identities.sql
+    echo "== storage.objects"
+    pg_dump --data-only --table=storage.objects --file=/out/storage-objects.sql
     ls -l /out
   '

@@ -16,7 +16,6 @@ Allt ligger i egna containrar, egna volymer och port **8082**. Den befintliga
 
 ```bash
 cd ~/vvs-supabase
-sh scripts/sync-migrations.sh      # kopierar appens migrationer
 python3 scripts/gen-keys.py        # skriver .env med nya hemligheter
 docker compose up -d --build
 ```
@@ -78,8 +77,11 @@ bash scripts/dump-supabase.sh
 bash scripts/restore-supabase.sh
 ```
 
-3. Kopiera storage-filerna från Supabase Storage till `data/storage/quiz-images`
-   och `data/storage/installationer` (samma mappstruktur som i Supabase).
+3. Kopiera bilderna från Supabase Storage:
+
+```bash
+SUPABASE_PROJECT_URL=https://<projektref>.supabase.co bash scripts/copy-storage-from-supabase.sh
+```
 
 ## Backup
 
