@@ -16,13 +16,15 @@ RAW=$(cat "$FILE")
 USER=$(printf '%s' "$RAW" | sed -E 's#^[^:]+://([^:]+):.*#\1#')
 PASS=$(printf '%s' "$RAW" | sed -E 's#^[^:]+://[^:]+:([^@]*)@.*#\1#')
 HOST=$(printf '%s' "$RAW" | sed -E 's#^[^@]+@([^:/]+).*#\1#')
+PORT=$(printf '%s' "$RAW" | sed -nE 's#^[^@]+@[^:]+:([0-9]+).*#\1#p')
+PORT=${PORT:-5432}
 [ -n "$USER" ] && [ -n "$PASS" ] && [ -n "$HOST" ] || { echo "Kunde inte läsa URL:en"; exit 1; }
 
 TMP=$(mktemp); trap 'rm -f "$TMP"' EXIT; chmod 600 "$TMP"
 printf 'PGPASSWORD=%s\n' "$PASS" > "$TMP"
 
 docker run --rm --env-file "$TMP" \
-  -e PGHOST="$HOST" -e PGUSER="$USER" -e PGDATABASE=postgres \
+  -e PGHOST="$HOST" -e PGPORT="$PORT" -e PGUSER="$USER" -e PGDATABASE=postgres \
   -v "$PWD/$OUT:/out" postgres:17 sh -c '
     set -e
     echo "== public (schema + data)"
