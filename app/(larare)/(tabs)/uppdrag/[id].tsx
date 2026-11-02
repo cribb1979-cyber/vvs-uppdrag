@@ -1,6 +1,6 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Image, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import type * as ImagePicker from "expo-image-picker";
 import { Badge, Card } from "@/components/ui/Card";
@@ -14,6 +14,13 @@ import { getErrorMessage } from "@/lib/errors";
 import { pickQuizImage, quizImageUrl, uploadQuizImage } from "@/lib/quizImages";
 import { supabase } from "@/lib/supabase";
 import { sessionJoinUrl } from "@/lib/links";
+import { skapaMallFranUppdrag } from "@/lib/uppdragsbank";
+import {
+  SAKERVATTEN_URL,
+  SAKERVATTEN_VERSION,
+  reglerFor,
+  reglerPerOmrade,
+} from "@/lib/sakervatten";
 import type { Database } from "@/lib/database.types";
 
 type Assignment = Database["public"]["Tables"]["assignments"]["Row"];
@@ -94,6 +101,8 @@ export default function AssignmentDetail() {
   } | null>(null);
   const [pickingReference, setPickingReference] = useState<"camera" | "library" | null>(null);
   const [savingReference, setSavingReference] = useState(false);
+  const [bankSparar, setBankSparar] = useState(false);
+  const [reglerOppna, setReglerOppna] = useState(false);
 
   const load = useCallback(async () => {
     if (!id || !org) return;
@@ -160,6 +169,45 @@ export default function AssignmentDetail() {
     if (!assignment) return;
     const { error } = await supabase.from("assignments").update({ status }).eq("id", assignment.id);
     if (!error) load();
+  }
+
+  async function sattInIBank() {
+    if (!assignment) return;
+    setBankSparar(true);
+    try {
+      const mallId = await skapaMallFranUppdrag(assignment.id);
+      Alert.alert(
+        "Inlagd i uppdragsbanken",
+        "Mallen ligger nu under “Granskas”. En annan lärare behöver godkänna den innan den blir synlig för alla.",
+        [
+          {
+            text: "Visa mallen",
+            onPress: () =>
+              router.push({ pathname: "/(larare)/(tabs)/bank/[id]", params: { id: mallId } }),
+          },
+          { text: "OK" },
+        ],
+      );
+    } catch (e) {
+      Alert.alert("Kunde inte lägga in i banken", getErrorMessage(e));
+    } finally {
+      setBankSparar(false);
+    }
+  }
+
+  async function vaxlaRegel(kod: string) {
+    if (!assignment) return;
+    const nu = assignment.rule_refs ?? [];
+    const next = nu.includes(kod) ? nu.filter((k) => k !== kod) : [...nu, kod];
+    const { error } = await supabase
+      .from("assignments")
+      .update({ rule_refs: next })
+      .eq("id", assignment.id);
+    if (error) {
+      Alert.alert("Kunde inte spara regeln", getErrorMessage(error));
+      return;
+    }
+    setAssignment({ ...assignment, rule_refs: next });
   }
 
   async function toggleMode() {
@@ -328,6 +376,82 @@ export default function AssignmentDetail() {
           </TouchableOpacity>
         ))}
       </View>
+
+      <Card style={{ marginTop: 12 }}>
+        <Text style={{ color: theme.text, fontWeight: "800" }}>🏦 Uppdragsbanken</Text>
+        <Text style={{ color: theme.muted, fontSize: 13, marginTop: 4, marginBottom: 10 }}>
+          Lägg in det här uppdraget som en mall. Material, quizfrågor, bedömning och Säkervatten-regler följer
+          med. Mallen går till granskning och blir synlig för andra först när en kollega har godkänt den.
+        </Text>
+        <Button
+          title="Sätt in i uppdragsbanken"
+          variant="secondary"
+          onPress={sattInIBank}
+          loading={bankSparar}
+        />
+      </Card>
+
+      <SectionTitle text={`🛡️ Säkervatten ${SAKERVATTEN_VERSION}`} theme={theme} />
+      <Card>
+        <Text style={{ color: theme.muted, fontSize: 13, marginBottom: 6 }}>
+          Koppla de regler som uppdraget tränar. Sammanfattningarna är appens egna – öppna alltid originalet för
+          full regeltext.
+        </Text>
+        <TouchableOpacity onPress={() => Linking.openURL(SAKERVATTEN_URL)}>
+          <Text style={{ color: theme.tint, fontWeight: "700", marginBottom: 10 }}>
+            Öppna Branschregler {SAKERVATTEN_VERSION} på sakervatten.se →
+          </Text>
+        </TouchableOpacity>
+
+        {reglerFor(assignment.rule_refs).length === 0 ? (
+          <Text style={{ color: theme.muted, marginBottom: 10 }}>Inga regler valda ännu.</Text>
+        ) : (
+          reglerFor(assignment.rule_refs).map((r) => (
+            <View key={r.kod} style={{ marginBottom: 10 }}>
+              <Text style={{ color: theme.text, fontWeight: "700" }}>{r.rubrik}</Text>
+              <Text style={{ color: theme.muted, fontSize: 13, marginTop: 2 }}>{r.sammanfattning}</Text>
+            </View>
+          ))
+        )}
+
+        <Button
+          title={reglerOppna ? "Klar med regelval" : "Välj Säkervatten-regler"}
+          variant="secondary"
+          onPress={() => setReglerOppna((v) => !v)}
+        />
+
+        {reglerOppna && (
+          <View style={{ marginTop: 14 }}>
+            {reglerPerOmrade().map((grupp) => (
+              <View key={grupp.omrade} style={{ marginBottom: 14 }}>
+                <Text style={{ color: theme.text, fontWeight: "800", marginBottom: 4 }}>
+                  {grupp.emoji} {grupp.omrade}
+                </Text>
+                {grupp.regler.map((r) => {
+                  const vald = (assignment.rule_refs ?? []).includes(r.kod);
+                  return (
+                    <TouchableOpacity
+                      key={r.kod}
+                      onPress={() => vaxlaRegel(r.kod)}
+                      style={[
+                        styles.ruleRow,
+                        {
+                          borderColor: vald ? theme.accent : theme.border,
+                          backgroundColor: vald ? theme.accent + "12" : theme.card,
+                        },
+                      ]}
+                    >
+                      <Text style={{ color: vald ? theme.accent : theme.text, fontWeight: "700" }}>
+                        {vald ? "☑" : "☐"}  {r.rubrik}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            ))}
+          </View>
+        )}
+      </Card>
 
       <SectionTitle text="🎯 Mål, egen kontroll & reflektion" theme={theme} />
       <Card>
@@ -628,6 +752,7 @@ function SectionTitle({ text, theme }: { text: string; theme: (typeof Colors)["l
 
 const styles = StyleSheet.create({
   container: { padding: 20, paddingBottom: 80 },
+  ruleRow: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 9, marginBottom: 6 },
   title: { fontSize: 24, fontWeight: "800" },
   desc: { fontSize: 15, marginTop: 6, lineHeight: 21 },
   statusRow: { flexDirection: "row", gap: 8, marginTop: 16, marginBottom: 8 },

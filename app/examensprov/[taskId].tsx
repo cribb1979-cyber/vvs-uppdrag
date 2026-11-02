@@ -2,11 +2,12 @@
 // Etikettstudion pekar hit, så att en telefonkamera kan öppna momentet utan
 // inloggning – samma princip som /i/[token] för verkstadens installationer.
 import { useLocalSearchParams } from "expo-router";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Linking, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Badge, Card } from "@/components/ui/Card";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { EXAM_TASKS, timmar } from "@/lib/examVvs";
+import { SAKERVATTEN_URL, SAKERVATTEN_VERSION, reglerFor } from "@/lib/sakervatten";
 
 const TON = {
   Dokumentation: "accent",
@@ -64,6 +65,24 @@ export default function ExamStation() {
                   •  {fraga}
                 </Text>
               ))}
+            </Card>
+          )}
+
+          {reglerFor(task.regelRefs).length > 0 && (
+            <Card style={{ marginTop: 12 }}>
+              <Text style={[styles.section, { color: theme.text }]}>Säkervatten {SAKERVATTEN_VERSION}</Text>
+              {reglerFor(task.regelRefs).map((r) => (
+                <View key={r.kod} style={{ marginBottom: 8 }}>
+                  <Text style={{ color: theme.text, fontWeight: "700" }}>{r.rubrik}</Text>
+                  <Text style={{ color: theme.muted, fontSize: 13 }}>{r.sammanfattning}</Text>
+                </View>
+              ))}
+              <Text
+                style={{ color: theme.tint, fontWeight: "700", marginTop: 4 }}
+                onPress={() => Linking.openURL(SAKERVATTEN_URL)}
+              >
+                Öppna Branschregler {SAKERVATTEN_VERSION} på sakervatten.se →
+              </Text>
             </Card>
           )}
 

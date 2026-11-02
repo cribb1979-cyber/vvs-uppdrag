@@ -16,6 +16,15 @@ export type AiMode = "off" | "app_help_only" | "general" | "full";
 export type AssessmentStatus = "ej_bedomd" | "uppfyller" | "behover_kompletteras";
 export type AssignmentKind = "uppdrag" | "quiz";
 export type MaterialOrderStatus = "att_bestalla" | "bestalld" | "mottagen";
+export type UppdragsbankStatus = "utkast" | "granskning" | "godkand" | "avslagen";
+
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
 
 export interface AssignmentStep {
   key: string;
@@ -232,6 +241,9 @@ export interface Database {
           goal: string;
           self_check_items: string[];
           reflection_questions: string[];
+          rule_refs: string[];
+          source_mall_id: string | null;
+          source_version: number | null;
           created_at: string;
         };
         Insert: {
@@ -254,6 +266,9 @@ export interface Database {
           goal?: string;
           self_check_items?: string[];
           reflection_questions?: string[];
+          rule_refs?: string[];
+          source_mall_id?: string | null;
+          source_version?: number | null;
           created_at?: string;
         };
         Update: {
@@ -273,10 +288,103 @@ export interface Database {
           goal?: string;
           self_check_items?: string[];
           reflection_questions?: string[];
+          rule_refs?: string[];
+          source_mall_id?: string | null;
+          source_version?: number | null;
         };
         Relationships: [
           { foreignKeyName: "assignments_org_id_fkey"; columns: ["org_id"]; isOneToOne: false; referencedRelation: "orgs"; referencedColumns: ["id"] },
           { foreignKeyName: "assignments_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "assignments_source_mall_id_fkey"; columns: ["source_mall_id"]; isOneToOne: false; referencedRelation: "uppdragsbank_mallar"; referencedColumns: ["id"] },
+        ];
+      };
+      uppdragsbank_mallar: {
+        Row: {
+          id: string;
+          agare_org_id: string;
+          created_by: string;
+          titel: string;
+          beskrivning: string;
+          year_level: string;
+          course_code: string;
+          kind: AssignmentKind;
+          payload: Json;
+          regel_refs: string[];
+          version: number;
+          status: UppdragsbankStatus;
+          granskad_av: string | null;
+          granskad_at: string | null;
+          granskningskommentar: string;
+          source_mall_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          agare_org_id: string;
+          created_by: string;
+          titel: string;
+          beskrivning?: string;
+          year_level?: string;
+          course_code?: string;
+          kind?: AssignmentKind;
+          payload: Json;
+          regel_refs?: string[];
+          version?: number;
+          status?: UppdragsbankStatus;
+          granskad_av?: string | null;
+          granskad_at?: string | null;
+          granskningskommentar?: string;
+          source_mall_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          titel?: string;
+          beskrivning?: string;
+          year_level?: string;
+          course_code?: string;
+          kind?: AssignmentKind;
+          payload?: Json;
+          regel_refs?: string[];
+          version?: number;
+          status?: UppdragsbankStatus;
+          granskad_av?: string | null;
+          granskad_at?: string | null;
+          granskningskommentar?: string;
+          source_mall_id?: string | null;
+        };
+        Relationships: [
+          { foreignKeyName: "uppdragsbank_mallar_agare_org_id_fkey"; columns: ["agare_org_id"]; isOneToOne: false; referencedRelation: "orgs"; referencedColumns: ["id"] },
+          { foreignKeyName: "uppdragsbank_mallar_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "uppdragsbank_mallar_granskad_av_fkey"; columns: ["granskad_av"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "uppdragsbank_mallar_source_mall_id_fkey"; columns: ["source_mall_id"]; isOneToOne: false; referencedRelation: "uppdragsbank_mallar"; referencedColumns: ["id"] },
+        ];
+      };
+      uppdragsbank_granskningar: {
+        Row: {
+          id: string;
+          mall_id: string;
+          granskare: string;
+          godkand: boolean;
+          kommentar: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          mall_id: string;
+          granskare: string;
+          godkand: boolean;
+          kommentar?: string;
+          created_at?: string;
+        };
+        Update: {
+          godkand?: boolean;
+          kommentar?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "uppdragsbank_granskningar_mall_id_fkey"; columns: ["mall_id"]; isOneToOne: false; referencedRelation: "uppdragsbank_mallar"; referencedColumns: ["id"] },
+          { foreignKeyName: "uppdragsbank_granskningar_granskare_fkey"; columns: ["granskare"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ];
       };
       material_requirements: {
@@ -698,6 +806,27 @@ export interface Database {
     };
     Views: Record<string, never>;
     Functions: {
+      skapa_uppdragsbank_mall: {
+        Args: {
+          p_assignment_id: string;
+          p_titel?: string | null;
+          p_beskrivning?: string | null;
+          p_regel_refs?: string[] | null;
+        };
+        Returns: string;
+      };
+      granska_uppdragsbank_mall: {
+        Args: { p_mall_id: string; p_godkann: boolean; p_kommentar?: string };
+        Returns: string;
+      };
+      ateroppna_uppdragsbank_mall: {
+        Args: { p_mall_id: string };
+        Returns: undefined;
+      };
+      ta_ut_uppdragsbank_mall: {
+        Args: { p_mall_id: string };
+        Returns: string;
+      };
       installation_public: {
         Args: { p_token: string };
         Returns: {

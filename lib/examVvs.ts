@@ -17,6 +17,8 @@ export interface ExamTask {
   fragor: string[];
   /** Ledtråd som bara visas i övningsläge. */
   ledtrad?: string;
+  /** Säkervatten-regler som hör till momentet (koder i lib/sakervatten.ts). */
+  regelRefs?: string[];
 }
 
 export const EXAM_TASKS: ExamTask[] = [
@@ -55,6 +57,7 @@ export const EXAM_TASKS: ExamTask[] = [
   },
   {
     id: "klamringskopplingar",
+    regelRefs: ["produkter-egenskaper", "monteringsanvisning", "kontroll-tryck"],
     titel: "Monteringsanvisningar – klämringskopplingar",
     minut: 120,
     kategori: "Dokumentation",
@@ -73,6 +76,7 @@ export const EXAM_TASKS: ExamTask[] = [
   },
   {
     id: "egenkontroll",
+    regelRefs: ["kontroll-tryck", "kontroll-temp", "kontroll-verktyg"],
     titel: "Egenkontroll",
     minut: 60,
     kategori: "Kontroll",
@@ -91,6 +95,7 @@ export const EXAM_TASKS: ExamTask[] = [
   },
   {
     id: "tryck-och-tathet",
+    regelRefs: ["kontroll-tryck"],
     titel: "Tryck- och täthetskontroll",
     minut: 180,
     kategori: "Kontroll",
@@ -151,6 +156,7 @@ export const EXAM_TASKS: ExamTask[] = [
   },
   {
     id: "materialspecifikation",
+    regelRefs: ["produkter-egenskaper", "produkter-massing"],
     titel: "Materialspecifikation",
     minut: 360,
     kategori: "Beräkning",
@@ -174,6 +180,7 @@ export const EXAM_TASKS: ExamTask[] = [
   },
   {
     id: "expansionskarl",
+    regelRefs: ["varme-fordelare", "varme-service", "kontroll-tryck"],
     titel: "Installation – slutet expansionskärl",
     minut: 480,
     kategori: "Installation",
@@ -204,6 +211,7 @@ export const EXAM_TASKS: ExamTask[] = [
   },
   {
     id: "varmvattenberedare",
+    regelRefs: ["legionella-temp", "legionella-utformning", "kontroll-temp", "aterstromning"],
     titel: "Installation – varmvattenberedare",
     minut: 480,
     kategori: "Installation",
@@ -229,6 +237,7 @@ export const EXAM_TASKS: ExamTask[] = [
   },
   {
     id: "komplettering-badrum",
+    regelRefs: ["tatskikt-golv", "tatskikt-vagg", "infastning-vagg", "infastning-golv", "golvbrunn"],
     titel: "Installation – komplettering av badrum",
     minut: 480,
     kategori: "Installation",

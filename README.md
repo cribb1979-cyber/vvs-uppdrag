@@ -71,3 +71,31 @@ telefonens vanliga kamera.
 Kräver migrationen `supabase/migrations/0011_infobank.sql` (tabellen
 `installations`, publik läsfunktion `installation_public` och bucketen
 `installationer`).
+
+## Uppdragsbank och Säkervatten 2026:1
+
+Fliken **🏦 Uppdragsbank** låter lärare dela färdiga uppdrag med varandra.
+
+* **Sätt in:** öppna ett av dina uppdrag → **“Sätt in i uppdragsbanken”**.
+  Uppdraget fryses som en kopia (material, quizfrågor, bedömning och
+  Säkervatten-regler). Det går till status **Granskas**.
+* **Granska:** en annan lärare öppnar mallen och väljer **Godkänn** eller
+  **Avslå**. Ingen kan granska sin egen mall.
+* **Ta ut:** en godkänd mall kan tas ut till din skola. Då skapas en **djup
+  kopia** som ett utkast – banken och din kopia påverkar inte varandra.
+* **Version:** en mall har `version`. Ett uttag sparar `source_mall_id` och
+  `source_version`, så man kan se varifrån kopian kom.
+
+Säkervatten-reglerna ligger i `lib/sakervatten.ts` som koder (t.ex.
+`tappvatten-fogar`) och kopplas till uppdrag via `assignments.rule_refs`.
+Appen visar en kort **egen sammanfattning** och länkar till
+<https://sakervatten.se/branschregler2026/>. Den officiella regeltexten
+återges inte – vill man visa hela texten i appen krävs tillstånd från
+Säker Vatten.
+
+Kräver migrationen `supabase/migrations/0012_uppdragsbank.sql`. Kör den i
+Supabase SQL Editor (eller `supabase db push`) innan fliken används.
+
+Vill du ha sju färdiga exempeluppdrag i banken kör du även
+`supabase/seed/0012_uppdragsbank_exempel.sql`. Skriptet kräver minst en
+godkänd lärare och kan köras flera gånger utan att dubbletter skapas.
