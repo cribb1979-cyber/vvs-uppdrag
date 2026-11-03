@@ -98,6 +98,10 @@ sökning och expanderbara kontrollpunkter. Även där är texterna appens egna
 sammanfattningar; full regeltext finns i boken och via länken till
 sakervatten.se.
 
+Från fliken kan läraren också **skapa en övning** per regel eller per område.
+Formuläret förifylls med titel, mål, egenkontroll och regelkoppling, och
+läraren kan ändra allt innan uppdraget sparas.
+
 Kräver migrationen `supabase/migrations/0012_uppdragsbank.sql`. Kör den i
 Supabase SQL Editor (eller `supabase db push`) innan fliken används.
 
