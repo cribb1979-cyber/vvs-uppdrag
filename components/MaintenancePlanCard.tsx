@@ -21,6 +21,7 @@ export function MaintenancePlanCard({
   const [text, setText] = useState(initialText ?? "");
   const [sparad, setSparad] = useState<string | null>(savedAt);
   const [sparar, setSparar] = useState(false);
+  const [fel, setFel] = useState<string | null>(null);
 
   // Fyll bara från servern när deltagaren byts ut. En tyst bakgrunds-
   // uppdatering får inte skriva över det eleven håller på att skriva.
@@ -31,13 +32,16 @@ export function MaintenancePlanCard({
 
   async function spara() {
     setSparar(true);
+    setFel(null);
     const { error } = await supabase.rpc("save_maintenance_plan", {
       p_participant_id: participantId,
       p_text: text,
     });
     setSparar(false);
     if (error) {
-      Alert.alert("Kunde inte spara planen", getErrorMessage(error));
+      const meddelande = getErrorMessage(error);
+      setFel(meddelande);
+      Alert.alert("Kunde inte spara planen", meddelande);
       return;
     }
     setSparad(new Date().toISOString());
@@ -63,9 +67,10 @@ export function MaintenancePlanCard({
       <View style={{ marginTop: 10 }}>
         <Button title="Spara plan" onPress={spara} loading={sparar} disabled={sparar} />
       </View>
-      {!!sparad && (
-        <Text style={{ color: theme.success, fontSize: 12, marginTop: 8 }}>
-          ✓ Sparad {new Date(sparad).toLocaleString("sv-SE")}
+      {!!fel && <Text style={{ color: theme.danger, fontSize: 13, marginTop: 8 }}>{fel}</Text>}
+      {!!sparad && !fel && (
+        <Text style={{ color: theme.success, fontSize: 13, marginTop: 8 }}>
+          ✓ Planen är sparad {new Date(sparad).toLocaleString("sv-SE")}. Läraren ser den i uppdraget.
         </Text>
       )}
     </Card>
