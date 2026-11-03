@@ -14,6 +14,7 @@ import { pickQuizImage, uploadQuizImage } from "@/lib/quizImages";
 import { supabase } from "@/lib/supabase";
 import type { AssignmentKind } from "@/lib/database.types";
 import { reglerFor, regel as hamtaRegel, reglerPerOmrade, SAKERVATTEN_VERSION } from "@/lib/sakervatten";
+import { materialForRegel, materialForRegler, type MaterialRad } from "@/lib/ovningsmaterial";
 
 interface DraftRequirement {
   key: string;
@@ -26,6 +27,19 @@ const KIND_OPTIONS: { value: AssignmentKind; label: string; hint: string }[] = [
   { value: "uppdrag", label: "📋 Uppdrag", hint: "Praktiskt uppdrag med materialplan" },
   { value: "quiz", label: "🖼 Materialquiz", hint: "Bildfrågor eleven svarar flerval på" },
 ];
+
+function tillDraftRader(rader: MaterialRad[]): DraftRequirement[] {
+  if (rader.length === 0) {
+    return [{ key: String(Date.now()), component: "", dimension: "", quantity: "1" }];
+  }
+  const stamp = Date.now();
+  return rader.map((rad, i) => ({
+    key: `preset-${stamp}-${i}`,
+    component: rad.component,
+    dimension: rad.dimension ?? "",
+    quantity: String(rad.quantity ?? 1),
+  }));
+}
 
 export default function NewAssignment() {
   const theme = Colors[useColorScheme() ?? "light"];
@@ -66,6 +80,7 @@ export default function NewAssignment() {
       setGoal(`Kunna ${r.rubrik.toLowerCase()} enligt Säkervatten ${SAKERVATTEN_VERSION}.`);
       setSelfItems(r.kontrollpunkter.join("\n"));
       setRuleRefs([r.kod]);
+      setRequirements(tillDraftRader(materialForRegel(r)));
       return;
     }
     if (omrade) {
@@ -78,10 +93,12 @@ export default function NewAssignment() {
       setGoal(`Kunna reglerna för ${grupp.omrade.toLowerCase()} enligt Säkervatten ${SAKERVATTEN_VERSION}.`);
       setSelfItems(punkter.join("\n"));
       setRuleRefs(grupp.regler.map((r) => r.kod));
+      setRequirements(tillDraftRader(materialForRegler(grupp.regler)));
     }
   }, [regelKod, omrade]);
 
   const valdaRegler = reglerFor(ruleRefs);
+  const materialRader = requirements.filter((r) => r.component.trim()).length;
 
   async function pickReferenceImage(source: "camera" | "library") {
     setPickingReference(source);
@@ -191,7 +208,8 @@ export default function NewAssignment() {
           <Card style={{ marginTop: 16 }}>
             <Text style={{ color: theme.text, fontWeight: "800" }}>🛡️ Säkervatten {SAKERVATTEN_VERSION}</Text>
             <Text style={{ color: theme.muted, fontSize: 13, marginTop: 4 }}>
-              {ruleRefs.length} regel{ruleRefs.length === 1 ? "" : "er"} förvalda. Du kan ändra dem efter att uppdraget sparats.
+              {ruleRefs.length} regel{ruleRefs.length === 1 ? "" : "er"} förvalda
+              {materialRader > 0 ? ` och ${materialRader} materialrader ifyllda` : ""}. Du kan ändra allt innan du sparar.
             </Text>
             {valdaRegler.slice(0, 4).map((r) => (
               <Text key={r.kod} style={{ color: theme.text, fontSize: 13, marginTop: 4 }}>
