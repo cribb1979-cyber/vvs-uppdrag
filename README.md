@@ -147,3 +147,10 @@ och sparas först när läraren trycker på knappen.
 Backenden anropar lokal Ollama på Y900 via `functions/generate-assignment`.
 Styrs med `OLLAMA_URL`, `OLLAMA_MODEL_QUALITY`, `OLLAMA_MODEL_QUICK` och
 `AI_TIMEOUT_MS`. Ingen API-kostnad och ingen elevdata lämnar skolan.
+
+## Elevens drift- och underhållsplan
+
+I både QR-flödet och klassflödet finns en textruta **🛠 Drift- och
+underhållsplan**. Eleven skriver och sparar per uppdrag, och läraren ser
+texten i uppdragets deltagarlista. Kräver migrationen
+`supabase/migrations/0016_maintenance_plan.sql`.
