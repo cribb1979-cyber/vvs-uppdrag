@@ -195,3 +195,9 @@ till `/signup?lk=...` och fyller i skolkoden automatiskt. Kollegan skapar
 konto, väljer **Gå med i skola** och skickar ansökan. Ansökan blir
 **väntande** tills en admin godkänner den under **Inställningar → Väntande
 lärare**. Äldre `/?lk=...`-länkar skickas vidare till registreringen.
+
+## Elevlänk för datorer
+
+Varje QR-session visar en direktlänk (`/elev/uppdrag/<kod>`) och knappen
+**📋 Kopiera elevlänk**. Läraren kan klistra in länken i lärplattformen eller
+mejla den, så elever på dator slipper skanna QR-koden.
