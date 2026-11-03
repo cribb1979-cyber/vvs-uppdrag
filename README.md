@@ -175,3 +175,10 @@ materialplanen när:
 Checklistan visar ✓/☐ och listar det som saknas. Samma kontroll görs i
 `submit_material_plan`, så den kan inte kringgås. Klassflödet kräver
 materialplan + underhållsplan tills egenkontroll och reflektion finns där.
+
+## Elevens omdöme
+
+Eleven når **🎓 Se mitt omdöme** från både QR- och klassflödet. Vyn visar
+bedömningskriterierna när läraren har publicerat bedömningen. Rena
+QR-sessioner som inte är kopplade till en klass/student kan ännu inte bedömas
+i lärargränssnittet – där är lärarens kommentar den återkoppling som visas.
