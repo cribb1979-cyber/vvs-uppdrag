@@ -187,3 +187,11 @@ Uppdragets valda Säkervatten-regler följer med till eleven: `join_session`
 och `open_assignment_as_student` returnerar `rule_refs`, och elevens
 uppdragssida visar rubrik, sammanfattning och kontrollpunkter för varje regel.
 Kräver migrationen `supabase/migrations/0019_student_rule_refs.sql`.
+
+## Bjud in lärare
+
+På **Hem** finns QR-kod, skolkod och knappen **Dela inbjudan**. Länken går
+till `/signup?lk=...` och fyller i skolkoden automatiskt. Kollegan skapar
+konto, väljer **Gå med i skola** och skickar ansökan. Ansökan blir
+**väntande** tills en admin godkänner den under **Inställningar → Väntande
+lärare**. Äldre `/?lk=...`-länkar skickas vidare till registreringen.
