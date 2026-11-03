@@ -35,6 +35,14 @@ export default function MaterialPlan() {
       planSubmittedAt={session.plan_submitted_at}
       onSubmitted={refreshSession}
       onBack={() => router.back()}
+      checklist={{
+        selfCheckRequired: (session.assignment.self_check_items?.length ?? 0) > 0,
+        selfCheckDone: !!session.self_check_submitted_at,
+        reflectionRequired: (session.assignment.reflection_questions?.length ?? 0) > 0,
+        reflectionDone: !!session.reflection_submitted_at,
+        maintenanceRequired: session.assignment.kind === "uppdrag",
+        maintenanceDone: !!session.maintenance_plan_saved_at,
+      }}
     />
   );
 }

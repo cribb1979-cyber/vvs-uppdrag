@@ -34,6 +34,16 @@ export default function MinaUppdragMaterialplan() {
       planSubmittedAt={data.plan_submitted_at}
       onSubmitted={refresh}
       onBack={() => router.back()}
+      checklist={{
+        // Klassflödet har ännu inga inmatningar för egenkontroll/reflektion;
+        // de kontrolleras i QR-flödet. Här krävs materialplan + underhållsplan.
+        selfCheckRequired: false,
+        selfCheckDone: !!data.self_check_submitted_at,
+        reflectionRequired: false,
+        reflectionDone: !!data.reflection_submitted_at,
+        maintenanceRequired: data.assignment.kind === "uppdrag",
+        maintenanceDone: !!data.maintenance_plan_saved_at,
+      }}
     />
   );
 }

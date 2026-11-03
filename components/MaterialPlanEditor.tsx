@@ -13,6 +13,15 @@ type RequirementsView =
   | { hidden: true; count: number | null }
   | Array<{ component: string; dimension: string; quantity: number; note: string }>;
 
+export interface SubmissionChecklist {
+  selfCheckRequired: boolean;
+  selfCheckDone: boolean;
+  reflectionRequired: boolean;
+  reflectionDone: boolean;
+  maintenanceRequired: boolean;
+  maintenanceDone: boolean;
+}
+
 // Delad materialplan-editor för BÅDA elevflödena (QR-engångssession och
 // klassregister) -- själva sessionsupplösningen (join_session vs
 // open_assignment_as_student) sker i respektive route, som sedan renderar
@@ -23,12 +32,14 @@ export function MaterialPlanEditor({
   planSubmittedAt,
   onSubmitted,
   onBack,
+  checklist,
 }: {
   participantId: string;
   planLocked: boolean;
   planSubmittedAt: string | null;
   onSubmitted: () => void | Promise<void>;
   onBack: () => void;
+  checklist: SubmissionChecklist;
 }) {
   const theme = Colors[useColorScheme() ?? "light"];
 
@@ -45,6 +56,17 @@ export function MaterialPlanEditor({
   const [noteDraft, setNoteDraft] = useState("");
   const [savedNote, setSavedNote] = useState("");
   const [savingNote, setSavingNote] = useState(false);
+
+  const krav = [
+    { label: "Materialplan med minst en rad", done: items.length > 0 },
+    ...(checklist.selfCheckRequired ? [{ label: "Egenkontroll sparad", done: checklist.selfCheckDone }] : []),
+    ...(checklist.reflectionRequired ? [{ label: "Reflektion sparad", done: checklist.reflectionDone }] : []),
+    ...(checklist.maintenanceRequired
+      ? [{ label: "Drift- och underhållsplan sparad", done: checklist.maintenanceDone }]
+      : []),
+  ];
+  const saknas = krav.filter((k) => !k.done).map((k) => k.label);
+  const klar = saknas.length === 0;
 
   const loadItems = useCallback(async () => {
     setLoadingItems(true);
@@ -106,6 +128,10 @@ export function MaterialPlanEditor({
   async function submitPlan() {
     if (items.length === 0) {
       Alert.alert("Tom materialplan", "Lägg till minst en rad innan du skickar in.");
+      return;
+    }
+    if (!klar) {
+      Alert.alert("Checklistan är inte klar", `Saknas: ${saknas.join(", ")}.`);
       return;
     }
     setSubmitting(true);
@@ -238,11 +264,33 @@ export function MaterialPlanEditor({
         <Button title="Spara anteckning" variant="ghost" onPress={saveNote} loading={savingNote} disabled={noteDraft.trim() === savedNote} />
       </Card>
 
+      <Card style={{ marginTop: 8 }}>
+        <Text style={{ color: theme.text, fontWeight: "800", fontSize: 16 }}>Checklista innan inlämning</Text>
+        <Text style={{ color: theme.muted, fontSize: 13, marginTop: 4, marginBottom: 8 }}>
+          Alla punkter måste vara klara innan du kan skicka in.
+        </Text>
+        {krav.map((k) => (
+          <Text key={k.label} style={{ color: k.done ? theme.success : theme.muted, fontSize: 14, marginTop: 5 }}>
+            {k.done ? "✓" : "☐"} {k.label}
+          </Text>
+        ))}
+        {!klar && (
+          <Text style={{ color: theme.warning, fontSize: 13, marginTop: 10 }}>
+            Saknas: {saknas.join(", ")}.
+          </Text>
+        )}
+        {!klar && (
+          <View style={{ marginTop: 10 }}>
+            <Button title="Tillbaka och komplettera" variant="ghost" onPress={onBack} />
+          </View>
+        )}
+      </Card>
+
       <View style={{ height: 24 }} />
       {planLocked ? (
         <Button title="Tillbaka till uppdraget" variant="secondary" onPress={onBack} />
       ) : (
-        <Button title="Skicka in materialplan" onPress={submitPlan} loading={submitting} />
+        <Button title="Skicka in materialplan" onPress={submitPlan} loading={submitting} disabled={!klar} />
       )}
     </ScrollView>
   );
