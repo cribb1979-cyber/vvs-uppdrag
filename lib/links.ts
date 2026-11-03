@@ -44,3 +44,12 @@ export function examTaskUrl(taskId: string): string {
   if (!APP_URL) return taskId;
   return `${APP_URL}/examensprov/${encodeURIComponent(taskId)}`;
 }
+
+// En QR för hela examensveckan: publika översiktssidan med alla moment.
+export function examWeekUrl(): string {
+  if (!APP_URL) return "examensprov";
+  return `${APP_URL}/examensprov`;
+}
+
+// Laneskär Ritverkstad – fristående ritverktyg i webbläsaren.
+export const RITVERKSTAD_URL = "https://cadverkstad.netlify.app";

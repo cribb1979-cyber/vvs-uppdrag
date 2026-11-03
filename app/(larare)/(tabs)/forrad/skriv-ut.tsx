@@ -12,7 +12,9 @@ export default function SkrivUtEtiketter() {
   const theme = Colors[useColorScheme() ?? "light"];
 
   const start =
-    kalla === "examensprov" || kalla === "fritext" || kalla === "forrad" ? kalla : undefined;
+    kalla === "examensprov" || kalla === "examensvecka" || kalla === "fritext" || kalla === "forrad"
+      ? kalla
+      : undefined;
   const initialArtikelIds =
     typeof artikel === "string" ? artikel.split(",").map((id) => id.trim()).filter(Boolean) : [];
 

@@ -2,7 +2,7 @@
 // Etikettstudion pekar hit, så att en telefonkamera kan öppna momentet utan
 // inloggning – samma princip som /i/[token] för verkstadens installationer.
 import { useLocalSearchParams } from "expo-router";
-import { Linking, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Badge, Card } from "@/components/ui/Card";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
@@ -45,6 +45,19 @@ export default function ExamStation() {
           <Card style={{ marginTop: 16 }}>
             <Text style={[styles.body, { color: theme.text }]}>{task.beskrivning}</Text>
           </Card>
+
+          {!!task.verktygUrl && (
+            <Card style={{ marginTop: 12, borderColor: theme.tint }}>
+              <Text style={[styles.section, { color: theme.text }]}>Ritverktyg</Text>
+              <Text style={{ color: theme.muted, fontSize: 14, lineHeight: 20 }}>
+                Rita uppgiften i Laneskär Ritverkstad. Exportera ritningen som SVG/PNG eller .cad och lämna in
+                enligt lärarens instruktion.
+              </Text>
+              <TouchableOpacity onPress={() => Linking.openURL(task.verktygUrl!)} style={{ marginTop: 10 }}>
+                <Text style={{ color: theme.tint, fontWeight: "700" }}>🖥 Öppna Laneskär Ritverkstad →</Text>
+              </TouchableOpacity>
+            </Card>
+          )}
 
           {task.checklista.length > 0 && (
             <Card style={{ marginTop: 12 }}>

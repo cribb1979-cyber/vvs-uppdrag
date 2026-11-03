@@ -3,6 +3,8 @@
 // tider. Innehållet är avsiktligt nära originalet så att eleven känner igen
 // uppgifterna från det skarpa provet.
 
+import { RITVERKSTAD_URL } from "./links";
+
 export type ExamKategori = "Dokumentation" | "Kontroll" | "Beräkning" | "Installation";
 
 export interface ExamTask {
@@ -19,6 +21,8 @@ export interface ExamTask {
   ledtrad?: string;
   /** Säkervatten-regler som hör till momentet (koder i lib/sakervatten.ts). */
   regelRefs?: string[];
+  /** Externt ritverktyg som momentet använder. */
+  verktygUrl?: string;
 }
 
 export const EXAM_TASKS: ExamTask[] = [
@@ -259,6 +263,56 @@ export const EXAM_TASKS: ExamTask[] = [
       "Hur kontrollerade du fallet mot avloppet?",
     ],
     ledtrad: "Kontrollera höjder och avstånd mot mått innan du börjar montera.",
+  },
+  {
+    id: "ritning-vvb-badrum",
+    regelRefs: [
+      "varme-fordelare",
+      "varme-service",
+      "varme-frys",
+      "legionella-temp",
+      "legionella-utformning",
+      "aterstromning",
+      "kontroll-tryck",
+      "tappvatten-avstangning",
+      "tatskikt-golv",
+      "tatskikt-vagg",
+      "infastning-vagg",
+      "infastning-golv",
+      "golvbrunn",
+      "spill-montage",
+      "spill-riktning",
+      "spill-luftning",
+      "produkter-egenskaper",
+      "monteringsanvisning",
+    ],
+    titel: "Ritning – varmvattenberedare och badrum",
+    minut: 240,
+    kategori: "Installation",
+    beskrivning:
+      "Rita en varmvattenberedare med blandningsventil, backventil, säkerhetsventil, avstängningsventiler och expansionsledning. " +
+      "Rita också ett badrum med rör på väggar och anslutningar. Använd Laneskär Ritverkstad och exportera ritningen som SVG/PNG eller .cad.",
+    checklista: [
+      "Varmvattenberedare",
+      "Blandningsventil",
+      "Backventil",
+      "Säkerhetsventil",
+      "Avstängningsventiler",
+      "Expansionsledning",
+      "Badrum med rör på väggar",
+      "Anslutningar",
+      "Ritningen exporterad som SVG/PNG eller .cad",
+    ],
+    fragor: [
+      "Vilken funktion har blandningsventilen?",
+      "Varför behövs backventilen?",
+      "Vart ska säkerhetsventilens spillvattenledning mynna?",
+      "Hur har du dragit expansionsledningen och varför?",
+      "Vilka mått och höjder har du använt i badrummet?",
+    ],
+    ledtrad:
+      "Börja med varmvattenberedaren och dess säkerhetsgrupp. Rita sedan badrummet med synliga rör och anslutningar. Kör VVSKONTROLL i Ritverkstaden innan du exporterar.",
+    verktygUrl: RITVERKSTAD_URL,
   },
 ];
 

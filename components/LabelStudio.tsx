@@ -22,11 +22,11 @@ import {
   type LabelStyle,
   type Printer,
 } from "@/lib/labelPrinter";
-import { examTaskUrl, materialArticleUrl } from "@/lib/links";
+import { examTaskUrl, examWeekUrl, materialArticleUrl } from "@/lib/links";
 import { supabase } from "@/lib/supabase";
 
 type MaterialRow = Database["public"]["Tables"]["material_catalog"]["Row"];
-type Kalla = "forrad" | "examensprov" | "fritext";
+type Kalla = "forrad" | "examensprov" | "examensvecka" | "fritext";
 
 interface QueueItem {
   key: string;
@@ -130,6 +130,14 @@ export default function LabelStudio({
     ]);
     setStatus(`${valda.length} artikel-etiketter i kön – anslut skrivaren och skriv ut.`);
   }, [artiklar, forvaldaArtikelIds, forvaldTillagd]);
+
+  // En enda QR för hela examensveckan.
+  useEffect(() => {
+    if (forvaldTillagd || initialKalla !== "examensvecka") return;
+    setForvaldTillagd(true);
+    setKo([{ key: nyNyckel(), text: "Examensprov VVS-montör\nAlla moment", qr: examWeekUrl() }]);
+    setStatus("Examensveckans QR ligger i kön – anslut skrivaren och skriv ut.");
+  }, [initialKalla, forvaldTillagd]);
 
   function laggTill(poster: { text: string; qr?: string }[]) {
     setKo((tidigare) => [...tidigare, ...poster.map((p) => ({ key: nyNyckel(), ...p }))]);

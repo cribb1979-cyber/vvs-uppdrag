@@ -73,7 +73,8 @@ function RootStack() {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       {/* Publik informationssida för QR-koder i verkstaden – ingen inloggning. */}
       <Stack.Screen name="i/[token]" options={{ headerShown: false }} />
-      {/* Publik stationssida för examensprov – QR-etiketter pekar hit. */}
+      {/* Publik översikt och stationssida för examensprov – QR-etiketter pekar hit. */}
+      <Stack.Screen name="examensprov/index" options={{ headerShown: false }} />
       <Stack.Screen name="examensprov/[taskId]" options={{ headerShown: false }} />
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       <Stack.Protected guard={isTeacher}>

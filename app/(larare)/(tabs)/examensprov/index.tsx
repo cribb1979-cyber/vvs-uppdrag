@@ -8,6 +8,7 @@ import Colors from "@/constants/Colors";
 import { useAuth } from "@/contexts/AuthContext";
 import { getErrorMessage } from "@/lib/errors";
 import { EXAM_TASKS, timmar, type ExamTask } from "@/lib/examVvs";
+import { examWeekUrl } from "@/lib/links";
 import { examMeta } from "@/lib/examMode";
 import { modeToFields, type AssignmentMode } from "@/lib/assignmentMode";
 import { supabase } from "@/lib/supabase";
@@ -81,6 +82,23 @@ export default function Examensprov() {
         />
         <Text style={{ color: theme.muted, fontSize: 12, marginTop: 6 }}>
           QR-kod på varje station som öppnar momentet – skrivs direkt på etikettskrivaren.
+        </Text>
+        <View style={{ height: 10 }} />
+        <Button
+          title="🏷 Skriv ut examensveckans QR"
+          variant="secondary"
+          onPress={() =>
+            router.push({
+              pathname: "/(larare)/(tabs)/forrad/skriv-ut",
+              params: { kalla: "examensvecka" },
+            })
+          }
+        />
+        <Text style={{ color: theme.muted, fontSize: 12, marginTop: 6 }}>
+          En QR för hela examensveckan – öppnar översikten med alla moment.
+        </Text>
+        <Text selectable style={{ color: theme.tint, fontSize: 12, marginTop: 6 }}>
+          {examWeekUrl()}
         </Text>
       </View>
 
