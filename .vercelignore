@@ -1,0 +1,8 @@
+node_modules
+android
+dist
+.expo
+.git
+selfhost
+.env
+.env.*
