@@ -161,3 +161,17 @@ Lärarens kommentar skrivs i elevens materialplan och visas nu även direkt på
 elevens uppdragssida. Läraren ser elevens anteckning, egenkontroll, reflektion
 och drift- och underhållsplan under **Insamlat** i uppdraget. Knappen
 **Uppdatera svar** hämtar det senaste utan att man lämnar sidan.
+
+## Checklista före inlämning
+
+På materialplanssidan visas en checklista. Eleven kan bara skicka in
+materialplanen när:
+
+* materialplanen har minst en rad
+* egenkontrollen är sparad (QR-flödet, om uppdraget har punkter)
+* reflektionen är sparad (QR-flödet, om uppdraget har frågor)
+* drift- och underhållsplanen är sparad (uppdrag)
+
+Checklistan visar ✓/☐ och listar det som saknas. Samma kontroll görs i
+`submit_material_plan`, så den kan inte kringgås. Klassflödet kräver
+materialplan + underhållsplan tills egenkontroll och reflektion finns där.
