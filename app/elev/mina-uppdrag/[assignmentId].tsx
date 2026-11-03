@@ -7,6 +7,7 @@ import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { ExamClock, useExamClock } from "@/components/ExamClock";
 import { MaintenancePlanCard } from "@/components/MaintenancePlanCard";
+import { SakervattenCard } from "@/components/SakervattenCard";
 import { examInfo } from "@/lib/examMode";
 import { quizImageUrl } from "@/lib/quizImages";
 import { supabase } from "@/lib/supabase";
@@ -84,6 +85,8 @@ export default function MinaUppdragDetail() {
           <Text style={{ color: theme.text, fontSize: 15, marginTop: 4 }}>{teacherComment}</Text>
         </Card>
       )}
+
+      <SakervattenCard ruleRefs={data.assignment.rule_refs ?? []} />
 
       {data.assignment.kind === "uppdrag" && data.assignment.ai_mode === "off" && (
         <Card style={{ marginTop: 16 }}>

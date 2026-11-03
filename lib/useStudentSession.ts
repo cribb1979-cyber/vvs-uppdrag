@@ -18,6 +18,7 @@ export interface StudentSessionData {
     goal: string;
     self_check_items: string[];
     reflection_questions: string[];
+    rule_refs: string[];
   };
   plan_locked: boolean;
   plan_submitted_at: string | null;

@@ -8,6 +8,7 @@ import Colors from "@/constants/Colors";
 import { getErrorMessage } from "@/lib/errors";
 import { ExamClock, useExamClock } from "@/components/ExamClock";
 import { MaintenancePlanCard } from "@/components/MaintenancePlanCard";
+import { SakervattenCard } from "@/components/SakervattenCard";
 import { examInfo } from "@/lib/examMode";
 import { quizImageUrl } from "@/lib/quizImages";
 import { supabase } from "@/lib/supabase";
@@ -198,6 +199,8 @@ export default function ElevUppdrag() {
           <Text style={{ color: theme.text, fontSize: 15, marginTop: 4 }}>{teacherComment}</Text>
         </Card>
       )}
+
+      <SakervattenCard ruleRefs={data.assignment.rule_refs ?? []} />
 
       <Card style={{ marginTop: 20 }}>
         <Text style={{ color: theme.muted, fontSize: 13, fontWeight: "700", marginBottom: 8 }}>DITT NAMN (VISAS FÖR LÄRAREN)</Text>
