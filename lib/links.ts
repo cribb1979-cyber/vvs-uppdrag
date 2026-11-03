@@ -23,7 +23,9 @@ export function sessionJoinUrl(code: string): string {
 // Utan publicerad webbadress faller vi tillbaka på bara koden.
 export function larareInbjudanUrl(joinCode: string): string {
   if (!APP_URL) return joinCode;
-  return `${APP_URL}/?lk=${encodeURIComponent(joinCode)}`;
+  // Gå direkt till registreringen med skolkoden ifylld. Äldre /?lk=-länkar
+  // fångas upp av startsidan och skickas vidare hit.
+  return `${APP_URL}/signup?lk=${encodeURIComponent(joinCode)}`;
 }
 
 export function studentRedeemUrl(code: string): string {

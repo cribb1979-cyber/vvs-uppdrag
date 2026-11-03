@@ -1,4 +1,4 @@
-import { Redirect, useRouter } from "expo-router";
+import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "@/components/ui/Button";
@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function Landing() {
   const { session, profile, loading } = useAuth();
   const router = useRouter();
+  const { lk } = useLocalSearchParams<{ lk?: string }>();
   const theme = Colors[useColorScheme() ?? "light"];
 
   if (loading) {
@@ -17,6 +18,11 @@ export default function Landing() {
         <ActivityIndicator size="large" color={theme.tint} />
       </SafeAreaView>
     );
+  }
+
+  // Äldre inbjudningslänkar (/?lk=SKOLKOD) skickas vidare till registreringen.
+  if (!session && typeof lk === "string" && lk.trim()) {
+    return <Redirect href={{ pathname: "/(auth)/signup", params: { lk: lk.trim() } }} />;
   }
 
   if (session && !session.user.is_anonymous) {

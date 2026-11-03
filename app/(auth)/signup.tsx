@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text } from "react-native";
 import { OrgChooser } from "@/components/OrgChooser";
@@ -11,6 +11,8 @@ import { supabase } from "@/lib/supabase";
 export default function Signup() {
   const theme = Colors[useColorScheme() ?? "light"];
   const router = useRouter();
+  const { lk } = useLocalSearchParams<{ lk?: string }>();
+  const initialJoinCode = typeof lk === "string" ? lk : undefined;
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,7 +44,7 @@ export default function Signup() {
     return (
       <ScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.background }]}>
         <Text style={[styles.heading, { color: theme.text }]}>Nästan klart</Text>
-        <OrgChooser fullName={fullName} />
+        <OrgChooser fullName={fullName} initialJoinCode={initialJoinCode} />
       </ScrollView>
     );
   }

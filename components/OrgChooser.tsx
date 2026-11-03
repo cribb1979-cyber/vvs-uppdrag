@@ -14,7 +14,7 @@ import { supabase } from "@/lib/supabase";
 // profil ännu: antingen precis registrerad, eller inloggad efter att ha
 // hoppat över det steget (t.ex. via e-postbekräftelse). Skapar org+admin
 // eller ansluter till en befintlig org som pending-lärare.
-export function OrgChooser({ fullName }: { fullName: string }) {
+export function OrgChooser({ fullName, initialJoinCode }: { fullName: string; initialJoinCode?: string }) {
   const theme = Colors[useColorScheme() ?? "light"];
   const router = useRouter();
   const { refresh } = useAuth();
@@ -24,7 +24,15 @@ export function OrgChooser({ fullName }: { fullName: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Kom in man via en inbjudningslänk (?lk=SKOLKOD)? Fyll i koden och välj "gå med".
+  // Kod från inbjudningslänken /signup?lk=SKOLKOD.
+  useEffect(() => {
+    if (initialJoinCode?.trim()) {
+      setMode("join");
+      setJoinCode(initialJoinCode.trim().toUpperCase());
+    }
+  }, [initialJoinCode]);
+
+  // Kom in man via en äldre inbjudningslänk (/?lk=SKOLKOD)? Fyll i koden och välj "gå med".
   useEffect(() => {
     (async () => {
       try {

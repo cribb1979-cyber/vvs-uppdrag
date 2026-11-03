@@ -128,8 +128,9 @@ export default function Hem() {
           title="Dela inbjudan"
           onPress={() => {
             const lank = larareInbjudanUrl(org?.join_code || "");
-            const med = `Gå med i ${org?.name || "skolan"} på VVS Uppdrag. Skolkod: ${org?.join_code}` +
-              (lank.startsWith("http") ? `\n${lank}` : "");
+            const med = `Gå med i ${org?.name || "skolan"} på VVS Uppdrag.\n` +
+              (lank.startsWith("http") ? `Skapa konto här: ${lank}\n` : "") +
+              `Skolkod: ${org?.join_code}`;
             Share.share({ message: med });
           }}
         />
