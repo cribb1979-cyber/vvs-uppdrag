@@ -105,6 +105,7 @@ export default function AssignmentDetail() {
       reflection_at: string | null;
       maintenance_plan: string;
       maintenance_plan_at: string | null;
+      student_note: string;
     }[];
   } | null>(null);
   const [pickingReference, setPickingReference] = useState<"camera" | "library" | null>(null);
@@ -490,7 +491,10 @@ export default function AssignmentDetail() {
 
       {svar && (
         <>
-          <SectionTitle text="📥 Insamlat (egen kontroll & reflektion)" theme={theme} />
+          <SectionTitle text="📥 Insamlat (egen kontroll, reflektion, anteckning & underhållsplan)" theme={theme} />
+          <View style={{ marginBottom: 12 }}>
+            <Button title="🔄 Uppdatera svar" variant="ghost" onPress={() => load()} />
+          </View>
           {svar.deltagare.length === 0 ? (
             <Text style={{ color: theme.muted, marginBottom: 12 }}>Ingen har lämnat in än.</Text>
           ) : (
@@ -518,6 +522,10 @@ export default function AssignmentDetail() {
                   DRIFT- OCH UNDERHÅLLSPLAN {d.maintenance_plan_at ? "✓" : "(inte sparad)"}
                 </Text>
                 <Text style={{ color: theme.text, fontSize: 14 }}>{d.maintenance_plan || "–"}</Text>
+                <Text style={{ color: theme.muted, fontSize: 12, fontWeight: "700", marginTop: 10, marginBottom: 4 }}>
+                  ELEVENS ANTECKNING
+                </Text>
+                <Text style={{ color: theme.text, fontSize: 14 }}>{d.student_note || "–"}</Text>
               </Card>
             ))
           )}

@@ -33,6 +33,7 @@ export default function ElevUppdrag() {
   const [name, setName] = useState("");
   const [savedName, setSavedName] = useState<string | null>(null);
   const [savingName, setSavingName] = useState(false);
+  const [teacherComment, setTeacherComment] = useState("");
   const [selfCheck, setSelfCheck] = useState<Record<string, boolean>>({});
   const [savingSelf, setSavingSelf] = useState(false);
   const [reflection, setReflection] = useState<Record<string, string>>({});
@@ -58,6 +59,20 @@ export default function ElevUppdrag() {
   useEffect(() => {
     loadName();
   }, [loadName]);
+
+  const loadTeacherComment = useCallback(async () => {
+    if (!data?.participant_id) return;
+    const { data: row } = await supabase
+      .from("assignment_participants")
+      .select("teacher_comment")
+      .eq("id", data.participant_id)
+      .single();
+    setTeacherComment(row?.teacher_comment ?? "");
+  }, [data?.participant_id]);
+
+  useEffect(() => {
+    loadTeacherComment();
+  }, [loadTeacherComment]);
 
   // Fyll egenkontrollen + reflektionen när sessionen laddas första gången.
   // En tyst bakgrundsuppdatering får inte skriva över osparade svar.
@@ -118,9 +133,12 @@ export default function ElevUppdrag() {
   // vid navigering. Går sessionen ut medan skärmen är öppen ska den bli
   // ogiltig automatiskt, inte först nästa gång appen öppnas.
   useEffect(() => {
-    const interval = setInterval(() => refresh({ silent: true }), 30_000);
+    const interval = setInterval(() => {
+      refresh({ silent: true });
+      loadTeacherComment();
+    }, 30_000);
     return () => clearInterval(interval);
-  }, [refresh]);
+  }, [refresh, loadTeacherComment]);
 
   if (loading) {
     return (
@@ -162,6 +180,13 @@ export default function ElevUppdrag() {
         <Card style={{ marginTop: 14, borderColor: theme.accent, borderWidth: 1 }}>
           <Text style={{ color: theme.accent, fontSize: 12, fontWeight: "800", letterSpacing: 0.5 }}>🎯 DAGENS MÅL</Text>
           <Text style={{ color: theme.text, fontSize: 16, fontWeight: "600", marginTop: 4 }}>{data.assignment.goal}</Text>
+        </Card>
+      )}
+
+      {!!teacherComment && (
+        <Card style={{ marginTop: 14, borderColor: theme.accent }}>
+          <Text style={{ color: theme.accent, fontSize: 12, fontWeight: "800", letterSpacing: 0.5 }}>💬 KOMMENTAR FRÅN LÄRAREN</Text>
+          <Text style={{ color: theme.text, fontSize: 15, marginTop: 4 }}>{teacherComment}</Text>
         </Card>
       )}
 

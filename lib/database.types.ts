@@ -984,6 +984,7 @@ export interface Database {
             reflection_at: string | null;
             maintenance_plan: string;
             maintenance_plan_at: string | null;
+            student_note: string;
           }>;
         };
       };

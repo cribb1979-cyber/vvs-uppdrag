@@ -278,6 +278,20 @@ export default function PlanReview() {
         </Card>
       )}
 
+      <Card style={{ marginTop: 10, borderColor: theme.tint }}>
+        <Text style={{ color: theme.muted, fontSize: 13, fontWeight: "700", marginBottom: 4 }}>
+          DRIFT- OCH UNDERHÅLLSPLAN
+        </Text>
+        <Text style={{ color: theme.text }}>
+          {participant.maintenance_plan?.trim() || "Eleven har inte sparat någon plan ännu."}
+        </Text>
+        {!!participant.maintenance_plan_saved_at && (
+          <Text style={{ color: theme.muted, fontSize: 12, marginTop: 6 }}>
+            Sparad {new Date(participant.maintenance_plan_saved_at).toLocaleString("sv-SE")}
+          </Text>
+        )}
+      </Card>
+
       <Card style={{ marginTop: 10 }}>
         <Text style={{ color: theme.muted, fontSize: 13, fontWeight: "700", marginBottom: 8 }}>DIN KOMMENTAR TILL ELEVEN</Text>
         <TextInput

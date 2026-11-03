@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -9,6 +9,7 @@ import { ExamClock, useExamClock } from "@/components/ExamClock";
 import { MaintenancePlanCard } from "@/components/MaintenancePlanCard";
 import { examInfo } from "@/lib/examMode";
 import { quizImageUrl } from "@/lib/quizImages";
+import { supabase } from "@/lib/supabase";
 import { useAssignmentAsStudent } from "@/lib/useAssignmentAsStudent";
 
 export default function MinaUppdragDetail() {
@@ -16,18 +17,36 @@ export default function MinaUppdragDetail() {
   const theme = Colors[useColorScheme() ?? "light"];
   const router = useRouter();
   const { data, error, loading, refresh } = useAssignmentAsStudent(assignmentId);
+  const [teacherComment, setTeacherComment] = useState("");
 
   const exam = examInfo(data?.assignment.steps);
   const examNyckel = data?.participant_id ? `vvsuppdrag.exam.${data.participant_id}` : null;
   const klocka = useExamClock(examNyckel, exam.minutes, exam.lage === "prov");
 
+  const loadTeacherComment = useCallback(async () => {
+    if (!data?.participant_id) return;
+    const { data: row } = await supabase
+      .from("assignment_participants")
+      .select("teacher_comment")
+      .eq("id", data.participant_id)
+      .single();
+    setTeacherComment(row?.teacher_comment ?? "");
+  }, [data?.participant_id]);
+
+  useEffect(() => {
+    loadTeacherComment();
+  }, [loadTeacherComment]);
+
   // Samma live-uppdatering som QR-engångsflödet (app/elev/uppdrag/[code].tsx):
   // byter läraren mellan Övningsläge/Provläge medan eleven har skärmen öppen
   // ska det synas utan att eleven behöver logga in på nytt.
   useEffect(() => {
-    const interval = setInterval(() => refresh({ silent: true }), 30_000);
+    const interval = setInterval(() => {
+      refresh({ silent: true });
+      loadTeacherComment();
+    }, 30_000);
     return () => clearInterval(interval);
-  }, [refresh]);
+  }, [refresh, loadTeacherComment]);
 
   if (loading) {
     return (
@@ -49,6 +68,13 @@ export default function MinaUppdragDetail() {
     <ScrollView style={{ backgroundColor: theme.background }} contentContainerStyle={styles.container}>
       <Text style={[styles.title, { color: theme.text }]}>{data.assignment.title}</Text>
       {!!data.assignment.description && <Text style={[styles.body, { color: theme.muted }]}>{data.assignment.description}</Text>}
+
+      {!!teacherComment && (
+        <Card style={{ marginTop: 14, borderColor: theme.accent }}>
+          <Text style={{ color: theme.accent, fontSize: 12, fontWeight: "800", letterSpacing: 0.5 }}>💬 KOMMENTAR FRÅN LÄRAREN</Text>
+          <Text style={{ color: theme.text, fontSize: 15, marginTop: 4 }}>{teacherComment}</Text>
+        </Card>
+      )}
 
       {data.assignment.kind === "uppdrag" && data.assignment.ai_mode === "off" && (
         <Card style={{ marginTop: 16 }}>
