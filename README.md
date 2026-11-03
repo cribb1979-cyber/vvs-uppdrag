@@ -182,3 +182,8 @@ Eleven når **🎓 Se mitt omdöme** från både QR- och klassflödet. Vyn visar
 bedömningskriterierna när läraren har publicerat bedömningen. Rena
 QR-sessioner som inte är kopplade till en klass/student kan ännu inte bedömas
 i lärargränssnittet – där är lärarens kommentar den återkoppling som visas.
+
+Uppdragets valda Säkervatten-regler följer med till eleven: `join_session`
+och `open_assignment_as_student` returnerar `rule_refs`, och elevens
+uppdragssida visar rubrik, sammanfattning och kontrollpunkter för varje regel.
+Kräver migrationen `supabase/migrations/0019_student_rule_refs.sql`.
