@@ -201,3 +201,15 @@ lärare**. Äldre `/?lk=...`-länkar skickas vidare till registreringen.
 Varje QR-session visar en direktlänk (`/elev/uppdrag/<kod>`) och knappen
 **📋 Kopiera elevlänk**. Läraren kan klistra in länken i lärplattformen eller
 mejla den, så elever på dator slipper skanna QR-koden.
+
+## Ritning i examensprovet
+
+Momentet **Ritning – varmvattenberedare och badrum** finns i examenslistan.
+Det kräver varmvattenberedare, blandningsventil, backventil, säkerhetsventil,
+avstängningsventiler, expansionsledning samt badrum med rör på väggar och
+anslutningar. Eleven ritar i Laneskär Ritverkstad och exporterar ritningen som
+SVG/PNG eller `.cad`.
+
+Från **Examensprov** kan läraren skriva ut **examensveckans QR**. Den öppnar
+den publika översikten `/examensprov` med alla moment och länken till
+Ritverkstaden. Samma sida kan delas som länk till elever på dator.
