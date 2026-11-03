@@ -213,3 +213,13 @@ SVG/PNG eller `.cad`.
 Från **Examensprov** kan läraren skriva ut **examensveckans QR**. Den öppnar
 den publika översikten `/examensprov` med alla moment och länken till
 Ritverkstaden. Samma sida kan delas som länk till elever på dator.
+
+## QR-koder
+
+Etikett-QR:erna ritas med hela modulpixlar och felkorrigering L. Våra länkar
+blir 29 moduler, vilket ger 3 px per modul = 93 av skrivhuvudets 96 px
+(cirka 11,6 mm) – skarpa rutor i stället för ojämn skalning.
+
+Är en etikett ändå svårläst är den fysiska bredden bara 12 mm. Använd då den
+stora QR:en under **Examensprov** på skärmen/projektorn eller skriv ut den på
+A4. Elevsessionens QR på skärmen är också större (190 px).
