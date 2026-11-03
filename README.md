@@ -122,3 +122,20 @@ den under **Beställningar** hos läraren. Därifrån kan läraren:
   som artiklar och etikettstudion öppnas med en QR-etikett per material.
 
 Kräver migrationen `supabase/migrations/0013_materialplan_rsk.sql`.
+
+## AI-läge (lokalt)
+
+I formuläret för nytt uppdrag finns **✨ Skapa med AI**. Läraren beskriver
+uppdraget och väljer:
+
+* **Kvalitet** – `gemma2:9b`, bättre text men långsammare
+* **Snabb** – `stoffe-stabil`, snabbare och lite enklare
+
+AI:n får Säkervatten-reglerna, bankmallarna och Förrådets artiklar som
+underlag och returnerar ett strukturerat utkast. RSK-nummer godkänns bara om
+de finns i `material_catalog`; okända RSK lämnas tomma och flaggas. Utkastet
+hamnar i formuläret och sparas först när läraren trycker på knappen.
+
+Backenden anropar lokal Ollama på Y900 via `functions/generate-assignment`.
+Styrs med `OLLAMA_URL`, `OLLAMA_MODEL_QUALITY`, `OLLAMA_MODEL_QUICK` och
+`AI_TIMEOUT_MS`. Ingen API-kostnad och ingen elevdata lämnar skolan.
