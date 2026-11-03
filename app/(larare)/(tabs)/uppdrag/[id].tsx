@@ -550,7 +550,7 @@ export default function AssignmentDetail() {
       {activeSessions.map((s) => (
         <Card key={s.id} style={styles.sessionCard}>
           <View style={styles.qrWrap}>
-            <QRCode value={sessionJoinUrl(s.code)} size={140} />
+            <QRCode value={sessionJoinUrl(s.code)} size={190} />
           </View>
           <Text style={[styles.code, { color: theme.text }]}>{s.code}</Text>
           <Text style={{ color: theme.muted, marginBottom: 8 }}>{timeLeftLabel(s.expires_at)}</Text>

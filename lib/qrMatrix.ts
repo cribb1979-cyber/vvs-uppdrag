@@ -7,7 +7,7 @@ export interface QrMatrix {
   data: Uint8Array;
 }
 
-export function qrMatrix(value: string): QrMatrix {
-  const qr = create(value, { errorCorrectionLevel: "M" });
+export function qrMatrix(value: string, errorCorrectionLevel: "L" | "M" | "Q" | "H" = "M"): QrMatrix {
+  const qr = create(value, { errorCorrectionLevel });
   return { size: qr.modules.size, data: qr.modules.data };
 }

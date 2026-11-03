@@ -146,29 +146,32 @@ function textBlock(text: string, style: LabelStyle): Block {
 }
 
 function qrBlock(value: string): Block {
-  const qr = qrMatrix(value);
+  // L ger färre moduler än M för våra länkar, vilket ger större rutor på den
+  // smala 12 mm-utskriften. Hela modulpixlar undviker suddiga kanter.
+  const qr = qrMatrix(value, "L");
   const count = qr.size;
-  const quiet = 2; // tyst zon i moduler, krävs för att kameran ska hitta koden
+  const quiet = 1; // extra vit marginal finns runt blocket i layouten
   const total = count + 2 * quiet;
+  const modulePx = Math.max(1, Math.floor(HEAD_WIDTH_PX / total));
+  const qrPx = modulePx * total;
+  const offset = Math.floor((HEAD_WIDTH_PX - qrPx) / 2);
 
-  const modules = nyCanvas(total, total);
-  const mctx = context(modules);
-  mctx.fillStyle = "#fff";
-  mctx.fillRect(0, 0, total, total);
-  mctx.fillStyle = "#000";
-  for (let y = 0; y < count; y++) {
-    for (let x = 0; x < count; x++) {
-      if (qr.data[y * count + x]) mctx.fillRect(x + quiet, y + quiet, 1, 1);
-    }
-  }
-
-  // Skala upp utan utjämning: skarpa moduler även när skalan inte är ett heltal.
   const canvas = nyCanvas(HEAD_WIDTH_PX, HEAD_WIDTH_PX);
   const ctx = context(canvas);
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(modules, 0, 0, total, total, 0, 0, HEAD_WIDTH_PX, HEAD_WIDTH_PX);
+  ctx.fillStyle = "#000";
+  for (let y = 0; y < count; y++) {
+    for (let x = 0; x < count; x++) {
+      if (!qr.data[y * count + x]) continue;
+      ctx.fillRect(
+        offset + (x + quiet) * modulePx,
+        offset + (y + quiet) * modulePx,
+        modulePx,
+        modulePx,
+      );
+    }
+  }
   return { canvas, width: HEAD_WIDTH_PX };
 }
 

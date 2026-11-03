@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Platform, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import QRCode from "react-native-qrcode-svg";
 import { Badge, Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useColorScheme } from "@/components/useColorScheme";
@@ -60,6 +61,21 @@ export default function Examensprov() {
     }
   }
 
+  async function kopieraVeckolank() {
+    const url = examWeekUrl();
+    const clipboard = typeof navigator !== "undefined" ? (navigator as any).clipboard : null;
+    if (Platform.OS === "web" && clipboard?.writeText) {
+      try {
+        await clipboard.writeText(url);
+        Alert.alert("Examenslänk kopierad", url);
+        return;
+      } catch {
+        // fall tillbaka till dela-dialogen
+      }
+    }
+    await Share.share({ message: `Examensprov VVS-montör: ${url}` });
+  }
+
   const totalt = EXAM_TASKS.reduce((s, t) => s + t.minut, 0);
 
   return (
@@ -101,6 +117,21 @@ export default function Examensprov() {
           {examWeekUrl()}
         </Text>
       </View>
+
+      <Card style={{ alignItems: "center", marginBottom: 16 }}>
+        <Text style={{ color: theme.text, fontWeight: "800", fontSize: 16 }}>QR för examensveckan</Text>
+        <Text style={{ color: theme.muted, fontSize: 13, textAlign: "center", marginTop: 4, marginBottom: 10 }}>
+          Visa på projektorn, skriv ut på A4 eller skriv ut etiketten. QR:en öppnar alla moment.
+        </Text>
+        <View style={{ backgroundColor: "#fff", padding: 14, borderRadius: 14 }}>
+          <QRCode value={examWeekUrl()} size={230} color="#0F1B24" backgroundColor="#ffffff" />
+        </View>
+        <Text selectable style={{ color: theme.tint, fontSize: 12, marginTop: 10 }}>
+          {examWeekUrl()}
+        </Text>
+        <View style={{ height: 10 }} />
+        <Button title="📋 Kopiera examenslänk" variant="secondary" onPress={kopieraVeckolank} />
+      </Card>
 
       <View style={styles.modes}>
         <Card style={{ flex: 1, borderColor: theme.accent }}>
