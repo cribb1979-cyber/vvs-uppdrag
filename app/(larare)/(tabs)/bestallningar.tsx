@@ -1,4 +1,4 @@
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Badge, Card } from "@/components/ui/Card";
@@ -13,6 +13,16 @@ import type { Database, MaterialOrderStatus } from "@/lib/database.types";
 
 type MaterialRow = Database["public"]["Tables"]["material_catalog"]["Row"];
 type OrderRow = Database["public"]["Tables"]["material_orders"]["Row"];
+type PlanItem = Database["public"]["Tables"]["material_plan_items"]["Row"];
+type PlanRow = {
+  id: string;
+  plan_submitted_at: string | null;
+  display_name: string | null;
+  student_id: string | null;
+  students: { name: string } | null;
+  assignments: { title: string } | null;
+  material_plan_items: PlanItem[];
+};
 
 const STATUS_META: Record<MaterialOrderStatus, { label: string; tone: "warning" | "muted" | "success"; next: MaterialOrderStatus }> = {
   att_bestalla: { label: "Att beställa", tone: "warning", next: "bestalld" },
@@ -22,24 +32,36 @@ const STATUS_META: Record<MaterialOrderStatus, { label: string; tone: "warning" 
 
 export default function Bestallningar() {
   const theme = Colors[useColorScheme() ?? "light"];
+  const router = useRouter();
   const { org } = useAuth();
 
   const [catalog, setCatalog] = useState<MaterialRow[]>([]);
   const [orders, setOrders] = useState<OrderRow[]>([]);
+  const [plans, setPlans] = useState<PlanRow[]>([]);
   const [adding, setAdding] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [planBusy, setPlanBusy] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
+  const [newRsk, setNewRsk] = useState("");
   const [newQuantity, setNewQuantity] = useState("1");
   const [newNote, setNewNote] = useState("");
 
   const load = useCallback(async () => {
     if (!org) return;
-    const [{ data: items }, { data: ord }] = await Promise.all([
+    const [{ data: items }, { data: ord }, { data: planData }] = await Promise.all([
       supabase.from("material_catalog").select("*").eq("org_id", org.id).order("name"),
       supabase.from("material_orders").select("*").eq("org_id", org.id).order("created_at", { ascending: false }),
+      supabase
+        .from("assignment_participants")
+        .select(
+          "id, plan_submitted_at, display_name, student_id, students(name), assignments(title), material_plan_items(id, component, dimension, quantity, comment, rsk_number, created_at)",
+        )
+        .not("plan_submitted_at", "is", null)
+        .order("plan_submitted_at", { ascending: false }),
     ]);
     setCatalog(items ?? []);
     setOrders(ord ?? []);
+    setPlans((planData as unknown as PlanRow[]) ?? []);
   }, [org]);
 
   useFocusEffect(
@@ -75,6 +97,7 @@ export default function Bestallningar() {
     const { error } = await supabase.from("material_orders").insert({
       org_id: org.id,
       material_name: newName.trim(),
+      rsk_number: newRsk.trim(),
       quantity: Math.max(1, Number.parseInt(newQuantity, 10) || 1),
       note: newNote.trim(),
     });
@@ -84,6 +107,7 @@ export default function Bestallningar() {
       return;
     }
     setNewName("");
+    setNewRsk("");
     setNewQuantity("1");
     setNewNote("");
     setAdding(false);
@@ -110,10 +134,181 @@ export default function Bestallningar() {
     ]);
   }
 
+  const submittedPlans = plans.filter((plan) => (plan.material_plan_items?.length ?? 0) > 0);
+
+  function planNamn(plan: PlanRow) {
+    return plan.students?.name ?? plan.display_name ?? "QR-session";
+  }
+
+  function planDatum(iso: string | null) {
+    return iso ? new Date(iso).toLocaleString("sv-SE") : "";
+  }
+
+  async function skapaBestallning(plan: PlanRow) {
+    if (!org) return;
+    const items = plan.material_plan_items ?? [];
+    if (items.length === 0) return;
+    setPlanBusy(plan.id);
+    try {
+      const itemIds = items.map((item) => item.id);
+      const { data: existing } = await supabase
+        .from("material_orders")
+        .select("source_plan_item_id")
+        .in("source_plan_item_id", itemIds);
+      const redanBestallda = new Set((existing ?? []).map((o) => o.source_plan_item_id));
+      const attLägga = items.filter((item) => !redanBestallda.has(item.id));
+      if (attLägga.length === 0) {
+        Alert.alert("Redan beställt", "Alla rader i planen finns redan som beställningar.");
+        return;
+      }
+      const titel = plan.assignments?.title ?? "Uppdrag";
+      const namn = planNamn(plan);
+      const rader = [];
+      for (const item of attLägga) {
+        let materialId: string | null = null;
+        const rsk = item.rsk_number.trim();
+        if (rsk) {
+          const { data: artikel } = await supabase
+            .from("material_catalog")
+            .select("id")
+            .eq("org_id", org.id)
+            .eq("rsk_number", rsk)
+            .limit(1)
+            .maybeSingle();
+          materialId = artikel?.id ?? null;
+        }
+        rader.push({
+          org_id: org.id,
+          material_id: materialId,
+          material_name: item.component,
+          quantity: item.quantity,
+          rsk_number: rsk,
+          note: `Materialplan: ${titel} – ${namn}${item.comment ? ` · ${item.comment}` : ""}`,
+          source_plan_item_id: item.id,
+        });
+      }
+      const { error } = await supabase.from("material_orders").insert(rader);
+      if (error) throw error;
+      Alert.alert("Beställning skapad", `${rader.length} rader lades till.`);
+      load();
+    } catch (e) {
+      Alert.alert("Kunde inte skapa beställning", getErrorMessage(e));
+    } finally {
+      setPlanBusy(null);
+    }
+  }
+
+  async function skapaEtiketter(plan: PlanRow) {
+    if (!org) return;
+    const medRsk = (plan.material_plan_items ?? []).filter((item) => item.rsk_number.trim());
+    if (medRsk.length === 0) {
+      Alert.alert("RSK saknas", "Ingen rad i planen har RSK-nummer.");
+      return;
+    }
+    setPlanBusy(plan.id);
+    try {
+      const artikelIds = new Set<string>();
+      const saknade = new Map<string, PlanItem>();
+      for (const item of medRsk) {
+        const rsk = item.rsk_number.trim();
+        const { data: artikel } = await supabase
+          .from("material_catalog")
+          .select("id")
+          .eq("org_id", org.id)
+          .eq("rsk_number", rsk)
+          .limit(1)
+          .maybeSingle();
+        if (artikel?.id) {
+          artikelIds.add(artikel.id);
+        } else if (!saknade.has(rsk)) {
+          saknade.set(rsk, item);
+        }
+      }
+
+      let skapade = 0;
+      for (const [rsk, item] of saknade) {
+        const { data: ny, error } = await supabase
+          .from("material_catalog")
+          .insert({
+            org_id: org.id,
+            name: item.component,
+            rsk_number: rsk,
+            dimension: item.dimension,
+            note: "Skapad från elevens materialplan",
+          })
+          .select("id")
+          .single();
+        if (error) throw error;
+        if (ny?.id) {
+          artikelIds.add(ny.id);
+          skapade++;
+        }
+      }
+
+      const ids = Array.from(artikelIds);
+      if (ids.length === 0) {
+        Alert.alert("Inga etiketter", "Inga RSK-nummer kunde matchas eller skapas.");
+        return;
+      }
+      if (skapade > 0) {
+        Alert.alert("Artiklar skapade", `${skapade} nya artiklar lades i Förrådet.`);
+      }
+      router.push({
+        pathname: "/(larare)/(tabs)/forrad/skriv-ut",
+        params: { kalla: "forrad", artikel: ids.join(",") },
+      });
+    } catch (e) {
+      Alert.alert("Kunde inte skapa etiketter", getErrorMessage(e));
+    } finally {
+      setPlanBusy(null);
+    }
+  }
+
   return (
     <ScrollView style={{ backgroundColor: theme.background }} contentContainerStyle={styles.container}>
       <Text style={[styles.title, { color: theme.text }]}>Beställningar</Text>
       <Text style={{ color: theme.muted, marginBottom: 16 }}>{orders.filter((o) => o.status !== "mottagen").length} öppna beställningar</Text>
+
+      <Text style={[styles.sectionTitle, { color: theme.text }]}>Materialplaner från elever</Text>
+      {submittedPlans.length === 0 && (
+        <Text style={{ color: theme.muted, marginBottom: 8 }}>Inga inskickade materialplaner ännu.</Text>
+      )}
+      {submittedPlans.map((plan) => (
+        <Card key={plan.id} style={{ marginBottom: 10 }}>
+          <Text style={{ color: theme.text, fontWeight: "800" }}>{plan.assignments?.title ?? "Uppdrag"}</Text>
+          <Text style={{ color: theme.muted, fontSize: 13, marginTop: 2 }}>
+            {planNamn(plan)} · {planDatum(plan.plan_submitted_at)} · {plan.material_plan_items.length} rader
+          </Text>
+          {plan.material_plan_items.map((item) => (
+            <Text key={item.id} style={{ color: theme.text, fontSize: 13, marginTop: 5 }}>
+              • {item.component}
+              {item.dimension ? ` · ${item.dimension}` : ""} — {item.quantity} st
+              {item.rsk_number ? ` · RSK ${item.rsk_number}` : ""}
+            </Text>
+          ))}
+          <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
+            <View style={{ flex: 1 }}>
+              <Button
+                title="Skapa beställning"
+                variant="secondary"
+                onPress={() => skapaBestallning(plan)}
+                loading={planBusy === plan.id}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Button
+                title="QR-etiketter"
+                variant="ghost"
+                onPress={() => skapaEtiketter(plan)}
+                loading={planBusy === plan.id}
+              />
+            </View>
+          </View>
+          <Text style={{ color: theme.muted, fontSize: 11, marginTop: 8 }}>
+            QR-etiketter matchar RSK mot Förrådet. Saknade RSK skapas som artiklar.
+          </Text>
+        </Card>
+      ))}
 
       {suggestions.length > 0 && (
         <>
@@ -139,6 +334,7 @@ export default function Bestallningar() {
           <View style={{ flex: 1 }}>
             <Text style={{ color: theme.text, fontWeight: "700" }}>
               {order.material_name} · {order.quantity} st
+              {order.rsk_number ? ` · RSK ${order.rsk_number}` : ""}
             </Text>
             {!!order.note && <Text style={{ color: theme.muted, fontSize: 13, marginTop: 2 }}>{order.note}</Text>}
           </View>
@@ -154,6 +350,7 @@ export default function Bestallningar() {
       {adding ? (
         <Card style={{ marginTop: 16 }}>
           <Field label="Vad ska beställas" placeholder="T.ex. Kopparrör 15mm" value={newName} onChangeText={setNewName} />
+          <Field label="RSK-nummer" placeholder="Valfritt" value={newRsk} onChangeText={setNewRsk} keyboardType="number-pad" />
           <Field label="Antal" value={newQuantity} onChangeText={setNewQuantity} keyboardType="number-pad" />
           <Field label="Anteckning" placeholder="Valfritt" value={newNote} onChangeText={setNewNote} />
           <View style={styles.actionRow}>

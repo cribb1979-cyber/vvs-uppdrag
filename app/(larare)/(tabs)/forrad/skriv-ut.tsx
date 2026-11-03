@@ -13,10 +13,12 @@ export default function SkrivUtEtiketter() {
 
   const start =
     kalla === "examensprov" || kalla === "fritext" || kalla === "forrad" ? kalla : undefined;
+  const initialArtikelIds =
+    typeof artikel === "string" ? artikel.split(",").map((id) => id.trim()).filter(Boolean) : [];
 
   return (
     <ScrollView style={{ backgroundColor: theme.background }} contentContainerStyle={styles.container}>
-      <LabelStudio initialKalla={start} initialArtikelId={artikel} />
+      <LabelStudio initialKalla={start} initialArtikelIds={initialArtikelIds} />
     </ScrollView>
   );
 }

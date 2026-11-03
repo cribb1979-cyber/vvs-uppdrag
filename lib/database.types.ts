@@ -543,6 +543,7 @@ export interface Database {
           dimension: string;
           quantity: number;
           comment: string;
+          rsk_number: string;
           created_at: string;
         };
         Insert: {
@@ -552,6 +553,7 @@ export interface Database {
           dimension?: string;
           quantity?: number;
           comment?: string;
+          rsk_number?: string;
           created_at?: string;
         };
         Update: {
@@ -559,6 +561,7 @@ export interface Database {
           dimension?: string;
           quantity?: number;
           comment?: string;
+          rsk_number?: string;
         };
         Relationships: [
           { foreignKeyName: "material_plan_items_participant_id_fkey"; columns: ["participant_id"]; isOneToOne: false; referencedRelation: "assignment_participants"; referencedColumns: ["id"] },
@@ -773,6 +776,8 @@ export interface Database {
           quantity: number;
           status: MaterialOrderStatus;
           note: string;
+          rsk_number: string;
+          source_plan_item_id: string | null;
           created_by: string | null;
           created_at: string;
           updated_at: string;
@@ -785,6 +790,8 @@ export interface Database {
           quantity?: number;
           status?: MaterialOrderStatus;
           note?: string;
+          rsk_number?: string;
+          source_plan_item_id?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -795,11 +802,14 @@ export interface Database {
           quantity?: number;
           status?: MaterialOrderStatus;
           note?: string;
+          rsk_number?: string;
+          source_plan_item_id?: string | null;
           updated_at?: string;
         };
         Relationships: [
           { foreignKeyName: "material_orders_org_id_fkey"; columns: ["org_id"]; isOneToOne: false; referencedRelation: "orgs"; referencedColumns: ["id"] },
           { foreignKeyName: "material_orders_material_id_fkey"; columns: ["material_id"]; isOneToOne: false; referencedRelation: "material_catalog"; referencedColumns: ["id"] },
+          { foreignKeyName: "material_orders_source_plan_item_id_fkey"; columns: ["source_plan_item_id"]; isOneToOne: false; referencedRelation: "material_plan_items"; referencedColumns: ["id"] },
           { foreignKeyName: "material_orders_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ];
       };

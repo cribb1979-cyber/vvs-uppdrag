@@ -36,6 +36,7 @@ export function MaterialPlanEditor({
   const [requirementsView, setRequirementsView] = useState<RequirementsView | null>(null);
   const [component, setComponent] = useState("");
   const [dimension, setDimension] = useState("");
+  const [rsk, setRsk] = useState("");
   const [quantity, setQuantity] = useState("1");
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -81,6 +82,7 @@ export function MaterialPlanEditor({
       participant_id: participantId,
       component: component.trim(),
       dimension: dimension.trim(),
+      rsk_number: rsk.trim(),
       quantity: Math.max(1, Number.parseInt(quantity, 10) || 1),
       comment: comment.trim(),
     });
@@ -90,6 +92,7 @@ export function MaterialPlanEditor({
     }
     setComponent("");
     setDimension("");
+    setRsk("");
     setQuantity("1");
     setComment("");
     loadItems();
@@ -165,7 +168,8 @@ export function MaterialPlanEditor({
               {item.component} {item.dimension ? `· ${item.dimension}` : ""}
             </Text>
             <Text style={{ color: theme.muted, fontSize: 13 }}>
-              {item.quantity} st{item.comment ? ` — ${item.comment}` : ""}
+              {item.quantity} st{item.rsk_number ? ` · RSK ${item.rsk_number}` : ""}
+              {item.comment ? ` — ${item.comment}` : ""}
             </Text>
           </View>
           {!planLocked && (
@@ -185,6 +189,14 @@ export function MaterialPlanEditor({
             placeholderTextColor={theme.muted}
             value={component}
             onChangeText={setComponent}
+          />
+          <TextInput
+            style={[styles.input, { color: theme.text, borderColor: theme.border, marginBottom: 8 }]}
+            placeholder="RSK-nummer (valfritt)"
+            placeholderTextColor={theme.muted}
+            value={rsk}
+            onChangeText={setRsk}
+            keyboardType="number-pad"
           />
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
             <TextInput

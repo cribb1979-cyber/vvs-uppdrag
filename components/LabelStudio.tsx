@@ -49,9 +49,11 @@ const STORLEKAR = ["S", "M", "L", "XL"];
 export default function LabelStudio({
   initialKalla = "forrad",
   initialArtikelId,
+  initialArtikelIds,
 }: {
   initialKalla?: Kalla;
   initialArtikelId?: string;
+  initialArtikelIds?: string[];
 }) {
   const theme = Colors[useColorScheme() ?? "light"];
   const { org } = useAuth();
@@ -101,22 +103,33 @@ export default function LabelStudio({
       .slice(0, 60);
   }, [artiklar, sok]);
 
-  // Artikel framklickad från artikelsidan: lägg den i kön automatiskt.
+  // Artiklar som kommer från artikelsidan eller en elevs materialplan:
+  // lägg dem i kön automatiskt.
+  const forvaldaArtikelIds = useMemo(
+    () =>
+      Array.from(
+        new Set(initialArtikelIds?.length ? initialArtikelIds : initialArtikelId ? [initialArtikelId] : []),
+      ),
+    [initialArtikelIds, initialArtikelId],
+  );
+
   useEffect(() => {
-    if (forvaldTillagd || !initialArtikelId) return;
-    const artikel = artiklar.find((a) => a.id === initialArtikelId);
-    if (!artikel) return;
+    if (forvaldTillagd || forvaldaArtikelIds.length === 0 || artiklar.length === 0) return;
+    const valda = forvaldaArtikelIds
+      .map((id) => artiklar.find((a) => a.id === id))
+      .filter((a): a is MaterialRow => Boolean(a));
+    if (valda.length === 0) return;
     setForvaldTillagd(true);
     setKo((tidigare) => [
       ...tidigare,
-      {
+      ...valda.map((artikel) => ({
         key: nyNyckel(),
         text: [artikel.name, artikel.dimension].filter(Boolean).join("\n"),
         qr: materialArticleUrl(artikel.id),
-      },
+      })),
     ]);
-    setStatus("Artikeln ligger i kön – anslut skrivaren och skriv ut.");
-  }, [artiklar, initialArtikelId, forvaldTillagd]);
+    setStatus(`${valda.length} artikel-etiketter i kön – anslut skrivaren och skriv ut.`);
+  }, [artiklar, forvaldaArtikelIds, forvaldTillagd]);
 
   function laggTill(poster: { text: string; qr?: string }[]) {
     setKo((tidigare) => [...tidigare, ...poster.map((p) => ({ key: nyNyckel(), ...p }))]);
