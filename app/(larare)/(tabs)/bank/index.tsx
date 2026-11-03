@@ -81,11 +81,8 @@ export default function Uppdragsbank() {
     setTarUt(m.id);
     try {
       const nyttId = await taUtMall(m.id);
-      Alert.alert("Uppdraget ligger nu hos dig", "Det skapades som ett utkast i din skola. Du kan ändra det fritt.", [
-        { text: "Öppna uppdraget", onPress: () => router.push({ pathname: "/(larare)/(tabs)/uppdrag/[id]", params: { id: nyttId } }) },
-        { text: "Stanna kvar" },
-      ]);
       await ladda();
+      router.push({ pathname: "/(larare)/(tabs)/uppdrag/[id]", params: { id: nyttId } });
     } catch (e) {
       Alert.alert("Kunde inte ta ut mallen", getErrorMessage(e));
     } finally {
