@@ -5,7 +5,7 @@ set -eu
 cd "$(dirname "$0")/.."
 M=migrering
 
-for f in "$M/auth-users.sql" "$M/auth-identities.sql" "$M/public.sql" "$M/storage-objects.sql"; do
+for f in "$M/auth-users.sql" "$M/auth-identities.sql" "$M/public.sql" "$M/storage-objects.csv" "$M/counts.txt"; do
   [ -f "$f" ] || { echo "Saknar $f"; exit 1; }
 done
 
@@ -25,23 +25,36 @@ until docker compose exec -T db psql -U postgres -d postgres -tAc "select to_reg
 done
 
 echo "== tömmer gamla storage-rader och filer =="
-docker compose exec -T db psql -U postgres -d postgres -c "truncate storage.objects;" || true
+docker compose exec -T db psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c "truncate storage.objects;"
 rm -rf data/storage/*
 
 echo "== auth-användare =="
-docker compose exec -T db psql -U postgres -d postgres < "$M/auth-users.sql"
-docker compose exec -T db psql -U postgres -d postgres < "$M/auth-identities.sql"
+docker compose exec -T db psql -U postgres -d postgres -v ON_ERROR_STOP=1 < "$M/auth-users.sql"
+docker compose exec -T db psql -U postgres -d postgres -v ON_ERROR_STOP=1 < "$M/auth-identities.sql"
 
 echo "== tömmer public och återställer appens schema + data =="
-docker compose exec -T db psql -U postgres -d postgres -c "drop schema public cascade; create schema public;"
-docker compose exec -T db psql -U postgres -d postgres -c "create extension if not exists \"uuid-ossp\" with schema public; create extension if not exists pgcrypto with schema public; create extension if not exists citext with schema public;"
-docker compose exec -T db psql -U postgres -d postgres < "$M/public.sql"
+docker compose exec -T db psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c "drop schema public cascade; create schema public;"
+docker compose exec -T db psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c "create extension if not exists \"uuid-ossp\" with schema public; create extension if not exists pgcrypto with schema public; create extension if not exists citext with schema public;"
+docker compose exec -T db psql -U postgres -d postgres -v ON_ERROR_STOP=1 < "$M/public.sql"
 
 echo "== storage-rader =="
-docker compose exec -T db psql -U postgres -d postgres < "$M/storage-objects.sql"
+docker compose exec -T db psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+  -c "\copy storage.objects (id, bucket_id, name, owner, created_at) from stdin with (format csv, header true)" \
+  < "$M/storage-objects.csv"
 
 echo "== nyare migrationer som dumpen kan sakna =="
-docker compose exec -T db psql -U postgres -d postgres < sql/vvs/0012_uppdragsbank.sql
+docker compose exec -T db psql -U postgres -d postgres -v ON_ERROR_STOP=1 < sql/vvs/0012_uppdragsbank.sql
+
+echo "== kontrollerar antal rader mot dumpen =="
+while read -r tabell forvantat; do
+  [ -n "$tabell" ] || continue
+  faktiskt=$(docker compose exec -T db psql -U postgres -d postgres -Atc "select count(*) from $tabell")
+  if [ "$faktiskt" != "$forvantat" ]; then
+    echo "FEL: $tabell har $faktiskt rader, dumpen hade $forvantat" >&2
+    exit 1
+  fi
+  echo "  $tabell: $faktiskt"
+done < "$M/counts.txt"
 
 echo "== startar resten =="
 docker compose up -d

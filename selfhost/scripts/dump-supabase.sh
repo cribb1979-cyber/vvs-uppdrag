@@ -33,7 +33,16 @@ docker run --rm --env-file "$TMP" \
     pg_dump --data-only --table=auth.users --file=/out/auth-users.sql
     echo "== auth.identities"
     pg_dump --data-only --table=auth.identities --file=/out/auth-identities.sql
-    echo "== storage.objects"
-    pg_dump --data-only --table=storage.objects --file=/out/storage-objects.sql
+    echo "== storage.objects (bara de kolumner den egna shimmen har)"
+    psql -v ON_ERROR_STOP=1 -c "\copy (select id, bucket_id, name, owner, created_at from storage.objects order by bucket_id, name) to stdout with (format csv, header true)" > /out/storage-objects.csv
+
+    echo "== antal rader (kontrolleras efter restore)"
+    : > /out/counts.txt
+    for t in auth.users auth.identities orgs profiles assignments storage.objects; do
+      n=$(psql -At -v ON_ERROR_STOP=1 -c "select count(*) from $t")
+      echo "$t $n" >> /out/counts.txt
+    done
+    cat /out/counts.txt
+
     ls -l /out
   '

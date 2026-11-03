@@ -51,6 +51,11 @@ services:
       GOTRUE_MAILER_AUTOCONFIRM: "true"
       GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED: "true"
       GOTRUE_LOG_LEVEL: info
+      # supabase-js skickar alltid med `apikey`, även till /auth/v1.
+      # GoTrue tillåter Authorization och Content-Type som standard, men
+      # inte apikey – utan detta faller webbläsarens CORS-preflight och
+      # inloggning/registrering i webbappen fungerar inte.
+      GOTRUE_CORS_ALLOWED_HEADERS: "apikey"
 
   migrate:
     image: postgres:17

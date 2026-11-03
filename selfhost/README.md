@@ -83,6 +83,10 @@ bash scripts/restore-supabase.sh
 SUPABASE_PROJECT_URL=https://<projektref>.supabase.co bash scripts/copy-storage-from-supabase.sh
 ```
 
+   Bucketarna `quiz-images` och `installationer` är publika, så inga nycklar
+   behövs. Går det inte, kopiera filerna manuellt till
+   `data/storage/<bucket>/<samma sökväg som i Supabase>`.
+
 ## Backup
 
 ```bash
@@ -105,3 +109,8 @@ docker compose logs -f storage
 docker compose logs -f functions
 docker compose logs -f caddy
 ```
+
+- **Inloggning i webbläsaren stoppas av CORS** – GoTrue måste tillåta `apikey`
+  i `GOTRUE_CORS_ALLOWED_HEADERS` (finns i `docker-compose.yml`). Utan den
+  svarar preflighten utan `Access-Control-Allow-Origin`, medan appen på
+  telefonen fungerar ändå.
