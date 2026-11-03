@@ -1,5 +1,5 @@
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import type * as ImagePicker from "expo-image-picker";
 import { Button } from "@/components/ui/Button";
@@ -13,6 +13,7 @@ import { MODE_OPTIONS, modeToFields, type AssignmentMode } from "@/lib/assignmen
 import { pickQuizImage, uploadQuizImage } from "@/lib/quizImages";
 import { supabase } from "@/lib/supabase";
 import type { AssignmentKind } from "@/lib/database.types";
+import { reglerFor, regel as hamtaRegel, reglerPerOmrade, SAKERVATTEN_VERSION } from "@/lib/sakervatten";
 
 interface DraftRequirement {
   key: string;
@@ -30,8 +31,12 @@ export default function NewAssignment() {
   const theme = Colors[useColorScheme() ?? "light"];
   const router = useRouter();
   const { org, profile } = useAuth();
+  const params = useLocalSearchParams<{ regel?: string | string[]; omrade?: string | string[] }>();
+  const regelKod = Array.isArray(params.regel) ? params.regel[0] : params.regel;
+  const omrade = Array.isArray(params.omrade) ? params.omrade[0] : params.omrade;
 
   const [kind, setKind] = useState<AssignmentKind>("uppdrag");
+  const [ruleRefs, setRuleRefs] = useState<string[]>([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [goal, setGoal] = useState("");
@@ -49,6 +54,34 @@ export default function NewAssignment() {
   ]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Snabbval från Säkervatten-fliken: förifyll formuläret med regeln/området.
+  useEffect(() => {
+    if (regelKod) {
+      const r = hamtaRegel(regelKod);
+      if (!r) return;
+      setKind("uppdrag");
+      setTitle(`Övning – ${r.rubrik}`);
+      setDescription(`${r.sammanfattning}\n\nPraktisk övning kopplad till Säkervatten ${SAKERVATTEN_VERSION}.`);
+      setGoal(`Kunna ${r.rubrik.toLowerCase()} enligt Säkervatten ${SAKERVATTEN_VERSION}.`);
+      setSelfItems(r.kontrollpunkter.join("\n"));
+      setRuleRefs([r.kod]);
+      return;
+    }
+    if (omrade) {
+      const grupp = reglerPerOmrade().find((g) => g.omrade === omrade);
+      if (!grupp) return;
+      const punkter = Array.from(new Set(grupp.regler.flatMap((r) => r.kontrollpunkter)));
+      setKind("uppdrag");
+      setTitle(`Övning – ${grupp.omrade}`);
+      setDescription(`Praktisk övning i ${grupp.omrade.toLowerCase()} enligt Säkervatten ${SAKERVATTEN_VERSION}.`);
+      setGoal(`Kunna reglerna för ${grupp.omrade.toLowerCase()} enligt Säkervatten ${SAKERVATTEN_VERSION}.`);
+      setSelfItems(punkter.join("\n"));
+      setRuleRefs(grupp.regler.map((r) => r.kod));
+    }
+  }, [regelKod, omrade]);
+
+  const valdaRegler = reglerFor(ruleRefs);
 
   async function pickReferenceImage(source: "camera" | "library") {
     setPickingReference(source);
@@ -98,6 +131,7 @@ export default function NewAssignment() {
           self_check_items: selfItems.split("\n").map((s) => s.trim()).filter(Boolean),
           reflection_questions: reflItems.split("\n").map((s) => s.trim()).filter(Boolean),
           reference_image_path: referenceImagePath,
+          rule_refs: ruleRefs,
           status: "draft",
         })
         .select()
@@ -152,6 +186,26 @@ export default function NewAssignment() {
             </TouchableOpacity>
           ))}
         </View>
+
+        {ruleRefs.length > 0 && (
+          <Card style={{ marginTop: 16 }}>
+            <Text style={{ color: theme.text, fontWeight: "800" }}>🛡️ Säkervatten {SAKERVATTEN_VERSION}</Text>
+            <Text style={{ color: theme.muted, fontSize: 13, marginTop: 4 }}>
+              {ruleRefs.length} regel{ruleRefs.length === 1 ? "" : "er"} förvalda. Du kan ändra dem efter att uppdraget sparats.
+            </Text>
+            {valdaRegler.slice(0, 4).map((r) => (
+              <Text key={r.kod} style={{ color: theme.text, fontSize: 13, marginTop: 4 }}>
+                • {r.rubrik}
+              </Text>
+            ))}
+            {valdaRegler.length > 4 && (
+              <Text style={{ color: theme.muted, fontSize: 12, marginTop: 4 }}>+ {valdaRegler.length - 4} fler</Text>
+            )}
+            <TouchableOpacity onPress={() => setRuleRefs([])} style={{ marginTop: 10 }}>
+              <Text style={{ color: theme.danger, fontWeight: "700" }}>Ta bort regelkoppling</Text>
+            </TouchableOpacity>
+          </Card>
+        )}
 
         <View style={{ height: 8 }} />
         <Field label="Titel" placeholder="t.ex. Slutprov – Komplett badrumsinstallation" value={title} onChangeText={setTitle} />

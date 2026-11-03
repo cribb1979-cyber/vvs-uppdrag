@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Badge, Card } from "@/components/ui/Card";
@@ -24,6 +25,7 @@ function matchar(regel: SakervattenRegel, q: string): boolean {
 
 export default function SakervattenScreen() {
   const theme = Colors[useColorScheme() ?? "light"];
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [oppna, setOppna] = useState<Record<string, boolean>>({});
 
@@ -65,6 +67,29 @@ export default function SakervattenScreen() {
         </TouchableOpacity>
       </Card>
 
+      <Card style={{ marginBottom: 16 }}>
+        <Text style={{ color: theme.text, fontWeight: "800" }}>Snabbval – skapa övning</Text>
+        <Text style={{ color: theme.muted, fontSize: 13, marginTop: 4 }}>
+          Välj område, så öppnas ett nytt uppdrag med reglerna och kontrollpunkterna förifyllda. Du kan ändra allt
+          innan du sparar.
+        </Text>
+        <View style={styles.chips}>
+          {reglerPerOmrade().map((grupp) => (
+            <TouchableOpacity
+              key={grupp.omrade}
+              onPress={() =>
+                router.push({ pathname: "/(larare)/(tabs)/uppdrag/new", params: { omrade: grupp.omrade } })
+              }
+              style={[styles.chip, { borderColor: theme.border, backgroundColor: theme.background }]}
+            >
+              <Text style={{ color: theme.text, fontWeight: "700", fontSize: 13 }}>
+                {grupp.emoji} {grupp.omrade}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </Card>
+
       <TextInput
         value={query}
         onChangeText={setQuery}
@@ -100,11 +125,21 @@ export default function SakervattenScreen() {
                 <Text style={{ color: theme.muted, fontSize: 13, lineHeight: 19, marginTop: 4 }}>
                   {regel.sammanfattning}
                 </Text>
-                <TouchableOpacity onPress={() => vaxla(regel.kod)} style={styles.kontrollKnapp} accessibilityRole="button">
-                  <Text style={{ color: theme.tint, fontWeight: "700" }}>
-                    {expanderad ? "Dölj kontrollpunkter" : `Visa kontrollpunkter (${regel.kontrollpunkter.length})`}
-                  </Text>
-                </TouchableOpacity>
+                <View style={styles.regelAtgarder}>
+                  <TouchableOpacity onPress={() => vaxla(regel.kod)} accessibilityRole="button">
+                    <Text style={{ color: theme.tint, fontWeight: "700" }}>
+                      {expanderad ? "Dölj kontrollpunkter" : `Visa kontrollpunkter (${regel.kontrollpunkter.length})`}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() =>
+                      router.push({ pathname: "/(larare)/(tabs)/uppdrag/new", params: { regel: regel.kod } })
+                    }
+                    accessibilityRole="button"
+                  >
+                    <Text style={{ color: theme.accent, fontWeight: "700" }}>+ Skapa övning</Text>
+                  </TouchableOpacity>
+                </View>
                 {expanderad && (
                   <View style={{ marginTop: 6 }}>
                     {regel.kontrollpunkter.map((punkt) => (
@@ -134,5 +169,7 @@ const styles = StyleSheet.create({
   omrade: { fontSize: 17, fontWeight: "800" },
   regelKort: { marginBottom: 8 },
   regelRubrik: { fontSize: 15, fontWeight: "800" },
-  kontrollKnapp: { marginTop: 10, alignSelf: "flex-start" },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+  chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
+  regelAtgarder: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 10, gap: 12 },
 });
