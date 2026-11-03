@@ -93,11 +93,13 @@ SUPABASE_PROJECT_URL=https://<projektref>.supabase.co bash scripts/copy-storage-
 bash scripts/backup.sh
 ```
 
-Lägg gärna in den i cron, t.ex. 03:15 varje natt:
+Lägg in den nattliga körningen (03:15) med:
 
+```bash
+bash scripts/install-backup-cron.sh
 ```
-15 3 * * * cd /home/christoffer/vvs-supabase && bash scripts/backup.sh
-```
+
+Scriptet lägger bara till VVS-raden och rör inte andra cron-jobb.
 
 ## Felsökning
 
