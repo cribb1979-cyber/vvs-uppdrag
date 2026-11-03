@@ -9,7 +9,7 @@ import Colors from "@/constants/Colors";
 import { useAuth } from "@/contexts/AuthContext";
 import { getErrorMessage } from "@/lib/errors";
 import { EXAM_TASKS, timmar, type ExamTask } from "@/lib/examVvs";
-import { examWeekUrl } from "@/lib/links";
+import { examWeekUrl, RITVERKSTAD_URL } from "@/lib/links";
 import { examMeta } from "@/lib/examMode";
 import { modeToFields, type AssignmentMode } from "@/lib/assignmentMode";
 import { supabase } from "@/lib/supabase";
@@ -61,6 +61,55 @@ export default function Examensprov() {
     }
   }
 
+  async function skapaHelaVeckan() {
+    if (!org || !profile) return;
+    setArbetar("hela-veckan");
+    try {
+      const momentText = EXAM_TASKS.map(
+        (t, i) => `${i + 1}. ${t.titel} (${timmar(t.minut)})\n${t.beskrivning}`,
+      ).join("\n\n");
+      const beskrivning =
+        "Genomför alla moment i examensprovet under veckan. Tiderna är uppskattade.\n\n" +
+        `${momentText}\n\n` +
+        `Ritverkstad: ${RITVERKSTAD_URL}\n` +
+        `Alla moment finns också på ${examWeekUrl()}`;
+      const selfCheck = EXAM_TASKS.flatMap((t) =>
+        t.checklista.map((punkt) => `${t.titel}: ${punkt}`),
+      );
+      const regler = Array.from(new Set(EXAM_TASKS.flatMap((t) => t.regelRefs ?? [])));
+
+      const { data, error } = await supabase
+        .from("assignments")
+        .insert({
+          org_id: org.id,
+          created_by: profile.id,
+          title: "Examensvecka VVS-montör",
+          description: beskrivning,
+          kind: "uppdrag",
+          ...modeToFields("prov"),
+          goal: "Genomföra alla moment i examensprovet VVS-montör.",
+          self_check_items: selfCheck,
+          reflection_questions: [
+            "Vilka moment gick bra?",
+            "Vilka moment behöver du komplettera?",
+            "Vad lärde du dig under veckan?",
+            "Vad skulle du göra annorlunda nästa gång?",
+          ],
+          steps: [examMeta("examensvecka", 4 * 24 * 60, "prov")],
+          rule_refs: regler,
+          status: "draft",
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      router.push(`/(larare)/(tabs)/uppdrag/${data.id}`);
+    } catch (e) {
+      Alert.alert("Kunde inte skapa examensveckan", getErrorMessage(e));
+    } finally {
+      setArbetar(null);
+    }
+  }
+
   async function kopieraVeckolank() {
     const url = examWeekUrl();
     const clipboard = typeof navigator !== "undefined" ? (navigator as any).clipboard : null;
@@ -83,6 +132,16 @@ export default function Examensprov() {
       <Text style={[styles.title, { color: theme.text }]}>Examensprov VVS-montör</Text>
       <Text style={[styles.ingress, { color: theme.muted }]}>
         Byggt på VVS-Branschens Yrkesnämnds gymnasiearbete. {EXAM_TASKS.length} delmoment, cirka {timmar(totalt)} totalt.
+      </Text>
+
+      <Button
+        title="🎓 Skapa hela examensveckan"
+        onPress={skapaHelaVeckan}
+        loading={arbetar === "hela-veckan"}
+        disabled={arbetar !== null}
+      />
+      <Text style={{ color: theme.muted, fontSize: 12, marginTop: 6, marginBottom: 16 }}>
+        Ett uppdrag med alla moment och en gemensam session för hela veckan. De enskilda momenten finns kvar nedan.
       </Text>
 
       <View style={{ marginBottom: 16 }}>
