@@ -394,6 +394,7 @@ export interface Database {
           component: string;
           dimension: string;
           quantity: number;
+          rsk_number: string;
           note: string;
           sort_order: number;
           created_at: string;
@@ -404,6 +405,7 @@ export interface Database {
           component: string;
           dimension?: string;
           quantity?: number;
+          rsk_number?: string;
           note?: string;
           sort_order?: number;
           created_at?: string;
@@ -412,6 +414,7 @@ export interface Database {
           component?: string;
           dimension?: string;
           quantity?: number;
+          rsk_number?: string;
           note?: string;
           sort_order?: number;
         };

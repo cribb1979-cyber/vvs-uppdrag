@@ -8,6 +8,9 @@
 alter table public.material_plan_items
   add column if not exists rsk_number text not null default '';
 
+alter table public.material_requirements
+  add column if not exists rsk_number text not null default '';
+
 alter table public.material_orders
   add column if not exists rsk_number text not null default '',
   add column if not exists source_plan_item_id uuid references public.material_plan_items (id) on delete set null;

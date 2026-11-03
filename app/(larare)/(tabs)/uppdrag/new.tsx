@@ -13,7 +13,7 @@ import { MODE_OPTIONS, modeToFields, type AssignmentMode } from "@/lib/assignmen
 import { pickQuizImage, uploadQuizImage } from "@/lib/quizImages";
 import { supabase } from "@/lib/supabase";
 import type { AssignmentKind } from "@/lib/database.types";
-import { reglerFor, regel as hamtaRegel, reglerPerOmrade, SAKERVATTEN_VERSION } from "@/lib/sakervatten";
+import { REGLER, reglerFor, regel as hamtaRegel, reglerPerOmrade, SAKERVATTEN_VERSION } from "@/lib/sakervatten";
 import { materialForRegel, materialForRegler, type MaterialRad } from "@/lib/ovningsmaterial";
 
 interface DraftRequirement {
@@ -21,6 +21,7 @@ interface DraftRequirement {
   component: string;
   dimension: string;
   quantity: string;
+  rsk: string;
 }
 
 const KIND_OPTIONS: { value: AssignmentKind; label: string; hint: string }[] = [
@@ -28,9 +29,9 @@ const KIND_OPTIONS: { value: AssignmentKind; label: string; hint: string }[] = [
   { value: "quiz", label: "🖼 Materialquiz", hint: "Bildfrågor eleven svarar flerval på" },
 ];
 
-function tillDraftRader(rader: MaterialRad[]): DraftRequirement[] {
+function tillDraftRader(rader: (MaterialRad & { rsk?: string })[]): DraftRequirement[] {
   if (rader.length === 0) {
-    return [{ key: String(Date.now()), component: "", dimension: "", quantity: "1" }];
+    return [{ key: String(Date.now()), component: "", dimension: "", quantity: "1", rsk: "" }];
   }
   const stamp = Date.now();
   return rader.map((rad, i) => ({
@@ -38,6 +39,7 @@ function tillDraftRader(rader: MaterialRad[]): DraftRequirement[] {
     component: rad.component,
     dimension: rad.dimension ?? "",
     quantity: String(rad.quantity ?? 1),
+    rsk: rad.rsk ?? "",
   }));
 }
 
@@ -64,10 +66,14 @@ export default function NewAssignment() {
   const [referenceAsset, setReferenceAsset] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [pickingReference, setPickingReference] = useState<"camera" | "library" | null>(null);
   const [requirements, setRequirements] = useState<DraftRequirement[]>([
-    { key: String(Date.now()), component: "", dimension: "", quantity: "1" },
+    { key: String(Date.now()), component: "", dimension: "", quantity: "1", rsk: "" },
   ]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiMode, setAiMode] = useState<"quality" | "quick" | null>(null);
+  const [aiStatus, setAiStatus] = useState<string | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   // Snabbval från Säkervatten-fliken: förifyll formuläret med regeln/området.
   useEffect(() => {
@@ -100,6 +106,60 @@ export default function NewAssignment() {
   const valdaRegler = reglerFor(ruleRefs);
   const materialRader = requirements.filter((r) => r.component.trim()).length;
 
+  async function skapaMedAi(mode: "quality" | "quick") {
+    if (!aiPrompt.trim()) {
+      setAiError("Beskriv vad uppdraget ska handla om först.");
+      return;
+    }
+    setAiError(null);
+    setAiStatus(null);
+    setAiMode(mode);
+    try {
+      const { data, error: aiErr } = await supabase.functions.invoke("generate-assignment", {
+        body: {
+          prompt: aiPrompt.trim(),
+          mode,
+          level: "GY",
+          selected_rules: ruleRefs,
+          rules: REGLER.map((r) => ({
+            kod: r.kod,
+            rubrik: r.rubrik,
+            sammanfattning: r.sammanfattning,
+            kontrollpunkter: r.kontrollpunkter,
+          })),
+        },
+      });
+      if (aiErr) throw aiErr;
+      if (data?.error) throw new Error(data.error);
+      const draft = data?.draft;
+      if (!draft) throw new Error("AI:n returnerade inget utkast.");
+
+      setKind("uppdrag");
+      setTitle(String(draft.title ?? "").trim() || aiPrompt.trim());
+      setDescription(String(draft.description ?? "").trim());
+      setGoal(String(draft.goal ?? "").trim());
+      setSelfItems(Array.isArray(draft.self_check_items) ? draft.self_check_items.join("\n") : "");
+      setReflItems(Array.isArray(draft.reflection_questions) ? draft.reflection_questions.join("\n") : "");
+
+      const giltigaKoder = new Set(REGLER.map((r) => r.kod));
+      const aiRefs = Array.isArray(draft.rule_refs)
+        ? draft.rule_refs.filter((kod: unknown): kod is string => typeof kod === "string" && giltigaKoder.has(kod))
+        : [];
+      setRuleRefs(aiRefs.length ? aiRefs : ruleRefs);
+
+      const material = Array.isArray(draft.material) ? draft.material : [];
+      setRequirements(tillDraftRader(material));
+      const saknas = Number(data?.rsk_missing ?? 0);
+      setAiStatus(
+        `Utkast från ${data?.model ?? "lokal AI"}: ${material.length} materialrader, ${saknas} RSK saknas. Granska innan du sparar.`,
+      );
+    } catch (e) {
+      setAiError(getErrorMessage(e, "AI:n kunde inte skapa ett utkast."));
+    } finally {
+      setAiMode(null);
+    }
+  }
+
   async function pickReferenceImage(source: "camera" | "library") {
     setPickingReference(source);
     try {
@@ -117,7 +177,7 @@ export default function NewAssignment() {
   }
 
   function addRequirement() {
-    setRequirements((prev) => [...prev, { key: String(Date.now()), component: "", dimension: "", quantity: "1" }]);
+    setRequirements((prev) => [...prev, { key: String(Date.now()), component: "", dimension: "", quantity: "1", rsk: "" }]);
   }
 
   function removeRequirement(key: string) {
@@ -163,6 +223,7 @@ export default function NewAssignment() {
             component: r.component.trim(),
             dimension: r.dimension.trim(),
             quantity: Math.max(1, Number.parseInt(r.quantity, 10) || 1),
+            rsk_number: r.rsk.trim(),
             sort_order: i,
           }));
 
@@ -190,6 +251,47 @@ export default function NewAssignment() {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1, backgroundColor: theme.background }}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <Card style={{ marginBottom: 16, borderColor: theme.accent }}>
+          <Text style={{ color: theme.text, fontWeight: "800" }}>✨ Skapa med AI</Text>
+          <Text style={{ color: theme.muted, fontSize: 13, marginTop: 4, marginBottom: 10 }}>
+            Beskriv uppdraget. AI:n fyller i mål, egenkontroll, material och Säkervatten-regler. Lokal AI på Y900 –
+            inga uppgifter lämnar skolan.
+          </Text>
+          <TextInput
+            style={[styles.aiInput, { color: theme.text, borderColor: theme.border, backgroundColor: theme.background }]}
+            placeholder="T.ex. badrumsinstallation för årskurs 2 med tätskikt, golvbrunn och infästning"
+            placeholderTextColor={theme.muted}
+            multiline
+            value={aiPrompt}
+            onChangeText={setAiPrompt}
+          />
+          <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
+            <View style={{ flex: 1 }}>
+              <Button
+                title="Kvalitet"
+                variant="secondary"
+                onPress={() => skapaMedAi("quality")}
+                loading={aiMode === "quality"}
+                disabled={!!aiMode}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Button
+                title="Snabb"
+                variant="ghost"
+                onPress={() => skapaMedAi("quick")}
+                loading={aiMode === "quick"}
+                disabled={!!aiMode}
+              />
+            </View>
+          </View>
+          <Text style={{ color: theme.muted, fontSize: 11, marginTop: 8 }}>
+            Kvalitet: gemma2:9b · Snabb: stoffe-stabil. RSK kontrolleras mot Förrådet.
+          </Text>
+          {aiStatus && <Text style={{ color: theme.success, fontSize: 13, marginTop: 8 }}>{aiStatus}</Text>}
+          {aiError && <Text style={{ color: theme.danger, fontSize: 13, marginTop: 8 }}>{aiError}</Text>}
+        </Card>
+
         <Text style={[styles.label, { color: theme.muted }]}>TYP AV UPPDRAG</Text>
         <View style={styles.revealRow}>
           {KIND_OPTIONS.map((opt) => (
@@ -348,6 +450,14 @@ export default function NewAssignment() {
                     onChangeText={(v) => updateRequirement(r.key, "quantity", v)}
                   />
                 </View>
+                <TextInput
+                  style={[styles.reqInput, { marginTop: 8, color: theme.text, borderColor: theme.border }]}
+                  placeholder="RSK-nummer (valfritt)"
+                  placeholderTextColor={theme.muted}
+                  keyboardType="number-pad"
+                  value={r.rsk}
+                  onChangeText={(v) => updateRequirement(r.key, "rsk", v)}
+                />
                 {requirements.length > 1 && (
                   <TouchableOpacity onPress={() => removeRequirement(r.key)}>
                     <Text style={{ color: theme.danger, marginTop: 10, fontSize: 13 }}>Ta bort rad</Text>
@@ -386,6 +496,7 @@ const styles = StyleSheet.create({
   reqCard: { marginBottom: 10 },
   reqRow: { flexDirection: "row", gap: 8 },
   reqInput: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 15 },
+  aiInput: { minHeight: 76, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15, textAlignVertical: "top" },
   addRow: { paddingVertical: 12, marginBottom: 10 },
   error: { marginTop: 8, marginBottom: 4 },
   referencePreview: { width: "100%", height: 160, borderRadius: 12, marginBottom: 10, backgroundColor: "#eee" },
