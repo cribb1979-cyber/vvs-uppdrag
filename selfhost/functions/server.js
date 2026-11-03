@@ -145,7 +145,7 @@ async function identifyMaterial(req, res) {
 const OLLAMA_URL = (process.env.OLLAMA_URL || '').replace(/\/+$/, '');
 const OLLAMA_MODEL_QUALITY = process.env.OLLAMA_MODEL_QUALITY || 'gemma2:9b';
 const OLLAMA_MODEL_QUICK = process.env.OLLAMA_MODEL_QUICK || 'stoffe-stabil';
-const AI_TIMEOUT_MS = Number(process.env.AI_TIMEOUT_MS || 120000);
+const AI_TIMEOUT_MS = Number(process.env.AI_TIMEOUT_MS || 180000);
 
 const GENERATE_SYSTEM_PROMPT =
   'Du är en erfaren svensk VVS-lärare på gymnasiet. Skriv ett färdigt praktiskt uppdrag på svenska. ' +
@@ -204,13 +204,24 @@ function byggExempel(rows) {
 }
 
 function byggPrompt({ prompt, level, rules, selectedRules, catalog, examples }) {
+  const nyckelord = normalisera(`${prompt} ${level || ''} ${(selectedRules || []).join(' ')}`)
+    .split(' ')
+    .filter((w) => w.length > 2);
+  const valda = new Set(selectedRules || []);
+
+  // Alla regelkoder följer med så modellen kan välja, men full text bara för
+  // valda regler eller regler som matchar uppdragsbeskrivningen. Det håller
+  // prompten liten och gör lokal AI betydligt snabbare.
   const regelText = (rules || [])
-    .map(
-      (r) =>
-        `- ${r.kod}: ${klipp(r.rubrik, 80)}. ${klipp(r.sammanfattning, 180)} Kontroll: ${(r.kontrollpunkter || [])
-          .slice(0, 4)
-          .join('; ')}`,
-    )
+    .map((r) => {
+      const rubrik = klipp(r.rubrik, 80);
+      const relevant = nyckelord.some((w) => normalisera(`${rubrik} ${r.sammanfattning || ''}`).includes(w));
+      const detaljerad = valda.has(r.kod) || (valda.size === 0 && relevant);
+      if (!detaljerad) return `- ${r.kod}: ${rubrik}`;
+      return `- ${r.kod}: ${rubrik}. ${klipp(r.sammanfattning, 180)} Kontroll: ${(r.kontrollpunkter || [])
+        .slice(0, 4)
+        .join('; ')}`;
+    })
     .join('\n');
 
   const valdaText =
@@ -218,9 +229,6 @@ function byggPrompt({ prompt, level, rules, selectedRules, catalog, examples }) 
       ? `Prioritera dessa regelkoder om de passar: ${selectedRules.join(', ')}`
       : '';
 
-  const nyckelord = normalisera(`${prompt} ${level || ''} ${(selectedRules || []).join(' ')}`)
-    .split(' ')
-    .filter((w) => w.length > 2);
   const relevant = (catalog || []).filter((c) => {
     const text = normalisera(`${c.name} ${c.dimension} ${c.category}`);
     return nyckelord.some((w) => text.includes(w));
@@ -397,7 +405,7 @@ async function generateAssignment(req, res) {
         model,
         stream: false,
         format: 'json',
-        options: { temperature: 0.2, num_predict: 800 },
+        options: { temperature: 0.2, num_predict: 600 },
         messages: [
           { role: 'system', content: GENERATE_SYSTEM_PROMPT },
           { role: 'user', content: userPrompt },
