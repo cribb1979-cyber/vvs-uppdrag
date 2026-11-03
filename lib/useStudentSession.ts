@@ -52,19 +52,22 @@ export function useStudentSession(code: string | undefined) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (opts?: { silent?: boolean }) => {
     if (!code) return;
-    setLoading(true);
-    setError(null);
+    if (!opts?.silent) {
+      setLoading(true);
+      setError(null);
+    }
     try {
       const result = await joinSession(code);
       setData(result);
+      setError(null);
     } catch (e) {
       console.error("Kunde inte ansluta till uppdraget:", e);
       setData(null);
       setError(getErrorMessage(e, "Kunde inte ansluta till uppdraget."));
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
     }
   }, [code]);
 

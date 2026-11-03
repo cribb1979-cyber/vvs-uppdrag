@@ -24,7 +24,7 @@ export default function MinaUppdragDetail() {
   // byter läraren mellan Övningsläge/Provläge medan eleven har skärmen öppen
   // ska det synas utan att eleven behöver logga in på nytt.
   useEffect(() => {
-    const interval = setInterval(refresh, 30_000);
+    const interval = setInterval(() => refresh({ silent: true }), 30_000);
     return () => clearInterval(interval);
   }, [refresh]);
 

@@ -58,13 +58,13 @@ export default function ElevUppdrag() {
     loadName();
   }, [loadName]);
 
-  // Fyll egenkontrollen + reflektionen från det som redan sparats.
+  // Fyll egenkontrollen + reflektionen när sessionen laddas första gången.
+  // En tyst bakgrundsuppdatering får inte skriva över osparade svar.
   useEffect(() => {
-    if (data) {
-      setSelfCheck(data.self_check ?? {});
-      setReflection(data.reflection ?? {});
-    }
-  }, [data]);
+    if (!data?.participant_id) return;
+    setSelfCheck(data.self_check ?? {});
+    setReflection(data.reflection ?? {});
+  }, [data?.participant_id]);
 
   async function saveReflection() {
     if (!data?.participant_id) return;
@@ -117,7 +117,7 @@ export default function ElevUppdrag() {
   // vid navigering. Går sessionen ut medan skärmen är öppen ska den bli
   // ogiltig automatiskt, inte först nästa gång appen öppnas.
   useEffect(() => {
-    const interval = setInterval(refresh, 30_000);
+    const interval = setInterval(() => refresh({ silent: true }), 30_000);
     return () => clearInterval(interval);
   }, [refresh]);
 
@@ -138,7 +138,7 @@ export default function ElevUppdrag() {
         <Text style={[styles.body, { color: theme.muted }]}>{error}</Text>
         <View style={{ height: 20 }} />
         {isTeacherConflict ? (
-          <Button title="Logga ut" variant="secondary" onPress={() => supabase.auth.signOut().then(refresh)} />
+          <Button title="Logga ut" variant="secondary" onPress={() => supabase.auth.signOut().then(() => refresh())} />
         ) : (
           <Button title="Skanna en ny kod" variant="secondary" onPress={() => router.replace("/elev/scan")} />
         )}

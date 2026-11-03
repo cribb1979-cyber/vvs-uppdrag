@@ -18,19 +18,22 @@ export function useAssignmentAsStudent(assignmentId: string | undefined) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (opts?: { silent?: boolean }) => {
     if (!assignmentId) return;
-    setLoading(true);
-    setError(null);
+    if (!opts?.silent) {
+      setLoading(true);
+      setError(null);
+    }
     try {
       const result = await openAssignmentAsStudent(assignmentId);
       setData(result);
+      setError(null);
     } catch (e) {
       console.error("Kunde inte öppna uppdraget:", e);
       setData(null);
       setError(getErrorMessage(e, "Kunde inte öppna uppdraget."));
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
     }
   }, [assignmentId]);
 
