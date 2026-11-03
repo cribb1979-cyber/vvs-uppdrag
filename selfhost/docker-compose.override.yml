@@ -2,3 +2,9 @@ services:
   caddy:
     ports:
       - "127.0.0.1:8082:80"
+
+# Eget namn på data-volymen. Då kan en ny tom volym skapas utan att den
+# gamla raderas – den ligger kvar som extra backup tills den städas bort.
+volumes:
+  pgdata:
+    name: vvs-supabase_pgdata-ren-20261103

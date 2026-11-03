@@ -10,8 +10,7 @@ for f in "$M/auth-users.sql" "$M/auth-identities.sql" "$M/public.sql" "$M/storag
 done
 
 echo "== stoppar och tar bort den gamla volymen =="
-docker compose down
-docker volume rm vvs-supabase_pgdata 2>/dev/null || true
+docker compose down -v
 
 echo "== startar PostgreSQL 17 + GoTrue =="
 docker compose up -d db auth
