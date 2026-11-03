@@ -559,8 +559,12 @@ export default function AssignmentDetail() {
             {assignment.kind === "uppdrag" &&
               ` · ${allParticipants.filter((p) => p.session_id === s.id && p.plan_submitted_at).length} har skickat in`}
           </Text>
-          <Text selectable style={{ color: theme.tint, fontSize: 12, marginBottom: 8 }}>
+          <Text selectable style={{ color: theme.tint, fontSize: 12, marginBottom: 4 }}>
             {sessionJoinUrl(s.code)}
+          </Text>
+          <Text style={{ color: theme.muted, fontSize: 11, marginBottom: 8 }}>
+            Samma länk gäller till {new Date(s.expires_at).toLocaleDateString("sv-SE")}. Eleven ska använda samma
+            webbläsare/enhet hela provperioden.
           </Text>
           <View style={{ marginBottom: 8 }}>
             <Button
@@ -575,7 +579,11 @@ export default function AssignmentDetail() {
 
       {creatingSession ? (
         <Card>
-          <Text style={{ color: theme.text, fontWeight: "700", marginBottom: 12 }}>Hur länge ska QR-koden gälla?</Text>
+          <Text style={{ color: theme.text, fontWeight: "700", marginBottom: 8 }}>Hur länge ska QR-koden gälla?</Text>
+          <Text style={{ color: theme.danger, fontSize: 13, fontWeight: "600", marginBottom: 12 }}>
+            Flerdagarsprov: använd en och samma session hela perioden och välj 7 dagar eller ett eget slutdatum
+            efter sista provdagen. Eleven måste använda samma webbläsare/enhet.
+          </Text>
           <View style={styles.durationRow}>
             {DURATIONS.map((d) => (
               <TouchableOpacity
