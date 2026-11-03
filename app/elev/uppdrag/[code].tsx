@@ -174,7 +174,16 @@ export default function ElevUppdrag() {
     <ScrollView style={{ backgroundColor: theme.background }} contentContainerStyle={styles.container}>
       <Text style={[styles.eyebrow, { color: theme.accent }]}>Du är ansluten till</Text>
       <Text style={[styles.title, { color: theme.text }]}>{data.assignment.title}</Text>
-      {!!data.assignment.description && <Text style={[styles.body, { color: theme.muted }]}>{data.assignment.description}</Text>}
+      {!!data.assignment.description && (
+        <Card style={{ marginTop: 12, borderColor: theme.danger }}>
+          <Text style={{ color: theme.danger, fontSize: 12, fontWeight: "800", letterSpacing: 0.5, marginBottom: 4 }}>
+            📌 LÄS INSTRUKTIONEN
+          </Text>
+          <Text style={{ color: theme.danger, fontSize: 15, fontWeight: "600", lineHeight: 22 }}>
+            {data.assignment.description}
+          </Text>
+        </Card>
+      )}
 
       {!!data.assignment.goal && (
         <Card style={{ marginTop: 14, borderColor: theme.accent, borderWidth: 1 }}>
@@ -256,7 +265,7 @@ export default function ElevUppdrag() {
           {selfItems.length > 0 && (
             <Card style={{ marginTop: 20 }}>
               <Text style={{ color: theme.text, fontWeight: "800", fontSize: 16 }}>✅ Egen kontroll</Text>
-              <Text style={{ color: theme.muted, fontSize: 13, marginTop: 4, marginBottom: 10 }}>
+              <Text style={{ color: theme.danger, fontSize: 14, fontWeight: "600", marginTop: 4, marginBottom: 10 }}>
                 Bocka av det du gjort och är nöjd med, innan du lämnar uppdraget.
               </Text>
               {selfItems.map((it, i) => {
@@ -289,7 +298,7 @@ export default function ElevUppdrag() {
           {reflItems.length > 0 && (
             <Card style={{ marginTop: 14 }}>
               <Text style={{ color: theme.text, fontWeight: "800", fontSize: 16 }}>💬 Reflektion i grupp</Text>
-              <Text style={{ color: theme.muted, fontSize: 13, marginTop: 4, marginBottom: 10 }}>
+              <Text style={{ color: theme.danger, fontSize: 14, fontWeight: "600", marginTop: 4, marginBottom: 10 }}>
                 Prata igenom frågorna i gruppen och skriv era svar.
               </Text>
               {reflItems.map((q, i) => (
@@ -319,6 +328,13 @@ export default function ElevUppdrag() {
             participantId={data.participant_id}
             initialText={data.maintenance_plan ?? ""}
             savedAt={data.maintenance_plan_saved_at ?? null}
+          />
+
+          <View style={{ height: 12 }} />
+          <Button
+            title="🎓 Se mitt omdöme"
+            variant="secondary"
+            onPress={() => router.push(`/elev/uppdrag/bedomning/${encodeURIComponent(code!)}`)}
           />
         </>
       )}

@@ -67,7 +67,16 @@ export default function MinaUppdragDetail() {
   return (
     <ScrollView style={{ backgroundColor: theme.background }} contentContainerStyle={styles.container}>
       <Text style={[styles.title, { color: theme.text }]}>{data.assignment.title}</Text>
-      {!!data.assignment.description && <Text style={[styles.body, { color: theme.muted }]}>{data.assignment.description}</Text>}
+      {!!data.assignment.description && (
+        <Card style={{ marginTop: 12, borderColor: theme.danger }}>
+          <Text style={{ color: theme.danger, fontSize: 12, fontWeight: "800", letterSpacing: 0.5, marginBottom: 4 }}>
+            📌 LÄS INSTRUKTIONEN
+          </Text>
+          <Text style={{ color: theme.danger, fontSize: 15, fontWeight: "600", lineHeight: 22 }}>
+            {data.assignment.description}
+          </Text>
+        </Card>
+      )}
 
       {!!teacherComment && (
         <Card style={{ marginTop: 14, borderColor: theme.accent }}>
@@ -118,7 +127,7 @@ export default function MinaUppdragDetail() {
           )}
           <View style={{ height: 12 }} />
           <Button
-            title="Se min bedömning"
+            title="🎓 Se mitt omdöme"
             variant="secondary"
             onPress={() => router.push(`/elev/mina-uppdrag/bedomning/${assignmentId}`)}
           />

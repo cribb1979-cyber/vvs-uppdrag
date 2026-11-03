@@ -266,7 +266,7 @@ export function MaterialPlanEditor({
 
       <Card style={{ marginTop: 8 }}>
         <Text style={{ color: theme.text, fontWeight: "800", fontSize: 16 }}>Checklista innan inlämning</Text>
-        <Text style={{ color: theme.muted, fontSize: 13, marginTop: 4, marginBottom: 8 }}>
+        <Text style={{ color: theme.danger, fontSize: 14, fontWeight: "600", marginTop: 4, marginBottom: 8 }}>
           Alla punkter måste vara klara innan du kan skicka in.
         </Text>
         {krav.map((k) => (
@@ -275,7 +275,7 @@ export function MaterialPlanEditor({
           </Text>
         ))}
         {!klar && (
-          <Text style={{ color: theme.warning, fontSize: 13, marginTop: 10 }}>
+          <Text style={{ color: theme.danger, fontSize: 14, fontWeight: "700", marginTop: 10 }}>
             Saknas: {saknas.join(", ")}.
           </Text>
         )}

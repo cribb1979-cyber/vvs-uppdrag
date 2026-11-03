@@ -50,7 +50,7 @@ export function MaintenancePlanCard({
   return (
     <Card style={{ marginTop: 16 }}>
       <Text style={{ color: theme.text, fontWeight: "800", fontSize: 16 }}>🛠 Drift- och underhållsplan</Text>
-      <Text style={{ color: theme.muted, fontSize: 13, marginTop: 4, marginBottom: 10, lineHeight: 18 }}>
+      <Text style={{ color: theme.danger, fontSize: 14, fontWeight: "600", marginTop: 4, marginBottom: 10, lineHeight: 20 }}>
         Skriv hur installationen ska drivas, kontrolleras och underhållas. Ta med kontrollintervall,
         reservdelar och vad som ska göras vid driftstörning. Spara när du är klar.
       </Text>

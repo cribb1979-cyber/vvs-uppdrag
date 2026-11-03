@@ -8,6 +8,7 @@ export default function ElevLayout() {
     <Stack screenOptions={{ headerStyle: { backgroundColor: theme.card }, headerTintColor: theme.text }}>
       <Stack.Screen name="scan" options={{ title: "Skanna QR-kod" }} />
       <Stack.Screen name="uppdrag/[code]" options={{ title: "Uppdrag" }} />
+      <Stack.Screen name="uppdrag/bedomning/[code]" options={{ title: "Mitt omdöme" }} />
       <Stack.Screen name="uppdrag/quiz/[code]" options={{ title: "Quiz" }} />
       <Stack.Screen name="materialplan/[code]" options={{ title: "Min materialplan" }} />
       <Stack.Screen name="redeem/[code]" options={{ title: "Loggar in", headerBackVisible: false }} />
