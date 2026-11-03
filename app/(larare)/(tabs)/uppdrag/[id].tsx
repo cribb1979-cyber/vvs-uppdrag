@@ -1,6 +1,6 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Alert, Image, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Image, Linking, Platform, ScrollView, Share, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import type * as ImagePicker from "expo-image-picker";
 import { Badge, Card } from "@/components/ui/Card";
@@ -338,6 +338,20 @@ export default function AssignmentDetail() {
     load();
   }
 
+  async function delaElevlank(url: string) {
+    const clipboard = typeof navigator !== "undefined" ? (navigator as any).clipboard : null;
+    if (Platform.OS === "web" && clipboard?.writeText) {
+      try {
+        await clipboard.writeText(url);
+        Alert.alert("Elevlänk kopierad", url);
+        return;
+      } catch {
+        // fall tillbaka till dela-dialogen
+      }
+    }
+    await Share.share({ message: `Öppna uppdraget: ${url}` });
+  }
+
   async function assignToClass(classId: string) {
     if (!assignment) return;
     const {
@@ -540,11 +554,21 @@ export default function AssignmentDetail() {
           </View>
           <Text style={[styles.code, { color: theme.text }]}>{s.code}</Text>
           <Text style={{ color: theme.muted, marginBottom: 8 }}>{timeLeftLabel(s.expires_at)}</Text>
-          <Text style={{ color: theme.muted, marginBottom: 12 }}>
+          <Text style={{ color: theme.muted, marginBottom: 8 }}>
             {allParticipants.filter((p) => p.session_id === s.id).length} elev(er) anslutna
             {assignment.kind === "uppdrag" &&
               ` · ${allParticipants.filter((p) => p.session_id === s.id && p.plan_submitted_at).length} har skickat in`}
           </Text>
+          <Text selectable style={{ color: theme.tint, fontSize: 12, marginBottom: 8 }}>
+            {sessionJoinUrl(s.code)}
+          </Text>
+          <View style={{ marginBottom: 8 }}>
+            <Button
+              title="📋 Kopiera elevlänk"
+              variant="secondary"
+              onPress={() => delaElevlank(sessionJoinUrl(s.code))}
+            />
+          </View>
           <Button title="Stäng session" variant="danger" onPress={() => revokeSession(s.id)} />
         </Card>
       ))}
