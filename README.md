@@ -93,14 +93,15 @@ Appen visar en kort **egen sammanfattning** och länkar till
 återges inte – vill man visa hela texten i appen krävs tillstånd från
 Säker Vatten.
 
-Fliken **🛡️ Säkervatten** samlar alla 40 regler grupperade per område, med
-sökning och expanderbara kontrollpunkter. Även där är texterna appens egna
-sammanfattningar; full regeltext finns i boken och via länken till
-sakervatten.se.
+Fliken **🛡️ Säkervatten** samlar regelbiblioteket i `lib/sakervatten.ts`
+(38 regler) grupperat per område, med sökning och expanderbara
+kontrollpunkter. Även där är texterna appens egna sammanfattningar; full
+regeltext finns i boken och via länken till sakervatten.se.
 
 Från fliken kan läraren också **skapa en övning** per regel eller per område.
-Formuläret förifylls med titel, mål, egenkontroll och regelkoppling, och
-läraren kan ändra allt innan uppdraget sparas.
+Formuläret förifylls med titel, mål, egenkontroll, regelkoppling och
+förvalda materialrader (`lib/ovningsmaterial.ts`). Läraren kan ändra allt
+innan uppdraget sparas.
 
 Kräver migrationen `supabase/migrations/0012_uppdragsbank.sql`. Kör den i
 Supabase SQL Editor (eller `supabase db push`) innan fliken används.
