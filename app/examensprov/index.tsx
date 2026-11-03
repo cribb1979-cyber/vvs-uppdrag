@@ -26,6 +26,15 @@ export default function Examensvecka() {
         Alla moment under examensveckan. Välj ett moment för att se uppgiften. Sidan är publik och visar inga elevsvar.
       </Text>
 
+      <Card style={{ marginTop: 12, borderColor: theme.accent }}>
+        <Text style={{ color: theme.text, fontWeight: "700" }}>
+          Det här är en översikt – ingen inloggning eller session.
+        </Text>
+        <Text style={{ color: theme.muted, fontSize: 13, marginTop: 4, lineHeight: 19 }}>
+          Sidan är alltid öppen. Själva inlämningen sker via länken/QR-koden som läraren delar för uppdraget.
+        </Text>
+      </Card>
+
       <Card style={{ marginTop: 16, borderColor: theme.tint }}>
         <Text style={{ color: theme.text, fontWeight: "800", fontSize: 16 }}>🖥 Laneskär Ritverkstad</Text>
         <Text style={{ color: theme.muted, fontSize: 14, lineHeight: 20, marginTop: 4 }}>
