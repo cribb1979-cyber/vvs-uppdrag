@@ -118,10 +118,17 @@ den under **Beställningar** hos läraren. Därifrån kan läraren:
 * **Skapa beställning** – raderna läggs i beställningslistan, RSK matchas mot
   Förrådet och `source_plan_item_id` hindrar att samma planrad beställs två
   gånger.
-* **QR-etiketter** – RSK matchas mot Förrådets artiklar. Saknade RSK skapas
-  som artiklar och etikettstudion öppnas med en QR-etikett per material.
+* **Spara RSK till Förrådet** – lägger upp en artikel per unikt RSK-nummer.
+  Ett unikt index per skola och RSK gör att samma artikel inte kan skapas
+  flera gånger.
+* **QR-etiketter** – använder samma deduplicerade flöde och öppnar
+  etikettstudion med en QR-etikett per material.
 
-Kräver migrationen `supabase/migrations/0013_materialplan_rsk.sql`.
+RSK finns i elevens materialplan och i beställningarna, inte i lärarens dolda
+materialkrav – eleven tar reda på RSK själv.
+
+Kräver migrationerna `0013_materialplan_rsk.sql` och
+`0014_material_catalog_rsk_unique.sql`.
 
 ## AI-läge (lokalt)
 
@@ -132,9 +139,10 @@ uppdraget och väljer:
 * **Snabb** – `stoffe-stabil`, snabbare och lite enklare
 
 AI:n får Säkervatten-reglerna, bankmallarna och Förrådets artiklar som
-underlag och returnerar ett strukturerat utkast. RSK-nummer godkänns bara om
-de finns i `material_catalog`; okända RSK lämnas tomma och flaggas. Utkastet
-hamnar i formuläret och sparas först när läraren trycker på knappen.
+underlag och returnerar ett strukturerat utkast. AI:n kontrollerar
+materialförslagen mot Förrådet; RSK är elevens uppgift och sparas i elevens
+materialplan/beställning, inte i lärarens facit. Utkastet hamnar i formuläret
+och sparas först när läraren trycker på knappen.
 
 Backenden anropar lokal Ollama på Y900 via `functions/generate-assignment`.
 Styrs med `OLLAMA_URL`, `OLLAMA_MODEL_QUALITY`, `OLLAMA_MODEL_QUICK` och
