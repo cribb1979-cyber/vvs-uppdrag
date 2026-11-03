@@ -25,6 +25,8 @@ export interface StudentSessionData {
   self_check_submitted_at: string | null;
   reflection: Record<string, string>;
   reflection_submitted_at: string | null;
+  maintenance_plan: string;
+  maintenance_plan_saved_at: string | null;
 }
 
 export class TeacherSignedInError extends Error {}

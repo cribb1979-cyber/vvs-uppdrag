@@ -491,6 +491,8 @@ export interface Database {
           display_name: string | null;
           teacher_comment: string;
           student_note: string;
+          maintenance_plan: string;
+          maintenance_plan_saved_at: string | null;
         };
         // Skrivs bara via RPC (join_session/open_assignment_as_student/
         // submit_material_plan/reopen_material_plan/submit_time_report/
@@ -515,6 +517,8 @@ export interface Database {
           display_name?: string | null;
           teacher_comment?: string;
           student_note?: string;
+          maintenance_plan?: string;
+          maintenance_plan_saved_at?: string | null;
         };
         Update: {
           plan_submitted_at?: string | null;
@@ -528,6 +532,8 @@ export interface Database {
           display_name?: string | null;
           teacher_comment?: string;
           student_note?: string;
+          maintenance_plan?: string;
+          maintenance_plan_saved_at?: string | null;
         };
         Relationships: [
           { foreignKeyName: "assignment_participants_assignment_id_fkey"; columns: ["assignment_id"]; isOneToOne: false; referencedRelation: "assignments"; referencedColumns: ["id"] },
@@ -961,6 +967,10 @@ export interface Database {
         Args: { p_participant_id: string };
         Returns: { ok: boolean };
       };
+      save_maintenance_plan: {
+        Args: { p_participant_id: string; p_text: string };
+        Returns: undefined;
+      };
       get_uppdrag_svar: {
         Args: { p_assignment_id: string };
         Returns: {
@@ -972,6 +982,8 @@ export interface Database {
             self_check_at: string | null;
             reflection: Record<string, string>;
             reflection_at: string | null;
+            maintenance_plan: string;
+            maintenance_plan_at: string | null;
           }>;
         };
       };

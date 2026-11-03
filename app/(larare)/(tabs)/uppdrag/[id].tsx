@@ -97,7 +97,15 @@ export default function AssignmentDetail() {
   const [svar, setSvar] = useState<{
     self_check_items: string[];
     reflection_questions: string[];
-    deltagare: { namn: string; self_check: Record<string, boolean>; self_check_at: string | null; reflection: Record<string, string>; reflection_at: string | null }[];
+    deltagare: {
+      namn: string;
+      self_check: Record<string, boolean>;
+      self_check_at: string | null;
+      reflection: Record<string, string>;
+      reflection_at: string | null;
+      maintenance_plan: string;
+      maintenance_plan_at: string | null;
+    }[];
   } | null>(null);
   const [pickingReference, setPickingReference] = useState<"camera" | "library" | null>(null);
   const [savingReference, setSavingReference] = useState(false);
@@ -506,6 +514,10 @@ export default function AssignmentDetail() {
                     <Text style={{ color: theme.muted, fontSize: 14 }}>{d.reflection?.[String(j)] || "–"}</Text>
                   </View>
                 ))}
+                <Text style={{ color: theme.muted, fontSize: 12, fontWeight: "700", marginTop: 10, marginBottom: 4 }}>
+                  DRIFT- OCH UNDERHÅLLSPLAN {d.maintenance_plan_at ? "✓" : "(inte sparad)"}
+                </Text>
+                <Text style={{ color: theme.text, fontSize: 14 }}>{d.maintenance_plan || "–"}</Text>
               </Card>
             ))
           )}

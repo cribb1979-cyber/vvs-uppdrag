@@ -7,6 +7,7 @@ import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { getErrorMessage } from "@/lib/errors";
 import { ExamClock, useExamClock } from "@/components/ExamClock";
+import { MaintenancePlanCard } from "@/components/MaintenancePlanCard";
 import { examInfo } from "@/lib/examMode";
 import { quizImageUrl } from "@/lib/quizImages";
 import { supabase } from "@/lib/supabase";
@@ -288,6 +289,12 @@ export default function ElevUppdrag() {
               )}
             </Card>
           )}
+
+          <MaintenancePlanCard
+            participantId={data.participant_id}
+            initialText={data.maintenance_plan ?? ""}
+            savedAt={data.maintenance_plan_saved_at ?? null}
+          />
         </>
       )}
     </ScrollView>

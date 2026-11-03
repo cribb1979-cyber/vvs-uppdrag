@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { ExamClock, useExamClock } from "@/components/ExamClock";
+import { MaintenancePlanCard } from "@/components/MaintenancePlanCard";
 import { examInfo } from "@/lib/examMode";
 import { quizImageUrl } from "@/lib/quizImages";
 import { useAssignmentAsStudent } from "@/lib/useAssignmentAsStudent";
@@ -64,6 +65,14 @@ export default function MinaUppdragDetail() {
           <Text style={{ color: theme.muted, fontSize: 13, fontWeight: "700", marginTop: 16, marginBottom: 8 }}>REFERENSBILD</Text>
           <Image source={{ uri: quizImageUrl(data.assignment.reference_image_path) }} style={styles.referenceImage} />
         </>
+      )}
+
+      {data.assignment.kind === "uppdrag" && (
+        <MaintenancePlanCard
+          participantId={data.participant_id}
+          initialText={data.maintenance_plan ?? ""}
+          savedAt={data.maintenance_plan_saved_at ?? null}
+        />
       )}
 
       <View style={{ height: 28 }} />
