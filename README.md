@@ -154,3 +154,10 @@ I både QR-flödet och klassflödet finns en textruta **🛠 Drift- och
 underhållsplan**. Eleven skriver och sparar per uppdrag, och läraren ser
 texten i uppdragets deltagarlista. Kräver migrationen
 `supabase/migrations/0016_maintenance_plan.sql`.
+
+## Kommentarer och insamlade svar
+
+Lärarens kommentar skrivs i elevens materialplan och visas nu även direkt på
+elevens uppdragssida. Läraren ser elevens anteckning, egenkontroll, reflektion
+och drift- och underhållsplan under **Insamlat** i uppdraget. Knappen
+**Uppdatera svar** hämtar det senaste utan att man lämnar sidan.
