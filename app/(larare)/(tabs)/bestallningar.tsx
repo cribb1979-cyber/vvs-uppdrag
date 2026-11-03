@@ -198,6 +198,89 @@ export default function Bestallningar() {
     }
   }
 
+  async function sakerstallRskArtiklar(plan: PlanRow) {
+    if (!org) return { ids: [] as string[], skapade: 0, fanns: 0 };
+    const medRsk = (plan.material_plan_items ?? []).filter((item) => item.rsk_number.trim());
+    const unika = new Map<string, PlanItem>();
+    for (const item of medRsk) {
+      const rsk = item.rsk_number.trim();
+      if (!unika.has(rsk)) unika.set(rsk, item);
+    }
+
+    const ids: string[] = [];
+    let skapade = 0;
+    let fanns = 0;
+    for (const [rsk, item] of unika) {
+      const { data: artikel } = await supabase
+        .from("material_catalog")
+        .select("id")
+        .eq("org_id", org.id)
+        .eq("rsk_number", rsk)
+        .limit(1)
+        .maybeSingle();
+      if (artikel?.id) {
+        ids.push(artikel.id);
+        fanns++;
+        continue;
+      }
+
+      const { data: ny, error } = await supabase
+        .from("material_catalog")
+        .insert({
+          org_id: org.id,
+          name: item.component,
+          rsk_number: rsk,
+          dimension: item.dimension,
+          note: "Skapad från elevens materialplan",
+        })
+        .select("id")
+        .single();
+
+      if (error) {
+        // Unikt index kan slå till om två lärare klickar samtidigt.
+        if (error.code === "23505") {
+          const { data: befintlig } = await supabase
+            .from("material_catalog")
+            .select("id")
+            .eq("org_id", org.id)
+            .eq("rsk_number", rsk)
+            .limit(1)
+            .maybeSingle();
+          if (befintlig?.id) {
+            ids.push(befintlig.id);
+            fanns++;
+            continue;
+          }
+        }
+        throw error;
+      }
+      if (ny?.id) {
+        ids.push(ny.id);
+        skapade++;
+      }
+    }
+    return { ids, skapade, fanns };
+  }
+
+  async function sparaRskTillForrad(plan: PlanRow) {
+    if (!org) return;
+    const medRsk = (plan.material_plan_items ?? []).filter((item) => item.rsk_number.trim());
+    if (medRsk.length === 0) {
+      Alert.alert("RSK saknas", "Ingen rad i planen har RSK-nummer.");
+      return;
+    }
+    setPlanBusy(plan.id);
+    try {
+      const { skapade, fanns } = await sakerstallRskArtiklar(plan);
+      Alert.alert("RSK till Förrådet", `${skapade} nya artiklar skapades, ${fanns} fanns redan.`);
+      load();
+    } catch (e) {
+      Alert.alert("Kunde inte spara RSK", getErrorMessage(e));
+    } finally {
+      setPlanBusy(null);
+    }
+  }
+
   async function skapaEtiketter(plan: PlanRow) {
     if (!org) return;
     const medRsk = (plan.material_plan_items ?? []).filter((item) => item.rsk_number.trim());
@@ -207,51 +290,10 @@ export default function Bestallningar() {
     }
     setPlanBusy(plan.id);
     try {
-      const artikelIds = new Set<string>();
-      const saknade = new Map<string, PlanItem>();
-      for (const item of medRsk) {
-        const rsk = item.rsk_number.trim();
-        const { data: artikel } = await supabase
-          .from("material_catalog")
-          .select("id")
-          .eq("org_id", org.id)
-          .eq("rsk_number", rsk)
-          .limit(1)
-          .maybeSingle();
-        if (artikel?.id) {
-          artikelIds.add(artikel.id);
-        } else if (!saknade.has(rsk)) {
-          saknade.set(rsk, item);
-        }
-      }
-
-      let skapade = 0;
-      for (const [rsk, item] of saknade) {
-        const { data: ny, error } = await supabase
-          .from("material_catalog")
-          .insert({
-            org_id: org.id,
-            name: item.component,
-            rsk_number: rsk,
-            dimension: item.dimension,
-            note: "Skapad från elevens materialplan",
-          })
-          .select("id")
-          .single();
-        if (error) throw error;
-        if (ny?.id) {
-          artikelIds.add(ny.id);
-          skapade++;
-        }
-      }
-
-      const ids = Array.from(artikelIds);
+      const { ids } = await sakerstallRskArtiklar(plan);
       if (ids.length === 0) {
         Alert.alert("Inga etiketter", "Inga RSK-nummer kunde matchas eller skapas.");
         return;
-      }
-      if (skapade > 0) {
-        Alert.alert("Artiklar skapade", `${skapade} nya artiklar lades i Förrådet.`);
       }
       router.push({
         pathname: "/(larare)/(tabs)/forrad/skriv-ut",
@@ -286,8 +328,16 @@ export default function Bestallningar() {
               {item.rsk_number ? ` · RSK ${item.rsk_number}` : ""}
             </Text>
           ))}
-          <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
-            <View style={{ flex: 1 }}>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+            <View style={{ flexGrow: 1, minWidth: 150 }}>
+              <Button
+                title="Spara RSK till Förrådet"
+                variant="secondary"
+                onPress={() => sparaRskTillForrad(plan)}
+                loading={planBusy === plan.id}
+              />
+            </View>
+            <View style={{ flexGrow: 1, minWidth: 150 }}>
               <Button
                 title="Skapa beställning"
                 variant="secondary"
@@ -295,7 +345,7 @@ export default function Bestallningar() {
                 loading={planBusy === plan.id}
               />
             </View>
-            <View style={{ flex: 1 }}>
+            <View style={{ flexGrow: 1, minWidth: 150 }}>
               <Button
                 title="QR-etiketter"
                 variant="ghost"
@@ -305,7 +355,7 @@ export default function Bestallningar() {
             </View>
           </View>
           <Text style={{ color: theme.muted, fontSize: 11, marginTop: 8 }}>
-            QR-etiketter matchar RSK mot Förrådet. Saknade RSK skapas som artiklar.
+            Spara RSK lägger upp en artikel per unikt RSK-nummer i Förrådet. QR-etiketter använder dem sedan.
           </Text>
         </Card>
       ))}

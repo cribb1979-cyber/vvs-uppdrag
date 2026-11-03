@@ -21,7 +21,6 @@ interface DraftRequirement {
   component: string;
   dimension: string;
   quantity: string;
-  rsk: string;
 }
 
 const KIND_OPTIONS: { value: AssignmentKind; label: string; hint: string }[] = [
@@ -29,9 +28,9 @@ const KIND_OPTIONS: { value: AssignmentKind; label: string; hint: string }[] = [
   { value: "quiz", label: "🖼 Materialquiz", hint: "Bildfrågor eleven svarar flerval på" },
 ];
 
-function tillDraftRader(rader: (MaterialRad & { rsk?: string })[]): DraftRequirement[] {
+function tillDraftRader(rader: MaterialRad[]): DraftRequirement[] {
   if (rader.length === 0) {
-    return [{ key: String(Date.now()), component: "", dimension: "", quantity: "1", rsk: "" }];
+    return [{ key: String(Date.now()), component: "", dimension: "", quantity: "1" }];
   }
   const stamp = Date.now();
   return rader.map((rad, i) => ({
@@ -39,7 +38,6 @@ function tillDraftRader(rader: (MaterialRad & { rsk?: string })[]): DraftRequire
     component: rad.component,
     dimension: rad.dimension ?? "",
     quantity: String(rad.quantity ?? 1),
-    rsk: rad.rsk ?? "",
   }));
 }
 
@@ -66,7 +64,7 @@ export default function NewAssignment() {
   const [referenceAsset, setReferenceAsset] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [pickingReference, setPickingReference] = useState<"camera" | "library" | null>(null);
   const [requirements, setRequirements] = useState<DraftRequirement[]>([
-    { key: String(Date.now()), component: "", dimension: "", quantity: "1", rsk: "" },
+    { key: String(Date.now()), component: "", dimension: "", quantity: "1" },
   ]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -149,9 +147,8 @@ export default function NewAssignment() {
 
       const material = Array.isArray(draft.material) ? draft.material : [];
       setRequirements(tillDraftRader(material));
-      const saknas = Number(data?.rsk_missing ?? 0);
       setAiStatus(
-        `Utkast från ${data?.model ?? "lokal AI"}: ${material.length} materialrader, ${saknas} RSK saknas. Granska innan du sparar.`,
+        `Utkast från ${data?.model ?? "lokal AI"}: ${material.length} materialrader ifyllda. Granska innan du sparar.`,
       );
     } catch (e) {
       setAiError(getErrorMessage(e, "AI:n kunde inte skapa ett utkast."));
@@ -177,7 +174,7 @@ export default function NewAssignment() {
   }
 
   function addRequirement() {
-    setRequirements((prev) => [...prev, { key: String(Date.now()), component: "", dimension: "", quantity: "1", rsk: "" }]);
+    setRequirements((prev) => [...prev, { key: String(Date.now()), component: "", dimension: "", quantity: "1" }]);
   }
 
   function removeRequirement(key: string) {
@@ -223,7 +220,6 @@ export default function NewAssignment() {
             component: r.component.trim(),
             dimension: r.dimension.trim(),
             quantity: Math.max(1, Number.parseInt(r.quantity, 10) || 1),
-            rsk_number: r.rsk.trim(),
             sort_order: i,
           }));
 
@@ -450,14 +446,6 @@ export default function NewAssignment() {
                     onChangeText={(v) => updateRequirement(r.key, "quantity", v)}
                   />
                 </View>
-                <TextInput
-                  style={[styles.reqInput, { marginTop: 8, color: theme.text, borderColor: theme.border }]}
-                  placeholder="RSK-nummer (valfritt)"
-                  placeholderTextColor={theme.muted}
-                  keyboardType="number-pad"
-                  value={r.rsk}
-                  onChangeText={(v) => updateRequirement(r.key, "rsk", v)}
-                />
                 {requirements.length > 1 && (
                   <TouchableOpacity onPress={() => removeRequirement(r.key)}>
                     <Text style={{ color: theme.danger, marginTop: 10, fontSize: 13 }}>Ta bort rad</Text>
