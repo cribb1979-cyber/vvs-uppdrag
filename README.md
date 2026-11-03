@@ -223,3 +223,11 @@ blir 29 moduler, vilket ger 3 px per modul = 93 av skrivhuvudets 96 px
 Är en etikett ändå svårläst är den fysiska bredden bara 12 mm. Använd då den
 stora QR:en under **Examensprov** på skärmen/projektorn eller skriv ut den på
 A4. Elevsessionens QR på skärmen är också större (190 px).
+
+### Hela examensveckan
+
+Knappen **🎓 Skapa hela examensveckan** skapar ett samlat uppdrag med alla
+moment, gemensam egenkontroll, reflektion, Säkervatten-regler och en
+4-dagarsklocka. Skapa sedan **en** elevsession med 7 dagar eller ett eget
+slutdatum – samma QR/länk används hela veckan. De enskilda momenten och den
+publika översikten finns kvar oförändrade.
