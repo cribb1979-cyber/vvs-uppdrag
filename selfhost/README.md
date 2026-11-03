@@ -114,3 +114,7 @@ docker compose logs -f caddy
   i `GOTRUE_CORS_ALLOWED_HEADERS` (finns i `docker-compose.yml`). Utan den
   svarar preflighten utan `Access-Control-Allow-Origin`, medan appen på
   telefonen fungerar ändå.
+- **`Could not find the function ... in the schema cache` (PGRST202)** –
+  PostgREST har inte laddat om efter en ny migration. Kör
+  `notify pgrst, 'reload schema'` eller `docker compose restart rest`.
+  `migrate`-tjänsten skickar numera signalen automatiskt.

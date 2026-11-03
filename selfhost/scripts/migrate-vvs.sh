@@ -39,6 +39,7 @@ if [ "$ANTAL" = "0" ] && [ "$HAR_APP" = "t" ]; then
     psql "$DB_URL" -v ON_ERROR_STOP=1 -c \
       "insert into public.schema_migrations (filnamn) values ('$namn') on conflict do nothing;"
   done
+  psql "$DB_URL" -v ON_ERROR_STOP=1 -c "notify pgrst, 'reload schema';" || true
   echo "== VVS-schemat är klart"
   exit 0
 fi
@@ -55,5 +56,9 @@ for f in /vvs/migrations/*.sql; do
   psql "$DB_URL" -v ON_ERROR_STOP=1 -c \
     "insert into public.schema_migrations (filnamn) values ('$namn');"
 done
+
+# PostgREST cachar funktioner och kolumner. Efter en ny migration måste den
+# ladda om, annars får klienten PGRST202 "Could not find the function ...".
+psql "$DB_URL" -v ON_ERROR_STOP=1 -c "notify pgrst, 'reload schema';" || true
 
 echo "== VVS-schemat är klart"
