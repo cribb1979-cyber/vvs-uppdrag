@@ -42,7 +42,11 @@ docker compose exec -T db psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
   < "$M/storage-objects.csv"
 
 echo "== nyare migrationer som dumpen kan sakna =="
-docker compose exec -T db psql -U postgres -d postgres -v ON_ERROR_STOP=1 < sql/vvs/0012_uppdragsbank.sql
+for f in sql/vvs/0012_uppdragsbank.sql sql/vvs/0013_materialplan_rsk.sql; do
+  [ -f "$f" ] || continue
+  echo "== $f"
+  docker compose exec -T db psql -U postgres -d postgres -v ON_ERROR_STOP=1 < "$f"
+done
 
 echo "== kontrollerar antal rader mot dumpen =="
 while read -r tabell forvantat; do
