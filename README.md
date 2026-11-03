@@ -109,3 +109,16 @@ Supabase SQL Editor (eller `supabase db push`) innan fliken används.
 Vill du ha sju färdiga exempeluppdrag i banken kör du även
 `supabase/seed/0012_uppdragsbank_exempel.sql`. Skriptet kräver minst en
 godkänd lärare och kan köras flera gånger utan att dubbletter skapas.
+
+## Beställningar och RSK
+
+Eleven skriver sin materialplan med RSK-nummer. När planen skickas in visas
+den under **Beställningar** hos läraren. Därifrån kan läraren:
+
+* **Skapa beställning** – raderna läggs i beställningslistan, RSK matchas mot
+  Förrådet och `source_plan_item_id` hindrar att samma planrad beställs två
+  gånger.
+* **QR-etiketter** – RSK matchas mot Förrådets artiklar. Saknade RSK skapas
+  som artiklar och etikettstudion öppnas med en QR-etikett per material.
+
+Kräver migrationen `supabase/migrations/0013_materialplan_rsk.sql`.
