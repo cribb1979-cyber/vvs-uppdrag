@@ -93,6 +93,11 @@ Appen visar en kort **egen sammanfattning** och länkar till
 återges inte – vill man visa hela texten i appen krävs tillstånd från
 Säker Vatten.
 
+Fliken **🛡️ Säkervatten** samlar alla 40 regler grupperade per område, med
+sökning och expanderbara kontrollpunkter. Även där är texterna appens egna
+sammanfattningar; full regeltext finns i boken och via länken till
+sakervatten.se.
+
 Kräver migrationen `supabase/migrations/0012_uppdragsbank.sql`. Kör den i
 Supabase SQL Editor (eller `supabase db push`) innan fliken används.
 
