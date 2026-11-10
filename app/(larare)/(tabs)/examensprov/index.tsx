@@ -146,6 +146,12 @@ export default function Examensprov() {
 
       <View style={{ marginBottom: 16 }}>
         <Button
+          title="📦 Examensinventering"
+          variant="secondary"
+          onPress={() => router.push("/(larare)/(tabs)/forrad/examensinventering" as any)}
+        />
+        <View style={{ height: 8 }} />
+        <Button
           title="🏷 Skriv ut stationsetiketter"
           variant="secondary"
           onPress={() =>

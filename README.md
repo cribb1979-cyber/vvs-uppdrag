@@ -110,6 +110,17 @@ Vill du ha sju färdiga exempeluppdrag i banken kör du även
 `supabase/seed/0012_uppdragsbank_exempel.sql`. Skriptet kräver minst en
 godkänd lärare och kan köras flera gånger utan att dubbletter skapas.
 
+## Examensinventering
+
+Fliken **Förråd → Examensinventering** räknar behovet per elev × antal elever
+för examensmomenten (klämringskopplingar, tryck/täthet, slutet expansionskärl,
+varmvattenberedare och badrum). Den jämför behovet med `material_catalog`,
+låter läraren räkna av saldot direkt i listan och skapa beställningar.
+
+Beställningslistan grupperas per leverantör, så större köp (t.ex. Biltema eller
+grossist) kan samlas på ett ställe. Materiallistan ligger i
+`lib/examMaterial.ts` – ändra mängderna där. Ingen databasmigrering behövs.
+
 ## Beställningar och RSK
 
 Eleven skriver sin materialplan med RSK-nummer. När planen skickas in visas

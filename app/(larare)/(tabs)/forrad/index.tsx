@@ -82,6 +82,12 @@ export default function Forrad() {
           <Button title="🖨 Etiketter" variant="secondary" onPress={() => router.push("/(larare)/(tabs)/forrad/skriv-ut")} />
         </View>
       </View>
+      <View style={{ height: 8 }} />
+      <Button
+        title="🎓 Examensinventering"
+        variant="secondary"
+        onPress={() => router.push("/(larare)/(tabs)/forrad/examensinventering" as any)}
+      />
       <View style={{ height: 12 }} />
 
       <TextInput

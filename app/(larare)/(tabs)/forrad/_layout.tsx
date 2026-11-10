@@ -7,6 +7,7 @@ export default function ForradLayout() {
   return (
     <Stack screenOptions={{ headerStyle: { backgroundColor: theme.card }, headerTintColor: theme.text }}>
       <Stack.Screen name="index" options={{ title: "Förråd" }} />
+      <Stack.Screen name="examensinventering" options={{ title: "Examensinventering" }} />
       <Stack.Screen name="artikel/[id]" options={{ title: "Artikel" }} />
       <Stack.Screen name="import" options={{ title: "Importera lista", presentation: "modal" }} />
       <Stack.Screen name="skriv-ut" options={{ title: "Etiketter", presentation: "modal" }} />
