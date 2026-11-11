@@ -1,9 +1,14 @@
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Badge, Card } from "@/components/ui/Card";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { useAuth } from "@/contexts/AuthContext";
+import { getErrorMessage } from "@/lib/errors";
+import { modeToFields } from "@/lib/assignmentMode";
+import { skapaMallFranUppdrag } from "@/lib/uppdragsbank";
+import { supabase } from "@/lib/supabase";
 import { BOCKNINGAR, type BockNiva, type BockOvning } from "@/lib/bockVvs";
 
 const NIVÅER: Array<"Alla" | BockNiva> = ["Alla", "Grund", "Fördjupning", "Mästare"];
@@ -25,6 +30,8 @@ function nivaTone(niva: BockNiva): "success" | "warning" | "danger" {
 export default function Bockningar() {
   const theme = Colors[useColorScheme() ?? "light"];
   const router = useRouter();
+  const { org, profile } = useAuth();
+  const [skickar, setSkickar] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [niva, setNiva] = useState<"Alla" | BockNiva>("Alla");
   const [oppna, setOppna] = useState<Record<string, boolean>>({});
@@ -44,6 +51,89 @@ export default function Bockningar() {
       pathname: "/(larare)/(tabs)/uppdrag/new",
       params: { bockning: o.id },
     } as any);
+  }
+
+  async function laggIBank(o: BockOvning) {
+    if (!org || !profile) {
+      Alert.alert("Inte inloggad", "Logga in som lärare först.");
+      return;
+    }
+    if (skickar) return;
+    setSkickar(o.id);
+    try {
+      const beskrivning = [
+        o.sammanfattning,
+        "",
+        "Moment:",
+        ...o.moment.map((m, i) => `${i + 1}. ${m}`),
+        "",
+        "Yrkesspråk: " + o.yrkestermer.join(", "),
+        "",
+        "Säkerhet:",
+        ...o.sakerhet.map((s) => `- ${s}`),
+        "",
+        "Vanliga fel:",
+        ...o.vanligaFel.map((f) => `- ${f}`),
+        ...(o.kalla ? ["", "Källa: " + o.kalla] : []),
+      ].join("\n");
+
+      const { data: assignment, error } = await supabase
+        .from("assignments")
+        .insert({
+          org_id: org.id,
+          created_by: profile.id,
+          title: `Bockövning – ${o.titel}`,
+          description: beskrivning,
+          kind: "uppdrag",
+          ...modeToFields("prov"),
+          goal: o.mal.join(" "),
+          self_check_items: o.kontroll,
+          reflection_questions: o.reflektion,
+          rule_refs: [],
+          status: "draft",
+        })
+        .select()
+        .single();
+      if (error) throw error;
+
+      const rader = o.material
+        .filter((m) => m.component.trim())
+        .map((m, i) => ({
+          assignment_id: assignment.id,
+          component: m.component.trim(),
+          dimension: (m.dimension ?? "").trim(),
+          quantity: Math.max(1, m.quantity ?? 1),
+          sort_order: i,
+        }));
+      if (rader.length > 0) {
+        const { error: reqErr } = await supabase.from("material_requirements").insert(rader);
+        if (reqErr) throw reqErr;
+      }
+
+      const mallId = await skapaMallFranUppdrag(assignment.id, {
+        titel: `Bockövning – ${o.titel}`,
+        beskrivning: o.sammanfattning,
+      });
+
+      // Uppdraget är nu fryst i banken – arkivera det så uppdragslistan hålls ren.
+      await supabase.from("assignments").update({ status: "archived" }).eq("id", assignment.id);
+
+      Alert.alert("Inlagd i uppdragsbanken", "Mallen ligger nu under Granskningsstatus i banken.", [
+        { text: "OK" },
+        {
+          text: "Öppna",
+          onPress: () =>
+            router.push({
+              pathname: "/(larare)/(tabs)/bank/[id]",
+              params: { id: mallId },
+            } as any),
+        },
+      ]);
+    } catch (e) {
+      Alert.alert("Kunde inte lägga i banken", getErrorMessage(e));
+    } finally {
+      setSkickar(null);
+    }
   }
 
   return (
@@ -123,6 +213,16 @@ export default function Bockningar() {
                 <Text style={{ color: theme.accent, fontWeight: "700" }}>+ Skapa övning</Text>
               </TouchableOpacity>
             </View>
+            <TouchableOpacity
+              onPress={() => laggIBank(o)}
+              disabled={skickar !== null}
+              accessibilityRole="button"
+              style={{ marginTop: 8 }}
+            >
+              <Text style={{ color: theme.tint, fontWeight: "700" }}>
+                {skickar === o.id ? "Lägger i banken…" : "🏦 Lägg i uppdragsbanken"}
+              </Text>
+            </TouchableOpacity>
 
             {expanderad && (
               <View style={{ marginTop: 10 }}>
