@@ -532,6 +532,81 @@ export const BOCKNINGAR: BockOvning[] = [
     kalla:
       "Tekniken är hämtad från RörmokarLäraren (Anders Pargell), ”En annan variant på nästa bock”. Kontrollera alltid mot din bockverktystillverkares anvisning – markeringarna kan skilja mellan fabrikat.",
   },
+  {
+    id: "bock-svanbock",
+    titel: "Svanbock – dubbel motriktad bock i samma plan",
+    niva: "Mästare",
+    tidMin: 90,
+    sammanfattning:
+      "Bocka en svanbock med två motriktade bockar i samma plan. Kontrollera offset, höjd, bockvinklar och parallellitet.",
+    mal: [
+      "Förstå vad en svanbock är och när den används.",
+      "Mäta upp offset och höjd enligt ritning.",
+      "Bocka två motriktade bockar i samma plan.",
+      "Kontrollera bockvinklar, offset och parallellitet.",
+      "Undvika veck och ovalitet i båda bockarna.",
+    ],
+    material: [
+      { component: "Kopparrör", dimension: "15 mm", quantity: 2 },
+      { component: "Propp", dimension: '1/2"', quantity: 2 },
+      { component: "Ritning/mall", quantity: 1 },
+    ],
+    verktyg: [
+      "Bockfjäder 15 mm",
+      "Rörbock (bocknyckel)",
+      "Vinkelhake",
+      "Tumstock",
+      "Skjutmått",
+      "Märkpenna",
+    ],
+    moment: [
+      "Läs ritningen och bestäm svanbockens offset, höjd och cc-mått.",
+      "Märk ut båda bockpunkterna och kontrollera att de ligger i samma plan.",
+      "Bocka första bocken enligt ritning, till exempel 45° eller 90°.",
+      "Vänd röret och bocka andra bocken motriktad med samma vinkel.",
+      "Kontrollera offset, höjd, bockvinklar och parallellitet.",
+      "Kontrollera ovalitet och veck i båda bockarna.",
+      "Skäva rörändarna och dokumentera resultatet.",
+    ],
+    kontroll: [
+      "Offset och höjd stämmer med ritningen ±2 mm.",
+      "Båda bockvinklarna stämmer ±2°.",
+      "Bockarna ligger i samma plan.",
+      "Röret är parallellt och utan veck.",
+      "Ovaliteten är mindre än 10 %.",
+    ],
+    vanligaFel: [
+      "Bockarna hamnar i olika plan.",
+      "Fel offset eller höjd.",
+      "Andra bocken bockas åt fel håll.",
+      "Röret vrids mellan bockarna.",
+      "För snäv bock så att röret veckar sig.",
+    ],
+    yrkestermer: [
+      "svanbock",
+      "motriktad bock",
+      "offset",
+      "höjd",
+      "cc-mått",
+      "bockplan",
+      "parallellitet",
+      "bockvinkel",
+      "ovalitet",
+    ],
+    sakerhet: [
+      "Handskar vid vassa rörändar.",
+      "Skyddsglasögon vid kapning och skävning.",
+      "Spänn fast röret vid bockning.",
+    ],
+    reflektion: [
+      "När används en svanbock i stället för två separata bockar?",
+      "Varför måste bockarna ligga i samma plan?",
+      "Hur påverkar offset och höjd varandra?",
+      "Vad gör du om andra bocken blir felvänd?",
+    ],
+    kalla:
+      "Standardövning i seriebockning. Videon ”svanbock level 3,1” av RörmokarLäraren har inga undertexter, så övningen är skriven enligt verkstadens yrkesspråk och kan justeras efter videons metod.",
+  },
 ];
 
 export function bockning(id: string): BockOvning | undefined {
