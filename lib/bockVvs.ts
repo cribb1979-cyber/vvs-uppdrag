@@ -22,6 +22,8 @@ export interface BockOvning {
   sammanfattning: string;
   /** Enkel förklaring för eleven – vad övningen går ut på och varför. */
   forklaring?: string;
+  /** Valfri principskiss som visas i appen. */
+  diagram?: "offset";
   mal: string[];
   material: BockMaterial[];
   verktyg: string[];
@@ -161,6 +163,7 @@ export const BOCKNINGAR: BockOvning[] = [
     titel: "Parallellförskjutning (offset) – två 45°-bockar",
     niva: "Fördjupning",
     tidMin: 60,
+    diagram: "offset",
     sammanfattning:
       "En offset används när röret ska fortsätta rakt men hamna på en annan nivå eller i sidled. Du gör två motriktade 45°-bockar. Här får du förklaringen steg för steg.",
     forklaring:

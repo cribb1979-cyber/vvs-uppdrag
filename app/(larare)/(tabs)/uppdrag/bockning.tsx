@@ -10,6 +10,7 @@ import { modeToFields } from "@/lib/assignmentMode";
 import { skapaMallFranUppdrag } from "@/lib/uppdragsbank";
 import { supabase } from "@/lib/supabase";
 import { BOCKNINGAR, type BockNiva, type BockOvning } from "@/lib/bockVvs";
+import { OffsetDiagram } from "@/components/OffsetDiagram";
 
 const NIVÅER: Array<"Alla" | BockNiva> = ["Alla", "Grund", "Fördjupning", "Mästare"];
 
@@ -226,6 +227,15 @@ export default function Bockningar() {
 
             {expanderad && (
               <View style={{ marginTop: 10 }}>
+                {o.diagram === "offset" && (
+                  <View style={{ marginTop: 8, marginBottom: 6 }}>
+                    <OffsetDiagram />
+                    <Text style={{ color: theme.muted, fontSize: 12, marginTop: 2 }}>
+                      Två motriktade 45°-bockar. Röret fortsätter rakt men på en ny nivå.
+                    </Text>
+                  </View>
+                )}
+
                 {!!o.forklaring && (
                   <>
                     <Text style={[styles.delRubrik, { color: theme.text }]}>Förklaring</Text>
