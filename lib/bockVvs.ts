@@ -20,6 +20,8 @@ export interface BockOvning {
   niva: BockNiva;
   tidMin: number;
   sammanfattning: string;
+  /** Enkel förklaring för eleven – vad övningen går ut på och varför. */
+  forklaring?: string;
   mal: string[];
   material: BockMaterial[];
   verktyg: string[];
@@ -156,48 +158,70 @@ export const BOCKNINGAR: BockOvning[] = [
   },
   {
     id: "bock-offset-45",
-    titel: "Parallellförskjutning (offset) med två 45°-bockar",
+    titel: "Parallellförskjutning (offset) – två 45°-bockar",
     niva: "Fördjupning",
     tidMin: 60,
     sammanfattning:
-      "Bocka en parallellförskjutning med två motriktade 45°-bockar. Kontrollera offsetmått, bockvinklar och parallellitet.",
+      "En offset används när röret ska fortsätta rakt men hamna på en annan nivå eller i sidled. Du gör två motriktade 45°-bockar. Här får du förklaringen steg för steg.",
+    forklaring:
+      "Tänk dig att röret går rakt fram. Du vill inte svänga av – du vill bara flytta röret lite åt sidan eller uppåt och sedan fortsätta rakt. Det gör du med två lika stora bockar åt motsatt håll: först 45° uppåt, sedan 45° tillbaka. Resultatet blir en förskjutning – röret fortsätter i samma riktning men på en ny nivå.\n\n" +
+      "Orden: offset = hur mycket röret förskjuts. Bockvinkel = hur mycket du böjer i varje bock (här 45°). Bockmått = avståndet mellan de två bockpunkterna. Parallellitet = de två raka delarna är parallella.\n\n" +
+      "Räkneexempel: vill du flytta röret 50 mm med 45°-bockar blir avståndet mellan bockarna 50 × 1,41 ≈ 70 mm. Vill du flytta 100 mm blir det 100 × 1,41 ≈ 141 mm. Kontrollera alltid mot din bockverktygs anvisning – måtten kan skilja mellan fabrikat.\n\n" +
+      "Så gör du: mät offset vinkelrätt, räkna ut bockmåttet, märk båda bockpunkterna, bocka första 45°, vänd röret, bocka andra 45° åt motsatt håll och kontrollera att de raka delarna är parallella.",
     mal: [
-      "Beräkna och mäta ut en parallellförskjutning.",
+      "Kunna förklara vad en offset är och varför den används.",
+      "Mäta offset vinkelrätt mellan den gamla och nya centrumlinjen.",
+      "Räkna ut bockmåttet med faktor 1,41 vid 45°.",
       "Bocka två motriktade 45°-bockar i samma plan.",
-      "Kontrollera offsetmått och parallellitet.",
-      "Skäva och kontrollera röret.",
+      "Kontrollera offsetmått, parallellitet och bockplan.",
     ],
     material: [
       { component: "Kopparrör", dimension: "15 mm", quantity: 1 },
       { component: "Propp", dimension: '1/2"', quantity: 2 },
     ],
-    verktyg: ["Bockfjäder 15 mm", "Vinkelhake", "Tumstock", "Märkpenna", "Skjutmått"],
+    verktyg: ["Bockfjäder 15 mm", "Vinkelhake", "Tumstock", "Märkpenna", "Skjutmått", "Ritning/mall"],
     moment: [
-      "Bestäm offsetmåttet och märk ut båda bockpunkterna.",
+      "Bestäm offsetmåttet: hur mycket ska röret flyttas? Mät vinkelrätt mellan den gamla och den nya centrumlinjen.",
+      "Välj bockvinkel, till exempel 45°.",
+      "Räkna ut bockmåttet: offset × 1,41 vid 45°.",
+      "Märk första bockpunkten och andra bockpunkten med bockmåttet mellan.",
       "Bocka första 45°-bocken.",
-      "Vänd röret och bocka andra 45°-bocken i samma plan.",
-      "Kontrollera offsetmått, vinklar och parallellitet.",
-      "Skäva rörändarna och kontrollera att röret är fritt från veck.",
+      "Vänd röret och bocka andra 45°-bocken åt motsatt håll, i samma plan.",
+      "Kontrollera offsetmått, parallellitet och att bockarna ligger i samma plan.",
+      "Skäva rörändarna och dokumentera resultatet.",
     ],
     kontroll: [
       "Offsetmåttet stämmer med ritningen ±2 mm.",
       "Båda bockvinklarna är 45° ±2°.",
+      "De raka delarna är parallella.",
       "Bockarna ligger i samma plan.",
-      "Röret är parallellt och utan veck.",
+      "Inga veck eller ovalitet.",
     ],
     vanligaFel: [
-      "Fel offsetmått.",
-      "Bockarna hamnar för nära varandra.",
-      "Röret vrids så att bockarna inte ligger i samma plan.",
-      "Andra bocken bockas åt fel håll.",
+      "Man bockar åt samma håll i stället för motsatt.",
+      "Man mäter offset snett i stället för vinkelrätt.",
+      "Man glömmer att vända röret mellan bockarna.",
+      "Bockarna hamnar i olika plan.",
+      "Fel bockmått eftersom faktorn inte används.",
     ],
-    yrkestermer: ["offset", "parallellförskjutning", "cc-mått", "bockmått", "bockvinkel", "parallellitet"],
+    yrkestermer: [
+      "offset",
+      "förskjutning",
+      "bockmått",
+      "bockvinkel",
+      "parallellitet",
+      "motriktad bock",
+      "centrumlinje",
+    ],
     sakerhet: ["Spänn fast röret vid bockning.", "Handskar och skyddsglasögon."],
     reflektion: [
-      "När används en offset i stället för en 90°-bock?",
-      "Varför måste båda bockarna ligga i samma plan?",
-      "Hur påverkar offsetmåttet rördragningen?",
+      "Varför ska bockarna vara motriktade?",
+      "Vad händer om du använder 30° i stället för 45°?",
+      "Hur påverkar offsetmåttet bockmåttet?",
+      "Varför är det viktigt att bockarna ligger i samma plan?",
     ],
+    kalla:
+      "Faktorn 1,41 för 45° är samma princip som i S-bock-övningen (RörmokarLäraren). Kontrollera mot din bockverktygstillverkares anvisning.",
   },
   {
     id: "bock-dubbel-90",

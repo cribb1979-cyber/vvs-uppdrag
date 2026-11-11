@@ -190,8 +190,8 @@ begin
   v_payload := $json$
 {
   "assignment": {
-    "title": "Bockövning – Parallellförskjutning (offset) med två 45°-bockar",
-    "description": "Bocka en parallellförskjutning med två motriktade 45°-bockar. Kontrollera offsetmått, bockvinklar och parallellitet.\n\nMoment:\n1. Bestäm offsetmåttet och märk ut båda bockpunkterna.\n2. Bocka första 45°-bocken.\n3. Vänd röret och bocka andra 45°-bocken i samma plan.\n4. Kontrollera offsetmått, vinklar och parallellitet.\n5. Skäva rörändarna och kontrollera att röret är fritt från veck.\n\nYrkesspråk: offset, parallellförskjutning, cc-mått, bockmått, bockvinkel, parallellitet\n\nSäkerhet:\n- Spänn fast röret vid bockning.\n- Handskar och skyddsglasögon.\n\nVanliga fel:\n- Fel offsetmått.\n- Bockarna hamnar för nära varandra.\n- Röret vrids så att bockarna inte ligger i samma plan.\n- Andra bocken bockas åt fel håll.",
+    "title": "Bockövning – Parallellförskjutning (offset) – två 45°-bockar",
+    "description": "En offset används när röret ska fortsätta rakt men hamna på en annan nivå eller i sidled. Du gör två motriktade 45°-bockar. Här får du förklaringen steg för steg.\n\nMoment:\n1. Bestäm offsetmåttet: hur mycket ska röret flyttas? Mät vinkelrätt mellan den gamla och den nya centrumlinjen.\n2. Välj bockvinkel, till exempel 45°.\n3. Räkna ut bockmåttet: offset × 1,41 vid 45°.\n4. Märk första bockpunkten och andra bockpunkten med bockmåttet mellan.\n5. Bocka första 45°-bocken.\n6. Vänd röret och bocka andra 45°-bocken åt motsatt håll, i samma plan.\n7. Kontrollera offsetmått, parallellitet och att bockarna ligger i samma plan.\n8. Skäva rörändarna och dokumentera resultatet.\n\nYrkesspråk: offset, förskjutning, bockmått, bockvinkel, parallellitet, motriktad bock, centrumlinje\n\nSäkerhet:\n- Spänn fast röret vid bockning.\n- Handskar och skyddsglasögon.\n\nVanliga fel:\n- Man bockar åt samma håll i stället för motsatt.\n- Man mäter offset snett i stället för vinkelrätt.\n- Man glömmer att vända röret mellan bockarna.\n- Bockarna hamnar i olika plan.\n- Fel bockmått eftersom faktorn inte används.\n\nKälla: Faktorn 1,41 för 45° är samma princip som i S-bock-övningen (RörmokarLäraren). Kontrollera mot din bockverktygstillverkares anvisning.",
     "kind": "uppdrag",
     "reveal_mode": "full",
     "ai_mode": "app_help_only",
@@ -201,17 +201,19 @@ begin
     "skolverket_ref": "",
     "assessment_visible": false,
     "reference_image_path": null,
-    "goal": "Beräkna och mäta ut en parallellförskjutning. Bocka två motriktade 45°-bockar i samma plan. Kontrollera offsetmått och parallellitet. Skäva och kontrollera röret.",
+    "goal": "Kunna förklara vad en offset är och varför den används. Mäta offset vinkelrätt mellan den gamla och nya centrumlinjen. Räkna ut bockmåttet med faktor 1,41 vid 45°. Bocka två motriktade 45°-bockar i samma plan. Kontrollera offsetmått, parallellitet och bockplan.",
     "self_check_items": [
       "Offsetmåttet stämmer med ritningen ±2 mm.",
       "Båda bockvinklarna är 45° ±2°.",
+      "De raka delarna är parallella.",
       "Bockarna ligger i samma plan.",
-      "Röret är parallellt och utan veck."
+      "Inga veck eller ovalitet."
     ],
     "reflection_questions": [
-      "När används en offset i stället för en 90°-bock?",
-      "Varför måste båda bockarna ligga i samma plan?",
-      "Hur påverkar offsetmåttet rördragningen?"
+      "Varför ska bockarna vara motriktade?",
+      "Vad händer om du använder 30° i stället för 45°?",
+      "Hur påverkar offsetmåttet bockmåttet?",
+      "Varför är det viktigt att bockarna ligger i samma plan?"
     ],
     "rule_refs": []
   },
@@ -242,12 +244,16 @@ begin
       "sort_order": 1
     },
     {
-      "label": "Bockarna ligger i samma plan.",
+      "label": "De raka delarna är parallella.",
       "sort_order": 2
     },
     {
-      "label": "Röret är parallellt och utan veck.",
+      "label": "Bockarna ligger i samma plan.",
       "sort_order": 3
+    },
+    {
+      "label": "Inga veck eller ovalitet.",
+      "sort_order": 4
     }
   ]
 }
@@ -256,9 +262,9 @@ begin
     agare_org_id, created_by, titel, beskrivning, year_level, course_code,
     kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar
   )
-  select v_org, v_profile, 'Bockövning – Parallellförskjutning (offset) med två 45°-bockar', 'Bocka en parallellförskjutning med två motriktade 45°-bockar. Kontrollera offsetmått, bockvinklar och parallellitet.', 'GY', 'VVS', 'uppdrag', v_payload,
+  select v_org, v_profile, 'Bockövning – Parallellförskjutning (offset) – två 45°-bockar', 'En offset används när röret ska fortsätta rakt men hamna på en annan nivå eller i sidled. Du gör två motriktade 45°-bockar. Här får du förklaringen steg för steg.', 'GY', 'VVS', 'uppdrag', v_payload,
          array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
-  where not exists (select 1 from public.uppdragsbank_mallar where titel = 'Bockövning – Parallellförskjutning (offset) med två 45°-bockar');
+  where not exists (select 1 from public.uppdragsbank_mallar where titel = 'Bockövning – Parallellförskjutning (offset) – två 45°-bockar');
 
   v_payload := $json$
 {
