@@ -1,5 +1,5 @@
 -- 0013_uppdragsbank_bockovningar.sql
--- Tolv bockövningar till uppdragsbanken (godkända exempelmallar).
+-- Bockövningar till uppdragsbanken (godkända exempelmallar).
 -- Kör efter 0012_uppdragsbank.sql och kräver minst en godkänd lärare.
 -- Skriptet är idempotent: en mall med samma titel läggs inte in igen.
 -- Körs med: docker exec -i vvs-supabase-db-1 psql -U postgres -d postgres -v ON_ERROR_STOP=1 < filen
@@ -34,7 +34,7 @@ begin
     "course_code": "VVS",
     "skolverket_ref": "",
     "assessment_visible": false,
-    "reference_image_path": null,
+    "reference_image_path": "ac3e0e58-428f-4610-8231-151b4f511f3d/bockning/bock-90-koppar-15.png",
     "goal": "Mäta och märka ut bockmått före bockning. Välja rätt bockfjäder för rördiameter och bockradie. Bocka ett 15 mm kopparrör 90° utan veck eller skador. Kontrollera bockvinkel, bockradie och ovalitet med vinkelhake och skjutmått. Skäva rörändarna och kontrollera att röret är fritt från grader.",
     "self_check_items": [
       "Bockvinkeln är 90° ±2°.",
@@ -127,7 +127,7 @@ begin
     "course_code": "VVS",
     "skolverket_ref": "",
     "assessment_visible": false,
-    "reference_image_path": null,
+    "reference_image_path": "ac3e0e58-428f-4610-8231-151b4f511f3d/bockning/bock-45-koppar-15.png",
     "goal": "Mäta och märka ut bockmått. Bocka 45° med bockfjäder utan veck. Kontrollera bockvinkel och ovalitet. Skäva rörändarna.",
     "self_check_items": [
       "Bockvinkeln är 45° ±2°.",
@@ -200,7 +200,7 @@ begin
     "course_code": "VVS",
     "skolverket_ref": "",
     "assessment_visible": false,
-    "reference_image_path": null,
+    "reference_image_path": "ac3e0e58-428f-4610-8231-151b4f511f3d/bockning/bock-offset-45.png",
     "goal": "Kunna förklara vad en offset är och varför den används. Mäta offset vinkelrätt mellan den gamla och nya centrumlinjen. Räkna ut bockmåttet med faktor 1,41 vid 45°. Bocka två motriktade 45°-bockar i samma plan. Kontrollera offsetmått, parallellitet och bockplan.",
     "self_check_items": [
       "Offsetmåttet stämmer med ritningen ±2 mm.",
@@ -279,7 +279,7 @@ begin
     "course_code": "VVS",
     "skolverket_ref": "",
     "assessment_visible": false,
-    "reference_image_path": null,
+    "reference_image_path": "ac3e0e58-428f-4610-8231-151b4f511f3d/bockning/bock-dubbel-90.png",
     "goal": "Mäta upp cc-mått och höjd. Bocka två 90°-bockar i samma plan. Kontrollera cc-mått, höjd och parallellitet. Skäva och dokumentera resultatet.",
     "self_check_items": [
       "Cc-måttet stämmer ±2 mm.",
@@ -352,7 +352,7 @@ begin
     "course_code": "VVS",
     "skolverket_ref": "",
     "assessment_visible": false,
-    "reference_image_path": null,
+    "reference_image_path": "ac3e0e58-428f-4610-8231-151b4f511f3d/bockning/bock-efter-ritning.png",
     "goal": "Läsa byggmått och centrumlinjer på en rörritning. Mäta ut bockpunkter och bockmått. Bocka i rätt ordning efter mall. Kontrollera mått, vinklar och toleranser.",
     "self_check_items": [
       "Måtten stämmer med ritningen ±2 mm.",
@@ -432,7 +432,7 @@ begin
     "course_code": "VVS",
     "skolverket_ref": "",
     "assessment_visible": false,
-    "reference_image_path": null,
+    "reference_image_path": "ac3e0e58-428f-4610-8231-151b4f511f3d/bockning/bock-tunnvaggig.png",
     "goal": "Välja rätt bockfjäder för tunnväggigt rör. Mjukglödga röret vid behov. Bocka med stor bockradie utan veck. Kontrollera ovalitet och sträckning.",
     "self_check_items": [
       "Ovaliteten är mindre än 10 %.",
@@ -510,7 +510,7 @@ begin
     "course_code": "VVS",
     "skolverket_ref": "",
     "assessment_visible": false,
-    "reference_image_path": null,
+    "reference_image_path": "ac3e0e58-428f-4610-8231-151b4f511f3d/bockning/bock-pex-16.png",
     "goal": "Känna till PEX-bockfjäder och minsta bockradie. Bocka PEX utan att röret knäcks. Kontrollera att röret är runt efter bockning. Montera stödhylsa och presskoppling.",
     "self_check_items": [
       "Minsta bockradie enligt tillverkaren är uppfylld.",
@@ -590,7 +590,7 @@ begin
     "course_code": "VVS",
     "skolverket_ref": "",
     "assessment_visible": false,
-    "reference_image_path": null,
+    "reference_image_path": "ac3e0e58-428f-4610-8231-151b4f511f3d/bockning/bock-anslut-tathet.png",
     "goal": "Bocka ett 15 mm kopparrör 90°. Montera klämringskopplingar på rätt sätt. Täthetsprova installationen med vatten. Dokumentera provtryck och resultat.",
     "self_check_items": [
       "Bockvinkeln är 90° ±2°.",
@@ -677,7 +677,7 @@ begin
     "course_code": "VVS",
     "skolverket_ref": "",
     "assessment_visible": false,
-    "reference_image_path": null,
+    "reference_image_path": "ac3e0e58-428f-4610-8231-151b4f511f3d/bockning/bock-serie-insida.png",
     "goal": "Förstå skillnaden mellan att mäta från centrum och från rörets insida. Beräkna kompensationen: halva ytterdiametern (7,5 mm för 15 mm rör, 6 mm för 12 mm rör). Använda bockverktygets X-markering på rätt sätt. Bocka L-, U- eller Z-bock i serie med rätt cc-mått. Kontrollera cc-mått, bockvinklar, parallellitet och att bockarna ligger i samma plan.",
     "self_check_items": [
       "Cc-måttet stämmer med ritningen ±2 mm.",
@@ -763,7 +763,7 @@ begin
     "course_code": "VVS",
     "skolverket_ref": "",
     "assessment_visible": false,
-    "reference_image_path": null,
+    "reference_image_path": "ac3e0e58-428f-4610-8231-151b4f511f3d/bockning/bock-svanbock.png",
     "goal": "Förstå vad en svanbock är och när den används. Mäta upp offset och höjd enligt ritning. Bocka två motriktade bockar i samma plan. Kontrollera bockvinklar, offset och parallellitet. Undvika veck och ovalitet i båda bockarna.",
     "self_check_items": [
       "Offset och höjd stämmer med ritningen ±2 mm.",
@@ -849,7 +849,7 @@ begin
     "course_code": "VVS",
     "skolverket_ref": "",
     "assessment_visible": false,
-    "reference_image_path": null,
+    "reference_image_path": "ac3e0e58-428f-4610-8231-151b4f511f3d/bockning/bock-s-bock.png",
     "goal": "Förstå vad en S-bock är och varför den inte får vara 90°. Beräkna avståndet mellan startstreck och bockstreck med rätt faktor. Bocka två lika stora bockar i samma plan. Kontrollera S-mått, bockvinklar och parallellitet. Dokumentera beräkning och resultat.",
     "self_check_items": [
       "S-måttet stämmer ±2 mm.",
@@ -935,7 +935,7 @@ begin
     "course_code": "VVS",
     "skolverket_ref": "",
     "assessment_visible": false,
-    "reference_image_path": null,
+    "reference_image_path": "ac3e0e58-428f-4610-8231-151b4f511f3d/bockning/bock-svanbock-alt.png",
     "goal": "Bocka en svanbock med 30/30/60-teknik. Få ett kort avstånd mellan bockarna. Kontrollera bockvinklar och bockplan. Jämföra tekniken med den traditionella svanbocken.",
     "self_check_items": [
       "Bockarna är 30°, 30° och 60° enligt tekniken.",
@@ -1001,4 +1001,104 @@ begin
   select v_org, v_profile, 'Bockövning – Svanbock – alternativ 30/30/60-teknik', 'Bocka en svanbock med 30°, 30° och 60° enligt den alternativa tekniken. Kontrollera att avståndet blir kort och att bockarna ligger i samma plan.', 'GY', 'VVS', 'uppdrag', v_payload,
          array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
   where not exists (select 1 from public.uppdragsbank_mallar where titel = 'Bockövning – Svanbock – alternativ 30/30/60-teknik');
+
+  v_payload := $json$
+{
+  "assignment": {
+    "title": "Bockövning – Bocktavlan – flera bockar efter ritning",
+    "description": "Montera en rörslinga med flera bockar på en bocktavla. Följ ritningen, håll cc-mått och bockplan och kontrollera hela slingan.\n\nMoment:\n1. Läs ritningen och märk ut alla bockpunkter och cc-mått.\n2. Bestäm bockordningen – börja med den bock som ligger närmast ena röränden.\n3. Bocka första bocken och kontrollera måttet.\n4. Fortsätt i samma ordning och kontrollera efter varje bock.\n5. Montera röret på tavlan med rörklammer.\n6. Kontrollera cc-mått, vinklar, parallellitet och att röret sitter stabilt.\n7. Dokumentera bockordning och resultat.\n\nYrkesspråk: bocktavla, bockordning, cc-mått, måttkedja, bockplan, rörklammer, montage\n\nSäkerhet:\n- Handskar och skyddsglasögon.\n- Spänn fast tavlan.\n- Var försiktig med skruvdragaren.\n\nVanliga fel:\n- Fel bockordning så att måtten inte räcker.\n- Måttkedjan räknas fel.\n- Röret vrids mellan bockarna.\n- För hårt åtdragna rörklammer som deformerar röret.\n- Man glömmer att kontrollera efter varje bock.\n\nKälla: RörmokarLäraren, ”Tavlan”. Övningen är skriven som en standardövning för bocktavla.",
+    "kind": "uppdrag",
+    "reveal_mode": "full",
+    "ai_mode": "app_help_only",
+    "steps": [],
+    "year_level": "GY",
+    "course_code": "VVS",
+    "skolverket_ref": "",
+    "assessment_visible": false,
+    "reference_image_path": "ac3e0e58-428f-4610-8231-151b4f511f3d/bockning/bock-tavlan.png",
+    "goal": "Läsa en rörritning med flera bockar. Planera bockordningen innan du börjar. Hålla cc-mått och måttkedja genom hela slingan. Montera röret stabilt på bocktavlan. Kontrollera vinklar, parallellitet och bockplan.",
+    "self_check_items": [
+      "Alla cc-mått stämmer ±2 mm.",
+      "Bockvinklarna stämmer ±2°.",
+      "Bockarna ligger i samma plan.",
+      "Röret sitter stadigt i rörklamren.",
+      "Inga veck eller ovalitet."
+    ],
+    "reflection_questions": [
+      "Varför är bockordningen viktig?",
+      "Hur undviker du att måttfel adderas?",
+      "Varför ska röret sitta i samma plan?",
+      "Vad skulle du göra annorlunda nästa gång?"
+    ],
+    "rule_refs": []
+  },
+  "material_requirements": [
+    {
+      "component": "Kopparrör",
+      "dimension": "15 mm",
+      "quantity": 5,
+      "note": "",
+      "sort_order": 0
+    },
+    {
+      "component": "Klämringskoppling rak",
+      "dimension": "15 mm",
+      "quantity": 8,
+      "note": "",
+      "sort_order": 1
+    },
+    {
+      "component": "Propp",
+      "dimension": "1/2\"",
+      "quantity": 4,
+      "note": "",
+      "sort_order": 2
+    },
+    {
+      "component": "Rörklammer",
+      "dimension": "15 mm",
+      "quantity": 10,
+      "note": "",
+      "sort_order": 3
+    },
+    {
+      "component": "Bocktavla/plywood",
+      "dimension": "",
+      "quantity": 1,
+      "note": "",
+      "sort_order": 4
+    }
+  ],
+  "quiz_questions": [],
+  "assessment_criteria": [
+    {
+      "label": "Alla cc-mått stämmer ±2 mm.",
+      "sort_order": 0
+    },
+    {
+      "label": "Bockvinklarna stämmer ±2°.",
+      "sort_order": 1
+    },
+    {
+      "label": "Bockarna ligger i samma plan.",
+      "sort_order": 2
+    },
+    {
+      "label": "Röret sitter stadigt i rörklamren.",
+      "sort_order": 3
+    },
+    {
+      "label": "Inga veck eller ovalitet.",
+      "sort_order": 4
+    }
+  ]
+}
+  $json$::jsonb;
+  insert into public.uppdragsbank_mallar (
+    agare_org_id, created_by, titel, beskrivning, year_level, course_code,
+    kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar
+  )
+  select v_org, v_profile, 'Bockövning – Bocktavlan – flera bockar efter ritning', 'Montera en rörslinga med flera bockar på en bocktavla. Följ ritningen, håll cc-mått och bockplan och kontrollera hela slingan.', 'GY', 'VVS', 'uppdrag', v_payload,
+         array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
+  where not exists (select 1 from public.uppdragsbank_mallar where titel = 'Bockövning – Bocktavlan – flera bockar efter ritning');
 end $$;

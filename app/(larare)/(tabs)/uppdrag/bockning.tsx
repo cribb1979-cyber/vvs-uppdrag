@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Badge, Card } from "@/components/ui/Card";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
@@ -9,8 +9,8 @@ import { getErrorMessage } from "@/lib/errors";
 import { modeToFields } from "@/lib/assignmentMode";
 import { skapaMallFranUppdrag } from "@/lib/uppdragsbank";
 import { supabase } from "@/lib/supabase";
-import { BOCKNINGAR, type BockNiva, type BockOvning } from "@/lib/bockVvs";
-import { OffsetDiagram } from "@/components/OffsetDiagram";
+import { BOCKNINGAR, bockImagePath, type BockNiva, type BockOvning } from "@/lib/bockVvs";
+import { quizImageUrl } from "@/lib/quizImages";
 
 const NIVÅER: Array<"Alla" | BockNiva> = ["Alla", "Grund", "Fördjupning", "Mästare"];
 
@@ -204,6 +204,17 @@ export default function Bockningar() {
             </View>
             <Text style={{ color: theme.muted, fontSize: 13, lineHeight: 19, marginTop: 6 }}>{o.sammanfattning}</Text>
 
+            <Image
+              source={{ uri: quizImageUrl(bockImagePath(o.id)) }}
+              style={{
+                width: "100%",
+                height: 180,
+                resizeMode: "contain",
+                marginTop: 10,
+                backgroundColor: theme.card,
+              }}
+            />
+
             <View style={styles.atgarder}>
               <TouchableOpacity onPress={() => vaxla(o.id)} accessibilityRole="button">
                 <Text style={{ color: theme.tint, fontWeight: "700" }}>
@@ -227,15 +238,6 @@ export default function Bockningar() {
 
             {expanderad && (
               <View style={{ marginTop: 10 }}>
-                {o.diagram === "offset" && (
-                  <View style={{ marginTop: 8, marginBottom: 6 }}>
-                    <OffsetDiagram />
-                    <Text style={{ color: theme.muted, fontSize: 12, marginTop: 2 }}>
-                      Två motriktade 45°-bockar. Röret fortsätter rakt men på en ny nivå.
-                    </Text>
-                  </View>
-                )}
-
                 {!!o.forklaring && (
                   <>
                     <Text style={[styles.delRubrik, { color: theme.text }]}>Förklaring</Text>

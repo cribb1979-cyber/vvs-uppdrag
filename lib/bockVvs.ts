@@ -22,8 +22,6 @@ export interface BockOvning {
   sammanfattning: string;
   /** Enkel förklaring för eleven – vad övningen går ut på och varför. */
   forklaring?: string;
-  /** Valfri principskiss som visas i appen. */
-  diagram?: "offset";
   mal: string[];
   material: BockMaterial[];
   verktyg: string[];
@@ -35,6 +33,13 @@ export interface BockOvning {
   reflektion: string[];
   /** Källa/idé, t.ex. en video eller ett leverantörsdokument. */
   kalla?: string;
+}
+
+export const BOCK_IMAGE_BASE = "ac3e0e58-428f-4610-8231-151b4f511f3d/bockning";
+
+/** Lagrad sökväg i quiz-images-bucketen. quizImageUrl() bygger publik URL. */
+export function bockImagePath(id: string): string {
+  return `${BOCK_IMAGE_BASE}/${id}.png`;
 }
 
 export const BOCKNINGAR: BockOvning[] = [
@@ -163,7 +168,6 @@ export const BOCKNINGAR: BockOvning[] = [
     titel: "Parallellförskjutning (offset) – två 45°-bockar",
     niva: "Fördjupning",
     tidMin: 60,
-    diagram: "offset",
     sammanfattning:
       "En offset används när röret ska fortsätta rakt men hamna på en annan nivå eller i sidled. Du gör två motriktade 45°-bockar. Här får du förklaringen steg för steg.",
     forklaring:
@@ -777,6 +781,84 @@ export const BOCKNINGAR: BockOvning[] = [
     ],
     kalla:
       "RörmokarLäraren, ”Svan och s bock”. Tekniken är hämtad från ett engelskt klipp och används med Fromax bocknyckel nr 55 – kontrollera mot din egen bockverktygsanvisning.",
+  },
+  {
+    id: "bock-tavlan",
+    titel: "Bocktavlan – flera bockar efter ritning",
+    niva: "Mästare",
+    tidMin: 120,
+    sammanfattning:
+      "Montera en rörslinga med flera bockar på en bocktavla. Följ ritningen, håll cc-mått och bockplan och kontrollera hela slingan.",
+    forklaring:
+      "En bocktavla är en övningsplatta där du gör flera bockar efter en ritning. Du tränar bockordning, måttkedja och montage. Tänk igenom i vilken ordning bockarna ska göras – annars kan röret bli för kort eller hamna i fel plan.",
+    mal: [
+      "Läsa en rörritning med flera bockar.",
+      "Planera bockordningen innan du börjar.",
+      "Hålla cc-mått och måttkedja genom hela slingan.",
+      "Montera röret stabilt på bocktavlan.",
+      "Kontrollera vinklar, parallellitet och bockplan.",
+    ],
+    material: [
+      { component: "Kopparrör", dimension: "15 mm", quantity: 5 },
+      { component: "Klämringskoppling rak", dimension: "15 mm", quantity: 8 },
+      { component: "Propp", dimension: '1/2"', quantity: 4 },
+      { component: "Rörklammer", dimension: "15 mm", quantity: 10 },
+      { component: "Bocktavla/plywood", quantity: 1 },
+    ],
+    verktyg: [
+      "Bockfjäder 15 mm",
+      "Rörbock",
+      "Tumstock",
+      "Vinkelhake",
+      "Skjutmått",
+      "Märkpenna",
+      "Skruvdragare",
+    ],
+    moment: [
+      "Läs ritningen och märk ut alla bockpunkter och cc-mått.",
+      "Bestäm bockordningen – börja med den bock som ligger närmast ena röränden.",
+      "Bocka första bocken och kontrollera måttet.",
+      "Fortsätt i samma ordning och kontrollera efter varje bock.",
+      "Montera röret på tavlan med rörklammer.",
+      "Kontrollera cc-mått, vinklar, parallellitet och att röret sitter stabilt.",
+      "Dokumentera bockordning och resultat.",
+    ],
+    kontroll: [
+      "Alla cc-mått stämmer ±2 mm.",
+      "Bockvinklarna stämmer ±2°.",
+      "Bockarna ligger i samma plan.",
+      "Röret sitter stadigt i rörklamren.",
+      "Inga veck eller ovalitet.",
+    ],
+    vanligaFel: [
+      "Fel bockordning så att måtten inte räcker.",
+      "Måttkedjan räknas fel.",
+      "Röret vrids mellan bockarna.",
+      "För hårt åtdragna rörklammer som deformerar röret.",
+      "Man glömmer att kontrollera efter varje bock.",
+    ],
+    yrkestermer: [
+      "bocktavla",
+      "bockordning",
+      "cc-mått",
+      "måttkedja",
+      "bockplan",
+      "rörklammer",
+      "montage",
+    ],
+    sakerhet: [
+      "Handskar och skyddsglasögon.",
+      "Spänn fast tavlan.",
+      "Var försiktig med skruvdragaren.",
+    ],
+    reflektion: [
+      "Varför är bockordningen viktig?",
+      "Hur undviker du att måttfel adderas?",
+      "Varför ska röret sitta i samma plan?",
+      "Vad skulle du göra annorlunda nästa gång?",
+    ],
+    kalla:
+      "RörmokarLäraren, ”Tavlan”. Övningen är skriven som en standardövning för bocktavla.",
   },
 ];
 

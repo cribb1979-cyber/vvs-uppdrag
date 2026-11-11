@@ -2,6 +2,7 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   Alert,
+  Image,
   Linking,
   ScrollView,
   StyleSheet,
@@ -16,6 +17,7 @@ import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { useAuth } from "@/contexts/AuthContext";
 import { getErrorMessage } from "@/lib/errors";
+import { quizImageUrl } from "@/lib/quizImages";
 import {
   BANK_STATUS_LABEL,
   BANK_STATUS_TONE,
@@ -148,6 +150,10 @@ export default function BankMall() {
         <Badge label={BANK_STATUS_LABEL[mall.status]} tone={BANK_STATUS_TONE[mall.status]} />
       </View>
       {!!mall.beskrivning && <Text style={[styles.desc, { color: theme.muted }]}>{mall.beskrivning}</Text>}
+
+      {!!a?.reference_image_path && (
+        <Image source={{ uri: quizImageUrl(a.reference_image_path) }} style={styles.bankImage} />
+      )}
 
       <Text style={{ color: theme.muted, fontSize: 12, marginTop: 8 }}>
         {mall.agare_org_id === org?.id ? "Din skola" : "Delad av en annan skola"} · version {mall.version} ·
@@ -302,6 +308,7 @@ export default function BankMall() {
 }
 
 const styles = StyleSheet.create({
+  bankImage: { width: "100%", height: 220, resizeMode: "contain", marginTop: 12, marginBottom: 4, backgroundColor: "#fff", borderRadius: 12 },
   container: { padding: 20, paddingBottom: 60 },
   titleRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
   title: { flex: 1, fontSize: 24, fontWeight: "800" },
