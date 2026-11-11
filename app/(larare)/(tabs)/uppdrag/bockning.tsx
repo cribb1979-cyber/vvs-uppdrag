@@ -150,6 +150,19 @@ export default function Bockningar() {
       </Text>
 
       <Card style={{ marginBottom: 16 }}>
+        <Text style={{ color: theme.text, fontWeight: "800", marginBottom: 6 }}>📖 Teori – bockningens grunder</Text>
+        <Text style={{ color: theme.muted, fontSize: 13, lineHeight: 19 }}>
+          Bockmått, cc-mått, offset, S-bock, Z-bock, svanbock och varför det blir fel.
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.push("/(larare)/(tabs)/uppdrag/bockteori" as any)}
+          style={{ marginTop: 8 }}
+        >
+          <Text style={{ color: theme.accent, fontWeight: "800" }}>Öppna teorin →</Text>
+        </TouchableOpacity>
+      </Card>
+
+      <Card style={{ marginBottom: 16 }}>
         <Text style={{ color: theme.text, fontWeight: "800", marginBottom: 6 }}>Yrkesspråk i verkstaden</Text>
         <Text style={{ color: theme.muted, fontSize: 13, lineHeight: 19 }}>
           Bockmått, bockradie, bockvinkel, ovalitet, veckbildning, sträckning och skäva. Varje övning tränar både
