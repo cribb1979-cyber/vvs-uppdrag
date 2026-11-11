@@ -2,7 +2,6 @@
 -- Bockövningar till uppdragsbanken (godkända exempelmallar).
 -- Kör efter 0012_uppdragsbank.sql och kräver minst en godkänd lärare.
 -- Skriptet är idempotent: en mall med samma titel läggs inte in igen.
--- Körs med: docker exec -i vvs-supabase-db-1 psql -U postgres -d postgres -v ON_ERROR_STOP=1 < filen
 
 do $$
 declare v_org uuid; v_profile uuid; v_payload jsonb;
@@ -707,7 +706,7 @@ begin
 {
   "assignment": {
     "title": "Bockövning – Svanbock – dubbel motriktad bock i samma plan",
-    "description": "Bocka en svanbock med två motriktade bockar i samma plan. Kontrollera offset, höjd, bockvinklar och parallellitet.\n\nMoment:\n1. Läs ritningen och bestäm svanbockens offset, höjd och cc-mått.\n2. Märk ut båda bockpunkterna och kontrollera att de ligger i samma plan.\n3. Bocka första bocken enligt ritning, till exempel 45° eller 90°.\n4. Vänd röret och bocka andra bocken motriktad med samma vinkel.\n5. Kontrollera offset, höjd, bockvinklar och parallellitet.\n6. Kontrollera ovalitet och veck i båda bockarna.\n7. Skäva rörändarna och dokumentera resultatet.\n\nYrkesspråk: svanbock, motriktad bock, offset, höjd, cc-mått, bockplan, parallellitet, bockvinkel, ovalitet\n\nSäkerhet:\n- Handskar vid vassa rörändar.\n- Skyddsglasögon vid kapning och skävning.\n- Spänn fast röret vid bockning.\n\nVanliga fel:\n- Bockarna hamnar i olika plan.\n- Fel offset eller höjd.\n- Andra bocken bockas åt fel håll.\n- Röret vrids mellan bockarna.\n- För snäv bock så att röret veckar sig.\n\nKälla: Standardövning i seriebockning. Videon ”svanbock level 3,1” av RörmokarLäraren har inga undertexter, så övningen är skriven enligt verkstadens yrkesspråk och kan justeras efter videons metod.",
+    "description": "Bocka en svanbock med 60° och 30°. Bocka 60°-bocken först och 30°-bocken sedan – ordningen är viktig.\n\nMoment:\n1. Läs ritningen och bestäm svanbockens mått.\n2. Märk ut båda bockpunkterna och kontrollera att de ligger i samma plan.\n3. Bocka 60°-bocken först.\n4. Vänd röret och bocka 30°-bocken sedan – 60° ska alltid komma först.\n5. Kontrollera mått, bockvinklar och att bockarna ligger i samma plan.\n6. Kontrollera ovalitet och veck i båda bockarna.\n7. Skäva rörändarna och dokumentera resultatet.\n\nYrkesspråk: svanbock, motriktad bock, offset, höjd, cc-mått, bockplan, parallellitet, bockvinkel, ovalitet\n\nSäkerhet:\n- Handskar vid vassa rörändar.\n- Skyddsglasögon vid kapning och skävning.\n- Spänn fast röret vid bockning.\n\nVanliga fel:\n- Bockarna hamnar i olika plan.\n- Fel offset eller höjd.\n- Man bockar 30° först – då blir måttet fel; 60° ska komma först.\n- Andra bocken bockas åt fel håll.\n- Röret vrids mellan bockarna.\n- För snäv bock så att röret veckar sig.\n\nKälla: RörmokarLäraren, ”Svan och s bock” – traditionell svanbock: 60° först, sedan 30°.",
     "kind": "uppdrag",
     "reveal_mode": "full",
     "ai_mode": "app_help_only",
@@ -717,7 +716,7 @@ begin
     "skolverket_ref": "",
     "assessment_visible": false,
     "reference_image_path": "ac3e0e58-428f-4610-8231-151b4f511f3d/bockning/bock-svanbock.png",
-    "goal": "Förstå vad en svanbock är och när den används. Mäta upp offset och höjd enligt ritning. Bocka två motriktade bockar i samma plan. Kontrollera bockvinklar, offset och parallellitet. Undvika veck och ovalitet i båda bockarna.",
+    "goal": "Förstå vad en svanbock är och när den används. Bocka 60°-bocken först och 30°-bocken sedan. Förstå varför ordningen 60/30 är viktig. Kontrollera mått, bockvinklar och parallellitet. Undvika veck och ovalitet i båda bockarna.",
     "self_check_items": [
       "Offset och höjd stämmer med ritningen ±2 mm.",
       "Båda bockvinklarna stämmer ±2°.",
@@ -782,7 +781,7 @@ begin
 }
   $json$::jsonb;
   insert into public.uppdragsbank_mallar (agare_org_id, created_by, titel, beskrivning, year_level, course_code, kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar)
-  select v_org, v_profile, 'Bockövning – Svanbock – dubbel motriktad bock i samma plan', 'Bocka en svanbock med två motriktade bockar i samma plan. Kontrollera offset, höjd, bockvinklar och parallellitet.', 'GY', 'VVS', 'uppdrag', v_payload, array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
+  select v_org, v_profile, 'Bockövning – Svanbock – dubbel motriktad bock i samma plan', 'Bocka en svanbock med 60° och 30°. Bocka 60°-bocken först och 30°-bocken sedan – ordningen är viktig.', 'GY', 'VVS', 'uppdrag', v_payload, array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
   where not exists (select 1 from public.uppdragsbank_mallar where titel = 'Bockövning – Svanbock – dubbel motriktad bock i samma plan');
 
   v_payload := $json$

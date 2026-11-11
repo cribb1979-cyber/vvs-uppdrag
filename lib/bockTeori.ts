@@ -55,7 +55,7 @@ export const BOCK_TEORI: TeoriSection[] = [
         "Kontrollera att röret inte blir ovalt eller veckar sig.",
         "Kapa och skäva rörändarna efter bockning.",
       ]},
-      { type: "image", exerciseId: "bock-90-koppar-15", caption: "90°-bock med bockmått och bockradie." },
+      { type: "image", exerciseId: "teori-90-45-matt", caption: "90° och 45° – bockmått och bockradie." },
     ],
   },
   {
@@ -94,7 +94,7 @@ export const BOCK_TEORI: TeoriSection[] = [
         "Bocka första bocken, vänd röret och bocka andra bocken åt motsatt håll.",
         "Kontrollera offsetmått, parallellitet och att bockarna ligger i samma plan.",
       ]},
-      { type: "image", exerciseId: "bock-offset-45", caption: "Offset med två motriktade 45°-bockar." },
+      { type: "image", exerciseId: "teori-offset-matt", caption: "Offset – mått och bockmått." },
     ],
   },
   {
@@ -116,7 +116,7 @@ export const BOCK_TEORI: TeoriSection[] = [
         "Bocka första bocken till vald vinkel.",
         "Vänd röret, lägg bockstrecket mot bockverktygets 0-punkt och bocka andra bocken till samma vinkel.",
       ]},
-      { type: "image", exerciseId: "bock-s-bock", caption: "S-bock – två lika stora bockar." },
+      { type: "image", exerciseId: "teori-s-bock-matt", caption: "S-bock – S-mått och avstånd." },
     ],
   },
   {
@@ -130,6 +130,7 @@ export const BOCK_TEORI: TeoriSection[] = [
         "Kontrollera att båda bockarna ligger i samma plan.",
         "Mät cc-måttet mellan bockarna och kontrollera med vinkelhake.",
       ]},
+      { type: "image", exerciseId: "teori-z-bock-matt", caption: "Z-bock – offsetmåttet är cc-måttet." },
     ],
   },
   {
@@ -147,8 +148,9 @@ export const BOCK_TEORI: TeoriSection[] = [
     ingress: "Två motriktade bockar med en kort rak del emellan.",
     block: [
       { type: "p", text: "En svanbock används för att komma runt ett hinder eller få ett kort avstånd mellan två rör. Det finns flera sätt att göra den." },
-      { type: "p", text: "Ett vanligt sätt är 30° + 30° + 60°: bocka 30°, vänd röret, bocka 30° igen och vänd sedan tillbaka och bocka första bocken till 60°. Resultatet blir en tight svanbock." },
-      { type: "image", exerciseId: "bock-svanbock-alt", caption: "Svanbock – alternativ 30/30/60-teknik." },
+      { type: "p", text: "Den traditionella svanbocken är 60° + 30°. Bocka 60°-bocken först och 30°-bocken sedan – ordningen är viktig. Gör du 30° först blir måttet fel." },
+      { type: "p", text: "Det finns också en alternativ 30/30/60-teknik: bocka 30°, vänd röret, bocka 30° igen och vänd tillbaka och bocka första bocken till 60°. Det är en annan metod som ger en tight svanbock." },
+      { type: "image", exerciseId: "bock-svanbock-alt", caption: "Svanbock – den alternativa 30/30/60-tekniken." },
     ],
   },
   {
@@ -163,7 +165,7 @@ export const BOCK_TEORI: TeoriSection[] = [
         "Använd bockverktygets X-markering om den finns – den är gjord för den här mätningen.",
         "Kontrollera cc-måttet efter varje bock.",
       ]},
-      { type: "image", exerciseId: "bock-serie-insida", caption: "Seriebock – mät från insidan och kontrollera cc." },
+      { type: "image", exerciseId: "teori-insida-matt", caption: "Mät från insidan – kompensation 6 mm / 7,5 mm." },
     ],
   },
   {

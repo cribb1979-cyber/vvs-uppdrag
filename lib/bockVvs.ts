@@ -569,12 +569,12 @@ export const BOCKNINGAR: BockOvning[] = [
     niva: "Mästare",
     tidMin: 90,
     sammanfattning:
-      "Bocka en svanbock med två motriktade bockar i samma plan. Kontrollera offset, höjd, bockvinklar och parallellitet.",
+      "Bocka en svanbock med 60° och 30°. Bocka 60°-bocken först och 30°-bocken sedan – ordningen är viktig.",
     mal: [
       "Förstå vad en svanbock är och när den används.",
-      "Mäta upp offset och höjd enligt ritning.",
-      "Bocka två motriktade bockar i samma plan.",
-      "Kontrollera bockvinklar, offset och parallellitet.",
+      "Bocka 60°-bocken först och 30°-bocken sedan.",
+      "Förstå varför ordningen 60/30 är viktig.",
+      "Kontrollera mått, bockvinklar och parallellitet.",
       "Undvika veck och ovalitet i båda bockarna.",
     ],
     material: [
@@ -591,11 +591,11 @@ export const BOCKNINGAR: BockOvning[] = [
       "Märkpenna",
     ],
     moment: [
-      "Läs ritningen och bestäm svanbockens offset, höjd och cc-mått.",
+      "Läs ritningen och bestäm svanbockens mått.",
       "Märk ut båda bockpunkterna och kontrollera att de ligger i samma plan.",
-      "Bocka första bocken enligt ritning, till exempel 45° eller 90°.",
-      "Vänd röret och bocka andra bocken motriktad med samma vinkel.",
-      "Kontrollera offset, höjd, bockvinklar och parallellitet.",
+      "Bocka 60°-bocken först.",
+      "Vänd röret och bocka 30°-bocken sedan – 60° ska alltid komma först.",
+      "Kontrollera mått, bockvinklar och att bockarna ligger i samma plan.",
       "Kontrollera ovalitet och veck i båda bockarna.",
       "Skäva rörändarna och dokumentera resultatet.",
     ],
@@ -609,6 +609,7 @@ export const BOCKNINGAR: BockOvning[] = [
     vanligaFel: [
       "Bockarna hamnar i olika plan.",
       "Fel offset eller höjd.",
+      "Man bockar 30° först – då blir måttet fel; 60° ska komma först.",
       "Andra bocken bockas åt fel håll.",
       "Röret vrids mellan bockarna.",
       "För snäv bock så att röret veckar sig.",
@@ -636,7 +637,7 @@ export const BOCKNINGAR: BockOvning[] = [
       "Vad gör du om andra bocken blir felvänd?",
     ],
     kalla:
-      "Standardövning i seriebockning. Videon ”svanbock level 3,1” av RörmokarLäraren har inga undertexter, så övningen är skriven enligt verkstadens yrkesspråk och kan justeras efter videons metod.",
+      "RörmokarLäraren, ”Svan och s bock” – traditionell svanbock: 60° först, sedan 30°.",
   },
   {
     id: "bock-s-bock",
@@ -720,6 +721,8 @@ export const BOCKNINGAR: BockOvning[] = [
     tidMin: 75,
     sammanfattning:
       "Bocka en svanbock med 30°, 30° och 60° enligt den alternativa tekniken. Kontrollera att avståndet blir kort och att bockarna ligger i samma plan.",
+    forklaring:
+      "Det här är den alternativa 30/30/60-tekniken. Den traditionella svanbocken är 60° först, sedan 30° – ordningen är viktig.",
     mal: [
       "Bocka en svanbock med 30/30/60-teknik.",
       "Få ett kort avstånd mellan bockarna.",
