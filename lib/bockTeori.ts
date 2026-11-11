@@ -134,6 +134,7 @@ export const BOCK_TEORI: TeoriSection[] = [
       { type: "example", text: "S-bock 60 mm, 45°: 60 × 1,41 = 84,6 mm." },
       { type: "example", text: "S-bock 80 mm på 15 mm rör med 110 + X: 110 + 80 = 190 mm. Steg: märk 190 mm → bocka första 45° → vänd röret → lägg märket på mittlinjen → bocka andra 45°." },
       { type: "example", text: "S-bock 90 mm på 12 mm rör med 90 + X: 90 + 90 = 180 mm. Samma steg som ovan." },
+      { type: "note", text: "Från videon: 12 rör → 90 + X = S-bock (X = din S-bock). Exempel: S = 90 mm → 90 + 90 = 180 mm. På 15 mm rör ger första strecket cirka 15 mm S och andra strecket cirka 35 mm. Alla bocknycklar är olika – lär dig din." },
       { type: "note", text: "Tight S-bock utan beräkning: 15 mm rör med två 45°-bockar så nära varandra som möjligt ger ca 60 mm cc; 12 mm rör ca 50 mm cc." },
       { type: "p", text: "Öva själv – räkna först, titta sedan på svaret:" },
       { type: "bullets", items: [

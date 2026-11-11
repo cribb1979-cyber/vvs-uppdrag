@@ -100,8 +100,44 @@ export default function BockTeori() {
       h1 { font-size: 24pt; margin: 0 0 2mm; }
       img { width: 100%; height: 155mm; object-fit: contain; display: block; border: 1px solid #d6dee2; }
       p { font-size: 10pt; color: #6b7280; }
+      table { width: 100%; border-collapse: collapse; margin: 2mm 0 3mm; font-size: 10pt; }
+      th { background: #0f2a44; color: #fff; text-align: left; padding: 1.5mm 2mm; }
+      td { border-bottom: 1px solid #d6dee2; padding: 1.2mm 2mm; }
+      ul { margin: 0 0 2mm 5mm; padding: 0; }
+      li { margin: 0.8mm 0; font-size: 10.5pt; }
     </style></head><body>
     ${bilder.map(([t, p]) => `<section><h1>${t}</h1><img src="${quizImageUrl(p)}"><p>Principskiss – kontrollera mot din bocknyckel.</p></section>`).join("")}
+    <section>
+      <h1>Räkneexempel</h1>
+      <p>Så räknar du ut avståndet innan du bockar.</p>
+      <table><tr><th>Vinkel</th><th>Faktor</th><th>Exempel</th></tr>
+        <tr><td>15°</td><td>3,7</td><td>60 mm S → 60 × 3,7 = 222 mm</td></tr>
+        <tr><td>30°</td><td>2,0</td><td>60 mm S → 60 × 2,0 = 120 mm</td></tr>
+        <tr><td>45°</td><td>1,41</td><td>60 mm S → 60 × 1,41 = 84,6 mm</td></tr>
+        <tr><td>90°</td><td>1,0</td><td>Z-bock – offset = cc-mått</td></tr>
+      </table>
+      <p><b>Offset och S-bock:</b></p>
+      <ul>
+        <li>Offset 50 mm, 45°: 50 × 1,41 = <b>70,5 mm</b>.</li>
+        <li>Offset 100 mm, 30°: 100 × 2,0 = <b>200 mm</b>.</li>
+        <li>S-bock 60 mm, 45°: 60 × 1,41 = <b>84,6 mm</b>.</li>
+      </ul>
+      <p><b>Större S-bock – videons formler:</b></p>
+      <ul>
+        <li>12 rör: 90 + X. S = 90 mm → 90 + 90 = <b>180 mm</b>.</li>
+        <li>15 rör: 110 + X. S = 80 mm → 110 + 80 = <b>190 mm</b>.</li>
+        <li>Tight S-bock 45°: 15 mm ≈ <b>60 mm cc</b>, 12 mm ≈ <b>50 mm cc</b>.</li>
+        <li>Första/andra strecket: 15 mm ≈ 15/35 mm S. 12 mm ≈ 10/30 mm S.</li>
+      </ul>
+      <p><b>Öva själv:</b></p>
+      <ul>
+        <li>Offset 70 mm, 45° → 70 × 1,41 = <b>98,7 mm</b>.</li>
+        <li>S-bock 50 mm, 30° → 50 × 2,0 = <b>100 mm</b>.</li>
+        <li>15 rör, S = 100 mm → 110 + 100 = <b>210 mm</b>.</li>
+        <li>12 rör, S = 60 mm → 90 + 60 = <b>150 mm</b>.</li>
+      </ul>
+      <p>110 + X och 90 + X är praktiska formler för den bocknyckel Anders använder. Alla bocknycklar slår olika – kontrollera din egen.</p>
+    </section>
     </body></html>`;
     w.document.write(html);
     w.document.close();
@@ -121,7 +157,7 @@ export default function BockTeori() {
         style={[styles.printBtn, { backgroundColor: theme.accent }]}
         accessibilityRole="button"
       >
-        <Text style={styles.printBtnText}>🖨 Skriv ut bilderna (A4 liggande)</Text>
+        <Text style={styles.printBtnText}>🖨 Skriv ut bilder + räkneexempel (A4 liggande)</Text>
       </TouchableOpacity>
       <Text style={{ color: theme.muted, fontSize: 12, marginTop: 4, marginBottom: 12 }}>
         En bild per sida – samma mått som i appen. Tryck på en bild för att öppna den i full storlek.
