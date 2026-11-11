@@ -15,6 +15,7 @@ import { supabase } from "@/lib/supabase";
 import type { AssignmentKind } from "@/lib/database.types";
 import { REGLER, reglerFor, regel as hamtaRegel, reglerPerOmrade, SAKERVATTEN_VERSION } from "@/lib/sakervatten";
 import { materialForRegel, materialForRegler, type MaterialRad } from "@/lib/ovningsmaterial";
+import { bockning as hamtaBockning, materialForBockning } from "@/lib/bockVvs";
 
 interface DraftRequirement {
   key: string;
@@ -45,9 +46,10 @@ export default function NewAssignment() {
   const theme = Colors[useColorScheme() ?? "light"];
   const router = useRouter();
   const { org, profile } = useAuth();
-  const params = useLocalSearchParams<{ regel?: string | string[]; omrade?: string | string[] }>();
+  const params = useLocalSearchParams<{ regel?: string | string[]; omrade?: string | string[]; bockning?: string | string[] }>();
   const regelKod = Array.isArray(params.regel) ? params.regel[0] : params.regel;
   const omrade = Array.isArray(params.omrade) ? params.omrade[0] : params.omrade;
+  const bockningId = Array.isArray(params.bockning) ? params.bockning[0] : params.bockning;
 
   const [kind, setKind] = useState<AssignmentKind>("uppdrag");
   const [ruleRefs, setRuleRefs] = useState<string[]>([]);
@@ -75,6 +77,31 @@ export default function NewAssignment() {
 
   // Snabbval från Säkervatten-fliken: förifyll formuläret med regeln/området.
   useEffect(() => {
+    if (bockningId) {
+      const o = hamtaBockning(bockningId);
+      if (!o) return;
+      setKind("uppdrag");
+      setTitle(`Bockövning – ${o.titel}`);
+      setDescription([
+        o.sammanfattning,
+        "",
+        "Moment:",
+        ...o.moment.map((m, i) => `${i + 1}. ${m}`),
+        "",
+        "Yrkesspråk: " + o.yrkestermer.join(", "),
+        "",
+        "Säkerhet:",
+        ...o.sakerhet.map((s) => `- ${s}`),
+        "",
+        "Vanliga fel:",
+        ...o.vanligaFel.map((f) => `- ${f}`),
+      ].join("\n"));
+      setGoal(o.mal.join(" "));
+      setSelfItems(o.kontroll.join("\n"));
+      setReflItems(o.reflektion.join("\n"));
+      setRequirements(tillDraftRader(materialForBockning(o)));
+      return;
+    }
     if (regelKod) {
       const r = hamtaRegel(regelKod);
       if (!r) return;
@@ -99,7 +126,7 @@ export default function NewAssignment() {
       setRuleRefs(grupp.regler.map((r) => r.kod));
       setRequirements(tillDraftRader(materialForRegler(grupp.regler)));
     }
-  }, [regelKod, omrade]);
+  }, [regelKod, omrade, bockningId]);
 
   const valdaRegler = reglerFor(ruleRefs);
   const materialRader = requirements.filter((r) => r.component.trim()).length;

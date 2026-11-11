@@ -7,6 +7,7 @@ export default function UppdragLayout() {
   return (
     <Stack screenOptions={{ headerStyle: { backgroundColor: theme.card }, headerTintColor: theme.text }}>
       <Stack.Screen name="index" options={{ title: "Uppdrag" }} />
+      <Stack.Screen name="bockning" options={{ title: "Bockövningar" }} />
       <Stack.Screen name="new" options={{ title: "Nytt uppdrag", presentation: "modal" }} />
       <Stack.Screen name="[id]" options={{ title: "Uppdrag" }} />
       <Stack.Screen name="bedomning/[id]" options={{ title: "Bedömning" }} />

@@ -72,9 +72,17 @@ export default function UppdragList() {
       keyExtractor={(a) => a.id}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.tint} />}
       ListHeaderComponent={
-        <TouchableOpacity style={[styles.cta, { backgroundColor: theme.accent, marginBottom: 16 }]} onPress={() => router.push("/(larare)/(tabs)/uppdrag/new")}>
-          <Text style={styles.ctaText}>+ Nytt uppdrag</Text>
-        </TouchableOpacity>
+        <View style={{ gap: 10, marginBottom: 16 }}>
+          <TouchableOpacity style={[styles.cta, { backgroundColor: theme.accent }]} onPress={() => router.push("/(larare)/(tabs)/uppdrag/new")}>
+            <Text style={styles.ctaText}>+ Nytt uppdrag</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.cta, { backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border }]}
+            onPress={() => router.push("/(larare)/(tabs)/uppdrag/bockning" as any)}
+          >
+            <Text style={[styles.ctaText, { color: theme.text }]}>📐 Bockövningar</Text>
+          </TouchableOpacity>
+        </View>
       }
       renderItem={({ item }) => (
         <TouchableOpacity
