@@ -124,6 +124,27 @@ export const BOCK_TEORI: TeoriSection[] = [
     ],
   },
   {
+    id: "rakneexempel",
+    titel: "Räkneexempel steg för steg",
+    ingress: "Så räknar du ut avståndet innan du bockar.",
+    block: [
+      { type: "p", text: "Grundregeln: avstånd mellan bockarna = S-mått × faktor. Vid 45° är faktorn 1,41, vid 30° är den 2,0 och vid 15° är den 3,7." },
+      { type: "example", text: "Offset 50 mm, 45°: 50 × 1,41 = 70,5 mm. Märk 70,5 mm mellan bockpunkterna." },
+      { type: "example", text: "Offset 100 mm, 30°: 100 × 2,0 = 200 mm." },
+      { type: "example", text: "S-bock 60 mm, 45°: 60 × 1,41 = 84,6 mm." },
+      { type: "example", text: "S-bock 80 mm på 15 mm rör med 110 + X: 110 + 80 = 190 mm. Steg: märk 190 mm → bocka första 45° → vänd röret → lägg märket på mittlinjen → bocka andra 45°." },
+      { type: "example", text: "S-bock 90 mm på 12 mm rör med 90 + X: 90 + 90 = 180 mm. Samma steg som ovan." },
+      { type: "note", text: "Tight S-bock utan beräkning: 15 mm rör med två 45°-bockar så nära varandra som möjligt ger ca 60 mm cc; 12 mm rör ca 50 mm cc." },
+      { type: "p", text: "Öva själv – räkna först, titta sedan på svaret:" },
+      { type: "bullets", items: [
+        "Offset 70 mm med 45° → 70 × 1,41 = 98,7 mm.",
+        "S-bock 50 mm med 30° → 50 × 2 = 100 mm.",
+        "15 mm rör, S = 100 mm med 110 + X → 110 + 100 = 210 mm.",
+        "12 mm rör, S = 60 mm med 90 + X → 90 + 60 = 150 mm.",
+      ]},
+    ],
+  },
+  {
     id: "z-bock",
     titel: "Z-bock",
     ingress: "Två 90°-bockar – röret går rakt, svänger 90° och svänger tillbaka.",

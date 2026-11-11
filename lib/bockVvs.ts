@@ -647,7 +647,7 @@ export const BOCKNINGAR: BockOvning[] = [
     sammanfattning:
       "Bocka en S-bock med två lika stora bockar. Tighta 45°-S-bockar ger ca 60 mm cc på 15 mm rör och ca 50 mm cc på 12 mm rör. Större S: 15 mm → 110 + X, 12 mm → 90 + X.",
     forklaring:
-      "En S-bock är två lika stora bockar. För tighta S-bockar lägger du bockarna så nära varandra som möjligt. Enligt RörmokarLäraren ger två 45°-bockar cirka 60 mm cc på 15 mm rör och cirka 50 mm cc på 12 mm rör. Vill du ha ett större S finns en praktisk formel: 15 mm rör → markavstånd = 110 + X; 12 mm rör → 90 + X. X är det S-mått du vill ha. Exempel: 15 mm rör och S = 80 mm → 110 + 80 = 190 mm. Alla bocknycklar slår olika – kontrollera din egen.",
+      "En S-bock är två lika stora bockar. För tighta S-bockar lägger du bockarna så nära varandra som möjligt. Enligt RörmokarLäraren ger två 45°-bockar cirka 60 mm cc på 15 mm rör och cirka 50 mm cc på 12 mm rör. Vill du ha ett större S finns en praktisk formel: 15 mm rör → markavstånd = 110 + X; 12 mm rör → 90 + X. X är det S-mått du vill ha. Räkneexempel: 15 mm rör och S = 80 mm → 110 + 80 = 190 mm. Steg: märk 190 mm → bocka första 45° → vänd röret → lägg märket på mittlinjen → bocka andra 45°. Alla bocknycklar slår olika – kontrollera din egen.",
     mal: [
       "Förstå vad en S-bock är och varför den inte får vara 90°.",
       "Beräkna avståndet mellan startstreck och bockstreck med rätt faktor.",
