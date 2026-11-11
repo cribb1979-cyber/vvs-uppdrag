@@ -7,6 +7,21 @@ import { BOCK_TEORI, type TeoriBlock } from "@/lib/bockTeori";
 import { bockImagePath } from "@/lib/bockVvs";
 import { quizImageUrl } from "@/lib/quizImages";
 
+function skrivUt(titel: string, css: string, body: string) {
+  if (Platform.OS !== "web") {
+    Alert.alert("Skriv ut", "Öppna webbversionen (vvs-uppdrag.vercel.app) och tryck på Skriv ut där.");
+    return;
+  }
+  const w = (globalThis as any).window?.open("", "_blank");
+  if (!w) {
+    Alert.alert("Popup blockerad", "Tillåt popup-fönster för att skriva ut.");
+    return;
+  }
+  w.document.write(`<!doctype html><html lang="sv"><head><meta charset="utf-8"><title>${titel}</title><style>${css}</style></head><body>${body}</body></html>`);
+  w.document.close();
+  setTimeout(() => { w.focus(); w.print(); }, 1200);
+}
+
 export default function BockTeori() {
   const theme = Colors[useColorScheme() ?? "light"];
   const router = useRouter();
@@ -83,16 +98,7 @@ export default function BockTeori() {
       ["90° och 45°", bockImagePath("teori-90-45-matt")],
       ["Mäta från insida", bockImagePath("teori-insida-matt")],
     ];
-    if (Platform.OS !== "web") {
-      Alert.alert("Skriv ut", "Öppna webbversionen (vvs-uppdrag.vercel.app) och tryck på Skriv ut där.");
-      return;
-    }
-    const w = (globalThis as any).window?.open("", "_blank");
-    if (!w) {
-      Alert.alert("Popup blockerad", "Tillåt popup-fönster för att skriva ut bilderna.");
-      return;
-    }
-    const html = `<!doctype html><html lang="sv"><head><meta charset="utf-8"><title>Bockning – bilder</title><style>
+    const css = `
       @page { size: A4 landscape; margin: 10mm; }
       body { font-family: Arial, Helvetica, sans-serif; color: #0f2a44; margin: 0; }
       section { page-break-after: always; break-after: page; }
@@ -105,7 +111,8 @@ export default function BockTeori() {
       td { border-bottom: 1px solid #d6dee2; padding: 1.2mm 2mm; }
       ul { margin: 0 0 2mm 5mm; padding: 0; }
       li { margin: 0.8mm 0; font-size: 10.5pt; }
-    </style></head><body>
+    `;
+    const html = `
     ${bilder.map(([t, p]) => `<section><h1>${t}</h1><img src="${quizImageUrl(p)}"><p>Principskiss – kontrollera mot din bocknyckel.</p></section>`).join("")}
     <section>
       <h1>Räkneexempel</h1>
@@ -138,10 +145,59 @@ export default function BockTeori() {
       </ul>
       <p>110 + X och 90 + X är praktiska formler för den bocknyckel Anders använder. Alla bocknycklar slår olika – kontrollera din egen.</p>
     </section>
-    </body></html>`;
-    w.document.write(html);
-    w.document.close();
-    setTimeout(() => { w.focus(); w.print(); }, 1200);
+    `;
+    skrivUt("Bockning – bilder", css, html);
+  }
+
+  function skrivUtFuskblad() {
+    const css = `
+      @page { size: A4 portrait; margin: 10mm; }
+      body { font-family: Arial, Helvetica, sans-serif; color: #0f2a44; margin: 0; }
+      h1 { font-size: 17pt; margin: 0 0 1mm; }
+      .sub { font-size: 9pt; color: #6b7280; margin: 0 0 3mm; }
+      table { width: 100%; border-collapse: collapse; margin: 0 0 3mm; font-size: 9.5pt; }
+      th { background: #0f2a44; color: #fff; text-align: left; padding: 1.2mm 2mm; }
+      td { border-bottom: 1px solid #d6dee2; padding: 1mm 2mm; }
+      .bilder { display: flex; gap: 4mm; margin: 0 0 3mm; }
+      .bilder figure { flex: 1; margin: 0; }
+      .bilder img { width: 100%; height: 48mm; object-fit: contain; border: 1px solid #d6dee2; display: block; }
+      figcaption { font-size: 8pt; color: #6b7280; margin-top: 0.5mm; }
+      h2 { font-size: 11pt; margin: 0 0 1.5mm; }
+      ul { margin: 0; padding: 0; list-style: none; column-count: 2; column-gap: 6mm; }
+      li { font-size: 9.5pt; margin: 0 0 1.2mm; break-inside: avoid; }
+      .fot { font-size: 8pt; color: #6b7280; margin-top: 3mm; border-top: 1px solid #d6dee2; padding-top: 1.5mm; }
+    `;
+    const html = `
+      <h1>Bockning – fuskblad</h1>
+      <p class="sub">Formler, två vanliga bockar och de mått du använder oftast.</p>
+      <table>
+        <tr><th>Vinkel</th><th>Faktor</th><th>Används till</th><th>Exempel: S eller offset 60 mm</th></tr>
+        <tr><td>15°</td><td>3,7</td><td>stor offset/S</td><td>60 × 3,7 = 222 mm</td></tr>
+        <tr><td>30°</td><td>2,0</td><td>vanlig S</td><td>60 × 2,0 = 120 mm</td></tr>
+        <tr><td>45°</td><td>1,41</td><td>vanligast</td><td>60 × 1,41 = 84,6 mm</td></tr>
+        <tr><td>60°</td><td>1,15</td><td>kort offset</td><td>60 × 1,15 = 69 mm</td></tr>
+        <tr><td>90°</td><td>1,0</td><td>Z-bock</td><td>offset = cc-mått</td></tr>
+      </table>
+      <div class="bilder">
+        <figure><img src="${quizImageUrl(bockImagePath("teori-offset-matt"))}"><figcaption>Offset – två lika bockar åt motsatt håll.</figcaption></figure>
+        <figure><img src="${quizImageUrl(bockImagePath("teori-s-bock-matt"))}"><figcaption>S-bock – S-måttet är förskjutningen.</figcaption></figure>
+      </div>
+      <h2>Vanligaste måtten</h2>
+      <ul>
+        <li>Offset 50 mm, 45° → 50 × 1,41 = <b>70,5 mm</b></li>
+        <li>Offset 100 mm, 30° → 100 × 2,0 = <b>200 mm</b></li>
+        <li>S-bock 60 mm, 45° → <b>84,6 mm</b></li>
+        <li>S-bock 60 mm, 30° → <b>120 mm</b></li>
+        <li>15 mm rör: <b>110 + X</b>. S 80 → <b>190 mm</b></li>
+        <li>12 mm rör: <b>90 + X</b>. S 90 → <b>180 mm</b></li>
+        <li>Tight S 45°: 15 mm ≈ <b>60 mm cc</b></li>
+        <li>Tight S 45°: 12 mm ≈ <b>50 mm cc</b></li>
+        <li>Märken 15 mm: <b>15 / 35 mm S</b></li>
+        <li>Märken 12 mm: <b>10 / 30 mm S</b></li>
+      </ul>
+      <p class="fot">Alla bocknycklar slår olika – kontrollera din egen. Mät alltid från samma referens (centrum eller insida).</p>
+    `;
+    skrivUt("Bockning – fuskblad", css, html);
   }
 
   return (
@@ -150,6 +206,17 @@ export default function BockTeori() {
       <Text style={[styles.ingress, { color: theme.muted }]}>
         Varför böjer röret sig? Vad är cc-mått? Hur räknar man en offset eller S-bock? Här är grunderna – med
         formler, exempel och vanliga fel.
+      </Text>
+
+      <TouchableOpacity
+        onPress={skrivUtFuskblad}
+        style={[styles.printBtn, { backgroundColor: theme.success }]}
+        accessibilityRole="button"
+      >
+        <Text style={styles.printBtnText}>🖨 Fuskblad – allt på en A4-sida</Text>
+      </TouchableOpacity>
+      <Text style={{ color: theme.muted, fontSize: 12, marginTop: 4, marginBottom: 12 }}>
+        Formlerna, offset och S-bock samt de vanligaste måtten. En sida att sätta i pärmen.
       </Text>
 
       <TouchableOpacity
