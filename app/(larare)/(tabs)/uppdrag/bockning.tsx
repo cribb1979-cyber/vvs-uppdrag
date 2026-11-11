@@ -14,7 +14,7 @@ function normalisera(text: string): string {
 
 function matchar(o: BockOvning, q: string): boolean {
   if (!q) return true;
-  const text = [o.titel, o.sammanfattning, o.niva, ...o.yrkestermer, ...o.moment, ...o.kontroll].join(" ");
+  const text = [o.titel, o.sammanfattning, o.niva, o.kalla ?? "", ...o.yrkestermer, ...o.moment, ...o.kontroll].join(" ");
   return normalisera(text).includes(q);
 }
 
@@ -149,6 +149,13 @@ export default function Bockningar() {
                     • {f}
                   </Text>
                 ))}
+
+                {!!o.kalla && (
+                  <>
+                    <Text style={[styles.delRubrik, { color: theme.text, marginTop: 12 }]}>Källa</Text>
+                    <Text style={{ color: theme.muted, fontSize: 12, lineHeight: 18 }}>{o.kalla}</Text>
+                  </>
+                )}
 
                 <Text style={[styles.delRubrik, { color: theme.text, marginTop: 12 }]}>Säkerhet</Text>
                 {o.sakerhet.map((s) => (

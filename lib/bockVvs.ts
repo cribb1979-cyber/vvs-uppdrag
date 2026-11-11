@@ -29,6 +29,8 @@ export interface BockOvning {
   yrkestermer: string[];
   sakerhet: string[];
   reflektion: string[];
+  /** Källa/idé, t.ex. en video eller ett leverantörsdokument. */
+  kalla?: string;
 }
 
 export const BOCKNINGAR: BockOvning[] = [
@@ -451,6 +453,84 @@ export const BOCKNINGAR: BockOvning[] = [
       "Vad gör du om en fog läcker vid provtryck?",
       "Varför är det viktigt att dokumentera provtrycket?",
     ],
+  },
+  {
+    id: "bock-serie-insida",
+    titel: "Bocka i serie – L-, U- och Z-bock med insida som måttreferens",
+    niva: "Mästare",
+    tidMin: 75,
+    sammanfattning:
+      "Bocka två eller flera 90°-bockar i serie (L-, U- eller Z-bock) och mät från rörets insida i stället för centrum. Kompensera med halva ytterdiametern och kontrollera cc-måttet.",
+    mal: [
+      "Förstå skillnaden mellan att mäta från centrum och från rörets insida.",
+      "Beräkna kompensationen: halva ytterdiametern (7,5 mm för 15 mm rör, 6 mm för 12 mm rör).",
+      "Använda bockverktygets X-markering på rätt sätt.",
+      "Bocka L-, U- eller Z-bock i serie med rätt cc-mått.",
+      "Kontrollera cc-mått, bockvinklar, parallellitet och att bockarna ligger i samma plan.",
+    ],
+    material: [
+      { component: "Kopparrör", dimension: "15 mm", quantity: 2 },
+      { component: "Propp", dimension: '1/2"', quantity: 2 },
+      { component: "Ritning/mall", quantity: 1 },
+    ],
+    verktyg: [
+      "Rörbock (bocknyckel)",
+      "Bockfjäder 15 mm",
+      "Vinkelhake",
+      "Tumstock",
+      "Skjutmått",
+      "Märkpenna",
+    ],
+    moment: [
+      "Mät cc-måttet mellan bockarna enligt ritning, till exempel 200 mm.",
+      "Välj referens: mät från rörets insida i stället för från centrumlinjen.",
+      "Beräkna kompensationen: halva ytterdiametern (7,5 mm för 15 mm rör, 6 mm för 12 mm rör).",
+      "Märk röret på rätt plats och kontrollera markeringen mot bockverktygets X-markering.",
+      "Bocka första 90°-bocken och kontrollera bockvinkeln.",
+      "Bocka nästa bock i serien (L-, U- eller Z-bock) med samma referens och kompensation.",
+      "Kontrollera cc-mått, bockvinklar, parallellitet och att bockarna ligger i samma plan.",
+      "Dokumentera mått och resultat i egenkontrollen.",
+    ],
+    kontroll: [
+      "Cc-måttet stämmer med ritningen ±2 mm.",
+      "Båda bockvinklarna är 90° ±2°.",
+      "Kompensationen är rätt: halva ytterdiametern.",
+      "Bockarna ligger i samma plan.",
+      "Inga veck eller ovalitet i bockarna.",
+    ],
+    vanligaFel: [
+      "Mäter från centrum men använder bockverktygets X-markering – eller tvärtom.",
+      "Glömmer kompensationen på halva ytterdiametern.",
+      "Fel cc-mått mellan bockarna.",
+      "Bockarna hamnar i olika plan.",
+      "Markeringen hamnar på fel sida av röret.",
+    ],
+    yrkestermer: [
+      "cc-mått",
+      "centrumlinje",
+      "insida",
+      "ytterdiameter",
+      "kompensation",
+      "bocknyckel",
+      "X-markering",
+      "L-bock",
+      "U-bock",
+      "Z-bock",
+      "seriebockning",
+    ],
+    sakerhet: [
+      "Handskar vid vassa rörändar.",
+      "Skyddsglasögon vid kapning och skävning.",
+      "Spänn fast röret vid bockning.",
+    ],
+    reflektion: [
+      "Varför blir det fel om du mäter från centrum men markerar enligt insidan?",
+      "Hur påverkar rördiametern kompensationen?",
+      "När är det bättre att mäta från centrum?",
+      "Varför är det viktigt att bockarna ligger i samma plan?",
+    ],
+    kalla:
+      "Tekniken är hämtad från RörmokarLäraren (Anders Pargell), ”En annan variant på nästa bock”. Kontrollera alltid mot din bockverktystillverkares anvisning – markeringarna kan skilja mellan fabrikat.",
   },
 ];
 
