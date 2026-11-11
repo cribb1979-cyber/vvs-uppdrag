@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Image, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Badge, Card } from "@/components/ui/Card";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
@@ -204,16 +204,24 @@ export default function Bockningar() {
             </View>
             <Text style={{ color: theme.muted, fontSize: 13, lineHeight: 19, marginTop: 6 }}>{o.sammanfattning}</Text>
 
-            <Image
-              source={{ uri: quizImageUrl(bockImagePath(o.id)) }}
-              style={{
-                width: "100%",
-                height: 180,
-                resizeMode: "contain",
-                marginTop: 10,
-                backgroundColor: theme.card,
-              }}
-            />
+            <TouchableOpacity
+              onPress={() => Linking.openURL(quizImageUrl(bockImagePath(o.id)))}
+              accessibilityRole="imagebutton"
+            >
+              <Image
+                source={{ uri: quizImageUrl(bockImagePath(o.id)) }}
+                style={{
+                  width: "100%",
+                  height: 220,
+                  resizeMode: "contain",
+                  marginTop: 10,
+                  backgroundColor: theme.card,
+                }}
+              />
+            </TouchableOpacity>
+            <Text style={{ color: theme.muted, fontSize: 11, marginTop: 2 }}>
+              Tryck på bilden för att öppna ritningen i full storlek.
+            </Text>
 
             <View style={styles.atgarder}>
               <TouchableOpacity onPress={() => vaxla(o.id)} accessibilityRole="button">

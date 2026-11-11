@@ -152,7 +152,17 @@ export default function BankMall() {
       {!!mall.beskrivning && <Text style={[styles.desc, { color: theme.muted }]}>{mall.beskrivning}</Text>}
 
       {!!a?.reference_image_path && (
-        <Image source={{ uri: quizImageUrl(a.reference_image_path) }} style={styles.bankImage} />
+        <>
+          <TouchableOpacity
+            onPress={() => Linking.openURL(quizImageUrl(a.reference_image_path!))}
+            accessibilityRole="imagebutton"
+          >
+            <Image source={{ uri: quizImageUrl(a.reference_image_path) }} style={styles.bankImage} />
+          </TouchableOpacity>
+          <Text style={{ color: theme.muted, fontSize: 11, marginTop: 2 }}>
+            Tryck på bilden för att öppna i full storlek.
+          </Text>
+        </>
       )}
 
       <Text style={{ color: theme.muted, fontSize: 12, marginTop: 8 }}>

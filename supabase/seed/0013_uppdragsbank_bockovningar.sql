@@ -947,7 +947,7 @@ begin
 {
   "assignment": {
     "title": "Bockövning – Bocktavlan – flera bockar efter ritning",
-    "description": "Montera en rörslinga med flera bockar på en bocktavla. Följ ritningen, håll cc-mått och bockplan och kontrollera hela slingan.\n\nMoment:\n1. Läs ritningen och märk ut alla bockpunkter och cc-mått.\n2. Mät upp bockpunkterna enligt tabellen och kontrollera cc-måtten.\n3. Bestäm bockordningen – börja med den bock som ligger närmast ena röränden.\n4. Bocka första bocken och kontrollera måttet.\n5. Fortsätt i samma ordning och kontrollera efter varje bock.\n6. Sätt klammorna K1–K7 enligt tabellen – samma cc-mått för 12 och 15 mm.\n7. Montera röret på tavlan med rörklammer.\n8. Kontrollera cc-mått, vinklar, parallellitet och att röret sitter stabilt.\n9. Dokumentera bockordning och resultat.\n\nYrkesspråk: bocktavla, bockordning, cc-mått, måttkedja, bockplan, rörklammer, klammerposition, bockpunkt, montage\n\nSäkerhet:\n- Handskar och skyddsglasögon.\n- Spänn fast tavlan.\n- Var försiktig med skruvdragaren.\n\nVanliga fel:\n- Fel bockordning så att måtten inte räcker.\n- Måttkedjan räknas fel.\n- Röret vrids mellan bockarna.\n- För hårt åtdragna rörklammer som deformerar röret.\n- Man glömmer att kontrollera efter varje bock.\n\nKälla: RörmokarLäraren, ”Tavlan”. Övningen är skriven som en standardövning för bocktavla.",
+    "description": "Montera en rörslinga med flera bockar på en bocktavla. Följ ritningen, håll cc-mått och bockplan och kontrollera hela slingan.\n\nMoment:\n1. Läs ritningen och märk ut alla bockpunkter och cc-mått.\n2. Mät upp bockpunkterna enligt tabellen och kontrollera cc-måtten.\n3. Bestäm om 12 mm-röret ska ligga 4 cc (40 mm) eller 6 cc (60 mm) under 15 mm-röret.\n4. Bestäm bockordningen – börja med den bock som ligger närmast ena röränden.\n5. Bocka första bocken och kontrollera måttet.\n6. Fortsätt i samma ordning och kontrollera efter varje bock.\n7. Sätt klammorna K1–K6 för båda rören enligt tabellen.\n8. Montera rören på tavlan med rörklammer – 4 eller 6 klammor per rör.\n9. Kontrollera cc-mått, vinklar, parallellitet och att röret sitter stabilt.\n10. Dokumentera bockordning och resultat.\n\nYrkesspråk: bocktavla, bockordning, cc-mått, måttkedja, bockplan, rörklammer, klammerposition, bockpunkt, cc-avstånd, montage\n\nSäkerhet:\n- Handskar och skyddsglasögon.\n- Spänn fast tavlan.\n- Var försiktig med skruvdragaren.\n\nVanliga fel:\n- Fel bockordning så att måtten inte räcker.\n- Måttkedjan räknas fel.\n- Röret vrids mellan bockarna.\n- För hårt åtdragna rörklammer som deformerar röret.\n- Man glömmer att kontrollera efter varje bock.\n\nKälla: RörmokarLäraren, ”Tavlan”. Övningen är skriven som en standardövning för bocktavla.",
     "kind": "uppdrag",
     "reveal_mode": "full",
     "ai_mode": "app_help_only",
@@ -963,7 +963,8 @@ begin
       "Bockvinklarna stämmer ±2°.",
       "Bockarna ligger i samma plan.",
       "Röret sitter stadigt i rörklamren.",
-      "Klammorna sitter på rätt cc-mått och deformera inte röret.",
+      "Båda rören sitter på rätt cc-mått och rätt avstånd (4 eller 6 cc).",
+      "Klammorna deformera inte rören.",
       "Inga veck eller ovalitet."
     ],
     "reflection_questions": [
@@ -1030,12 +1031,16 @@ begin
       "sort_order": 3
     },
     {
-      "label": "Klammorna sitter på rätt cc-mått och deformera inte röret.",
+      "label": "Båda rören sitter på rätt cc-mått och rätt avstånd (4 eller 6 cc).",
       "sort_order": 4
     },
     {
-      "label": "Inga veck eller ovalitet.",
+      "label": "Klammorna deformera inte rören.",
       "sort_order": 5
+    },
+    {
+      "label": "Inga veck eller ovalitet.",
+      "sort_order": 6
     }
   ]
 }
