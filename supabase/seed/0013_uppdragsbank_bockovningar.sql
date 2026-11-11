@@ -5,21 +5,10 @@
 -- Körs med: docker exec -i vvs-supabase-db-1 psql -U postgres -d postgres -v ON_ERROR_STOP=1 < filen
 
 do $$
-declare
-  v_org uuid;
-  v_profile uuid;
-  v_payload jsonb;
+declare v_org uuid; v_profile uuid; v_payload jsonb;
 begin
-  select p.org_id, p.id into v_org, v_profile
-  from public.profiles p
-  where p.status = 'approved'
-  order by p.created_at
-  limit 1;
-
-  if v_org is null then
-    raise notice 'Ingen godkänd lärare finns – bockövningarna hoppas över.';
-    return;
-  end if;
+  select p.org_id, p.id into v_org, v_profile from public.profiles p where p.status='approved' order by p.created_at limit 1;
+  if v_org is null then raise notice 'Ingen godkänd lärare finns – bockövningarna hoppas över.'; return; end if;
 
   v_payload := $json$
 {
@@ -106,12 +95,8 @@ begin
   ]
 }
   $json$::jsonb;
-  insert into public.uppdragsbank_mallar (
-    agare_org_id, created_by, titel, beskrivning, year_level, course_code,
-    kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar
-  )
-  select v_org, v_profile, 'Bockövning – Bocka 90° med bockfjäder – koppar 15 mm', 'Bocka ett 15 mm kopparrör 90° med bockfjäder. Öva bockmått, bockradie och kontroll av bockvinkel och ovalitet.', 'GY', 'VVS', 'uppdrag', v_payload,
-         array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
+  insert into public.uppdragsbank_mallar (agare_org_id, created_by, titel, beskrivning, year_level, course_code, kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar)
+  select v_org, v_profile, 'Bockövning – Bocka 90° med bockfjäder – koppar 15 mm', 'Bocka ett 15 mm kopparrör 90° med bockfjäder. Öva bockmått, bockradie och kontroll av bockvinkel och ovalitet.', 'GY', 'VVS', 'uppdrag', v_payload, array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
   where not exists (select 1 from public.uppdragsbank_mallar where titel = 'Bockövning – Bocka 90° med bockfjäder – koppar 15 mm');
 
   v_payload := $json$
@@ -179,12 +164,8 @@ begin
   ]
 }
   $json$::jsonb;
-  insert into public.uppdragsbank_mallar (
-    agare_org_id, created_by, titel, beskrivning, year_level, course_code,
-    kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar
-  )
-  select v_org, v_profile, 'Bockövning – Bocka 45° och kontrollera bockvinkel', 'Bocka ett 15 mm kopparrör 45° med bockfjäder och kontrollera vinkeln mot en vinkelmall.', 'GY', 'VVS', 'uppdrag', v_payload,
-         array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
+  insert into public.uppdragsbank_mallar (agare_org_id, created_by, titel, beskrivning, year_level, course_code, kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar)
+  select v_org, v_profile, 'Bockövning – Bocka 45° och kontrollera bockvinkel', 'Bocka ett 15 mm kopparrör 45° med bockfjäder och kontrollera vinkeln mot en vinkelmall.', 'GY', 'VVS', 'uppdrag', v_payload, array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
   where not exists (select 1 from public.uppdragsbank_mallar where titel = 'Bockövning – Bocka 45° och kontrollera bockvinkel');
 
   v_payload := $json$
@@ -258,12 +239,8 @@ begin
   ]
 }
   $json$::jsonb;
-  insert into public.uppdragsbank_mallar (
-    agare_org_id, created_by, titel, beskrivning, year_level, course_code,
-    kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar
-  )
-  select v_org, v_profile, 'Bockövning – Parallellförskjutning (offset) – två 45°-bockar', 'En offset används när röret ska fortsätta rakt men hamna på en annan nivå eller i sidled. Du gör två motriktade 45°-bockar. Här får du förklaringen steg för steg.', 'GY', 'VVS', 'uppdrag', v_payload,
-         array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
+  insert into public.uppdragsbank_mallar (agare_org_id, created_by, titel, beskrivning, year_level, course_code, kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar)
+  select v_org, v_profile, 'Bockövning – Parallellförskjutning (offset) – två 45°-bockar', 'En offset används när röret ska fortsätta rakt men hamna på en annan nivå eller i sidled. Du gör två motriktade 45°-bockar. Här får du förklaringen steg för steg.', 'GY', 'VVS', 'uppdrag', v_payload, array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
   where not exists (select 1 from public.uppdragsbank_mallar where titel = 'Bockövning – Parallellförskjutning (offset) – två 45°-bockar');
 
   v_payload := $json$
@@ -331,12 +308,8 @@ begin
   ]
 }
   $json$::jsonb;
-  insert into public.uppdragsbank_mallar (
-    agare_org_id, created_by, titel, beskrivning, year_level, course_code,
-    kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar
-  )
-  select v_org, v_profile, 'Bockövning – Dubbelbock/U-bock efter mått', 'Bocka en U-form med två 90°-bockar. Kontrollera cc-mått, höjd och att benen blir parallella.', 'GY', 'VVS', 'uppdrag', v_payload,
-         array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
+  insert into public.uppdragsbank_mallar (agare_org_id, created_by, titel, beskrivning, year_level, course_code, kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar)
+  select v_org, v_profile, 'Bockövning – Dubbelbock/U-bock efter mått', 'Bocka en U-form med två 90°-bockar. Kontrollera cc-mått, höjd och att benen blir parallella.', 'GY', 'VVS', 'uppdrag', v_payload, array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
   where not exists (select 1 from public.uppdragsbank_mallar where titel = 'Bockövning – Dubbelbock/U-bock efter mått');
 
   v_payload := $json$
@@ -411,12 +384,8 @@ begin
   ]
 }
   $json$::jsonb;
-  insert into public.uppdragsbank_mallar (
-    agare_org_id, created_by, titel, beskrivning, year_level, course_code,
-    kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar
-  )
-  select v_org, v_profile, 'Bockövning – Bocka efter ritning och mall', 'Läs en enkel rörritning, måttsätt och bocka röret efter mall. Kontrollera mått, vinklar och toleranser mot ritningen.', 'GY', 'VVS', 'uppdrag', v_payload,
-         array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
+  insert into public.uppdragsbank_mallar (agare_org_id, created_by, titel, beskrivning, year_level, course_code, kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar)
+  select v_org, v_profile, 'Bockövning – Bocka efter ritning och mall', 'Läs en enkel rörritning, måttsätt och bocka röret efter mall. Kontrollera mått, vinklar och toleranser mot ritningen.', 'GY', 'VVS', 'uppdrag', v_payload, array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
   where not exists (select 1 from public.uppdragsbank_mallar where titel = 'Bockövning – Bocka efter ritning och mall');
 
   v_payload := $json$
@@ -489,12 +458,8 @@ begin
   ]
 }
   $json$::jsonb;
-  insert into public.uppdragsbank_mallar (
-    agare_org_id, created_by, titel, beskrivning, year_level, course_code,
-    kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar
-  )
-  select v_org, v_profile, 'Bockövning – Bocka tunnväggigt kopparrör utan veck', 'Bocka ett tunnväggigt kopparrör med stor bockradie utan veck och med kontrollerad ovalitet.', 'GY', 'VVS', 'uppdrag', v_payload,
-         array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
+  insert into public.uppdragsbank_mallar (agare_org_id, created_by, titel, beskrivning, year_level, course_code, kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar)
+  select v_org, v_profile, 'Bockövning – Bocka tunnväggigt kopparrör utan veck', 'Bocka ett tunnväggigt kopparrör med stor bockradie utan veck och med kontrollerad ovalitet.', 'GY', 'VVS', 'uppdrag', v_payload, array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
   where not exists (select 1 from public.uppdragsbank_mallar where titel = 'Bockövning – Bocka tunnväggigt kopparrör utan veck');
 
   v_payload := $json$
@@ -569,12 +534,8 @@ begin
   ]
 }
   $json$::jsonb;
-  insert into public.uppdragsbank_mallar (
-    agare_org_id, created_by, titel, beskrivning, year_level, course_code,
-    kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar
-  )
-  select v_org, v_profile, 'Bockövning – Bocka PEX 16 mm med bockfjäder', 'Bocka PEX 16 mm med bockfjäder för PEX. Kontrollera minsta bockradie och att röret inte knäcks.', 'GY', 'VVS', 'uppdrag', v_payload,
-         array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
+  insert into public.uppdragsbank_mallar (agare_org_id, created_by, titel, beskrivning, year_level, course_code, kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar)
+  select v_org, v_profile, 'Bockövning – Bocka PEX 16 mm med bockfjäder', 'Bocka PEX 16 mm med bockfjäder för PEX. Kontrollera minsta bockradie och att röret inte knäcks.', 'GY', 'VVS', 'uppdrag', v_payload, array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
   where not exists (select 1 from public.uppdragsbank_mallar where titel = 'Bockövning – Bocka PEX 16 mm med bockfjäder');
 
   v_payload := $json$
@@ -656,12 +617,8 @@ begin
   ]
 }
   $json$::jsonb;
-  insert into public.uppdragsbank_mallar (
-    agare_org_id, created_by, titel, beskrivning, year_level, course_code,
-    kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar
-  )
-  select v_org, v_profile, 'Bockövning – Bocka och anslut – täthetsprovning', 'Bocka 90°, anslut med klämringskopplingar och täthetsprova installationen. Koppla ihop bockning med egenkontroll och provtryck.', 'GY', 'VVS', 'uppdrag', v_payload,
-         array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
+  insert into public.uppdragsbank_mallar (agare_org_id, created_by, titel, beskrivning, year_level, course_code, kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar)
+  select v_org, v_profile, 'Bockövning – Bocka och anslut – täthetsprovning', 'Bocka 90°, anslut med klämringskopplingar och täthetsprova installationen. Koppla ihop bockning med egenkontroll och provtryck.', 'GY', 'VVS', 'uppdrag', v_payload, array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
   where not exists (select 1 from public.uppdragsbank_mallar where titel = 'Bockövning – Bocka och anslut – täthetsprovning');
 
   v_payload := $json$
@@ -742,12 +699,8 @@ begin
   ]
 }
   $json$::jsonb;
-  insert into public.uppdragsbank_mallar (
-    agare_org_id, created_by, titel, beskrivning, year_level, course_code,
-    kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar
-  )
-  select v_org, v_profile, 'Bockövning – Bocka i serie – L-, U- och Z-bock med insida som måttreferens', 'Bocka två eller flera 90°-bockar i serie (L-, U- eller Z-bock) och mät från rörets insida i stället för centrum. Kompensera med halva ytterdiametern och kontrollera cc-måttet.', 'GY', 'VVS', 'uppdrag', v_payload,
-         array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
+  insert into public.uppdragsbank_mallar (agare_org_id, created_by, titel, beskrivning, year_level, course_code, kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar)
+  select v_org, v_profile, 'Bockövning – Bocka i serie – L-, U- och Z-bock med insida som måttreferens', 'Bocka två eller flera 90°-bockar i serie (L-, U- eller Z-bock) och mät från rörets insida i stället för centrum. Kompensera med halva ytterdiametern och kontrollera cc-måttet.', 'GY', 'VVS', 'uppdrag', v_payload, array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
   where not exists (select 1 from public.uppdragsbank_mallar where titel = 'Bockövning – Bocka i serie – L-, U- och Z-bock med insida som måttreferens');
 
   v_payload := $json$
@@ -828,12 +781,8 @@ begin
   ]
 }
   $json$::jsonb;
-  insert into public.uppdragsbank_mallar (
-    agare_org_id, created_by, titel, beskrivning, year_level, course_code,
-    kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar
-  )
-  select v_org, v_profile, 'Bockövning – Svanbock – dubbel motriktad bock i samma plan', 'Bocka en svanbock med två motriktade bockar i samma plan. Kontrollera offset, höjd, bockvinklar och parallellitet.', 'GY', 'VVS', 'uppdrag', v_payload,
-         array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
+  insert into public.uppdragsbank_mallar (agare_org_id, created_by, titel, beskrivning, year_level, course_code, kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar)
+  select v_org, v_profile, 'Bockövning – Svanbock – dubbel motriktad bock i samma plan', 'Bocka en svanbock med två motriktade bockar i samma plan. Kontrollera offset, höjd, bockvinklar och parallellitet.', 'GY', 'VVS', 'uppdrag', v_payload, array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
   where not exists (select 1 from public.uppdragsbank_mallar where titel = 'Bockövning – Svanbock – dubbel motriktad bock i samma plan');
 
   v_payload := $json$
@@ -914,12 +863,8 @@ begin
   ]
 }
   $json$::jsonb;
-  insert into public.uppdragsbank_mallar (
-    agare_org_id, created_by, titel, beskrivning, year_level, course_code,
-    kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar
-  )
-  select v_org, v_profile, 'Bockövning – S-bock – två lika stora bockar med beräknat avstånd', 'Bocka en S-bock med två lika stora bockar. Beräkna avståndet mellan markeringarna med faktor 2 vid 30°, 1,41 vid 45° och 3,7 vid 15°. Kontrollera S-mått och bockplan.', 'GY', 'VVS', 'uppdrag', v_payload,
-         array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
+  insert into public.uppdragsbank_mallar (agare_org_id, created_by, titel, beskrivning, year_level, course_code, kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar)
+  select v_org, v_profile, 'Bockövning – S-bock – två lika stora bockar med beräknat avstånd', 'Bocka en S-bock med två lika stora bockar. Beräkna avståndet mellan markeringarna med faktor 2 vid 30°, 1,41 vid 45° och 3,7 vid 15°. Kontrollera S-mått och bockplan.', 'GY', 'VVS', 'uppdrag', v_payload, array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
   where not exists (select 1 from public.uppdragsbank_mallar where titel = 'Bockövning – S-bock – två lika stora bockar med beräknat avstånd');
 
   v_payload := $json$
@@ -994,19 +939,15 @@ begin
   ]
 }
   $json$::jsonb;
-  insert into public.uppdragsbank_mallar (
-    agare_org_id, created_by, titel, beskrivning, year_level, course_code,
-    kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar
-  )
-  select v_org, v_profile, 'Bockövning – Svanbock – alternativ 30/30/60-teknik', 'Bocka en svanbock med 30°, 30° och 60° enligt den alternativa tekniken. Kontrollera att avståndet blir kort och att bockarna ligger i samma plan.', 'GY', 'VVS', 'uppdrag', v_payload,
-         array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
+  insert into public.uppdragsbank_mallar (agare_org_id, created_by, titel, beskrivning, year_level, course_code, kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar)
+  select v_org, v_profile, 'Bockövning – Svanbock – alternativ 30/30/60-teknik', 'Bocka en svanbock med 30°, 30° och 60° enligt den alternativa tekniken. Kontrollera att avståndet blir kort och att bockarna ligger i samma plan.', 'GY', 'VVS', 'uppdrag', v_payload, array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
   where not exists (select 1 from public.uppdragsbank_mallar where titel = 'Bockövning – Svanbock – alternativ 30/30/60-teknik');
 
   v_payload := $json$
 {
   "assignment": {
     "title": "Bockövning – Bocktavlan – flera bockar efter ritning",
-    "description": "Montera en rörslinga med flera bockar på en bocktavla. Följ ritningen, håll cc-mått och bockplan och kontrollera hela slingan.\n\nMoment:\n1. Läs ritningen och märk ut alla bockpunkter och cc-mått.\n2. Bestäm bockordningen – börja med den bock som ligger närmast ena röränden.\n3. Bocka första bocken och kontrollera måttet.\n4. Fortsätt i samma ordning och kontrollera efter varje bock.\n5. Montera röret på tavlan med rörklammer.\n6. Kontrollera cc-mått, vinklar, parallellitet och att röret sitter stabilt.\n7. Dokumentera bockordning och resultat.\n\nYrkesspråk: bocktavla, bockordning, cc-mått, måttkedja, bockplan, rörklammer, montage\n\nSäkerhet:\n- Handskar och skyddsglasögon.\n- Spänn fast tavlan.\n- Var försiktig med skruvdragaren.\n\nVanliga fel:\n- Fel bockordning så att måtten inte räcker.\n- Måttkedjan räknas fel.\n- Röret vrids mellan bockarna.\n- För hårt åtdragna rörklammer som deformerar röret.\n- Man glömmer att kontrollera efter varje bock.\n\nKälla: RörmokarLäraren, ”Tavlan”. Övningen är skriven som en standardövning för bocktavla.",
+    "description": "Montera en rörslinga med flera bockar på en bocktavla. Följ ritningen, håll cc-mått och bockplan och kontrollera hela slingan.\n\nMoment:\n1. Läs ritningen och märk ut alla bockpunkter och cc-mått.\n2. Mät upp bockpunkterna enligt tabellen och kontrollera cc-måtten.\n3. Bestäm bockordningen – börja med den bock som ligger närmast ena röränden.\n4. Bocka första bocken och kontrollera måttet.\n5. Fortsätt i samma ordning och kontrollera efter varje bock.\n6. Sätt klammorna K1–K7 enligt tabellen – samma cc-mått för 12 och 15 mm.\n7. Montera röret på tavlan med rörklammer.\n8. Kontrollera cc-mått, vinklar, parallellitet och att röret sitter stabilt.\n9. Dokumentera bockordning och resultat.\n\nYrkesspråk: bocktavla, bockordning, cc-mått, måttkedja, bockplan, rörklammer, klammerposition, bockpunkt, montage\n\nSäkerhet:\n- Handskar och skyddsglasögon.\n- Spänn fast tavlan.\n- Var försiktig med skruvdragaren.\n\nVanliga fel:\n- Fel bockordning så att måtten inte räcker.\n- Måttkedjan räknas fel.\n- Röret vrids mellan bockarna.\n- För hårt åtdragna rörklammer som deformerar röret.\n- Man glömmer att kontrollera efter varje bock.\n\nKälla: RörmokarLäraren, ”Tavlan”. Övningen är skriven som en standardövning för bocktavla.",
     "kind": "uppdrag",
     "reveal_mode": "full",
     "ai_mode": "app_help_only",
@@ -1022,6 +963,7 @@ begin
       "Bockvinklarna stämmer ±2°.",
       "Bockarna ligger i samma plan.",
       "Röret sitter stadigt i rörklamren.",
+      "Klammorna sitter på rätt cc-mått och deformera inte röret.",
       "Inga veck eller ovalitet."
     ],
     "reflection_questions": [
@@ -1088,17 +1030,17 @@ begin
       "sort_order": 3
     },
     {
-      "label": "Inga veck eller ovalitet.",
+      "label": "Klammorna sitter på rätt cc-mått och deformera inte röret.",
       "sort_order": 4
+    },
+    {
+      "label": "Inga veck eller ovalitet.",
+      "sort_order": 5
     }
   ]
 }
   $json$::jsonb;
-  insert into public.uppdragsbank_mallar (
-    agare_org_id, created_by, titel, beskrivning, year_level, course_code,
-    kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar
-  )
-  select v_org, v_profile, 'Bockövning – Bocktavlan – flera bockar efter ritning', 'Montera en rörslinga med flera bockar på en bocktavla. Följ ritningen, håll cc-mått och bockplan och kontrollera hela slingan.', 'GY', 'VVS', 'uppdrag', v_payload,
-         array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
+  insert into public.uppdragsbank_mallar (agare_org_id, created_by, titel, beskrivning, year_level, course_code, kind, payload, regel_refs, version, status, granskad_av, granskad_at, granskningskommentar)
+  select v_org, v_profile, 'Bockövning – Bocktavlan – flera bockar efter ritning', 'Montera en rörslinga med flera bockar på en bocktavla. Följ ritningen, håll cc-mått och bockplan och kontrollera hela slingan.', 'GY', 'VVS', 'uppdrag', v_payload, array[]::text[], 1, 'godkand', v_profile, now(), 'Importerad bockövning'
   where not exists (select 1 from public.uppdragsbank_mallar where titel = 'Bockövning – Bocktavlan – flera bockar efter ritning');
 end $$;

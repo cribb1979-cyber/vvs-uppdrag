@@ -790,7 +790,9 @@ export const BOCKNINGAR: BockOvning[] = [
     sammanfattning:
       "Montera en rörslinga med flera bockar på en bocktavla. Följ ritningen, håll cc-mått och bockplan och kontrollera hela slingan.",
     forklaring:
-      "En bocktavla är en övningsplatta där du gör flera bockar efter en ritning. Du tränar bockordning, måttkedja och montage. Tänk igenom i vilken ordning bockarna ska göras – annars kan röret bli för kort eller hamna i fel plan.",
+      "En bocktavla är en övningsplatta där du gör flera bockar efter en ritning. Du tränar bockordning, måttkedja och montage. Tänk igenom i vilken ordning bockarna ska göras – annars kan röret bli för kort eller hamna i fel plan.\n\n" +
+      "Ritningen är 900 × 600 mm. Alla mått är cc-mått och gäller både 12 och 15 mm rör. Bockpunkter: Start (100, 100), B1 (300, 100), B2 (300, 350), B3 (550, 350), B4 (550, 150), B5 (800, 150), B6 (800, 450). Klammer: K1 (150, 100), K2 (300, 225), K3 (425, 350), K4 (550, 250), K5 (675, 150), K6 (800, 300), K7 (800, 450).\n\n" +
+      "Mäter du från insidan kompenserar du med 6 mm för 12 mm rör och 7,5 mm för 15 mm rör. Välj 12 eller 15 mm rörklammer – cc-måtten är desamma.",
     mal: [
       "Läsa en rörritning med flera bockar.",
       "Planera bockordningen innan du börjar.",
@@ -816,9 +818,11 @@ export const BOCKNINGAR: BockOvning[] = [
     ],
     moment: [
       "Läs ritningen och märk ut alla bockpunkter och cc-mått.",
+      "Mät upp bockpunkterna enligt tabellen och kontrollera cc-måtten.",
       "Bestäm bockordningen – börja med den bock som ligger närmast ena röränden.",
       "Bocka första bocken och kontrollera måttet.",
       "Fortsätt i samma ordning och kontrollera efter varje bock.",
+      "Sätt klammorna K1–K7 enligt tabellen – samma cc-mått för 12 och 15 mm.",
       "Montera röret på tavlan med rörklammer.",
       "Kontrollera cc-mått, vinklar, parallellitet och att röret sitter stabilt.",
       "Dokumentera bockordning och resultat.",
@@ -828,6 +832,7 @@ export const BOCKNINGAR: BockOvning[] = [
       "Bockvinklarna stämmer ±2°.",
       "Bockarna ligger i samma plan.",
       "Röret sitter stadigt i rörklamren.",
+      "Klammorna sitter på rätt cc-mått och deformera inte röret.",
       "Inga veck eller ovalitet.",
     ],
     vanligaFel: [
@@ -844,6 +849,8 @@ export const BOCKNINGAR: BockOvning[] = [
       "måttkedja",
       "bockplan",
       "rörklammer",
+      "klammerposition",
+      "bockpunkt",
       "montage",
     ],
     sakerhet: [
