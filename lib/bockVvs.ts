@@ -645,7 +645,9 @@ export const BOCKNINGAR: BockOvning[] = [
     niva: "Mästare",
     tidMin: 75,
     sammanfattning:
-      "Bocka en S-bock med två lika stora bockar. Beräkna avståndet mellan markeringarna med faktor 2 vid 30°, 1,41 vid 45° och 3,7 vid 15°. Kontrollera S-mått och bockplan.",
+      "Bocka en S-bock med två lika stora bockar. Tighta 45°-S-bockar ger ca 60 mm cc på 15 mm rör och ca 50 mm cc på 12 mm rör. Större S: 15 mm → 110 + X, 12 mm → 90 + X.",
+    forklaring:
+      "En S-bock är två lika stora bockar. För tighta S-bockar lägger du bockarna så nära varandra som möjligt. Enligt RörmokarLäraren ger två 45°-bockar cirka 60 mm cc på 15 mm rör och cirka 50 mm cc på 12 mm rör. Vill du ha ett större S finns en praktisk formel: 15 mm rör → markavstånd = 110 + X; 12 mm rör → 90 + X. X är det S-mått du vill ha. Exempel: 15 mm rör och S = 80 mm → 110 + 80 = 190 mm. Alla bocknycklar slår olika – kontrollera din egen.",
     mal: [
       "Förstå vad en S-bock är och varför den inte får vara 90°.",
       "Beräkna avståndet mellan startstreck och bockstreck med rätt faktor.",
@@ -667,8 +669,10 @@ export const BOCKNINGAR: BockOvning[] = [
       "Märkpenna",
     ],
     moment: [
-      "Bestäm S-måttet, till exempel 60 mm, och bockvinkeln, till exempel 30°.",
+      "Bestäm S-måttet och bockvinkeln, till exempel 45°.",
       "Beräkna avståndet mellan markeringarna: S-mått × faktor. 30° → ×2, 45° → ×1,41, 15° → ×3,7.",
+      "Tight S-bock: lägg bockarna så nära varandra som möjligt (15 mm ≈ 60 mm cc, 12 mm ≈ 50 mm cc).",
+      "Större S-bock: 15 mm rör → markavstånd = 110 + X; 12 mm rör → 90 + X.",
       "Sätt ett startstreck vid bockverktygets referens (0 på 0). Startstrecket kan ligga var som helst, men måste vara känt.",
       "Mät upp avståndet från startstrecket och gör ett bockstreck runt hela röret.",
       "Bocka första bocken till vald vinkel.",
@@ -681,6 +685,7 @@ export const BOCKNINGAR: BockOvning[] = [
       "Båda bockvinklarna är lika och stämmer ±2°.",
       "Bockarna ligger i samma plan.",
       "Inga veck eller ovalitet.",
+      "Tight S-bock enligt bocknyckelns märken.",
       "Beräkningen är dokumenterad.",
     ],
     vanligaFel: [
@@ -689,6 +694,7 @@ export const BOCKNINGAR: BockOvning[] = [
       "Startstreck och bockstreck blandas ihop.",
       "Bockarna får olika gradantal.",
       "Bockarna hamnar i olika plan.",
+      "Man använder 110 + X på fel rördiameter eller fel bocknyckel.",
     ],
     yrkestermer: [
       "S-bock",
@@ -699,6 +705,9 @@ export const BOCKNINGAR: BockOvning[] = [
       "bockvinkel",
       "bockplan",
       "Z-bock",
+      "tight S-bock",
+      "110 + X",
+      "90 + X",
     ],
     sakerhet: [
       "Handskar vid vassa rörändar.",
@@ -712,7 +721,7 @@ export const BOCKNINGAR: BockOvning[] = [
       "Varför måste bockstrecket gå runt hela röret?",
     ],
     kalla:
-      "RörmokarLäraren, ”Svan och s bock”. Faktorer: 15° × 3,7, 30° × 2, 45° × 1,41. Kontrollera mot din bockverktygstillverkares anvisning.",
+      "RörmokarLäraren, ”S-bockar 2.0” – tighta S-bockar och formlerna 110 + X / 90 + X. Kontrollera mot din bocknyckel.",
   },
   {
     id: "bock-svanbock-alt",

@@ -110,6 +110,10 @@ export const BOCK_TEORI: TeoriSection[] = [
         { vinkel: "45°", faktor: "1,41", anvandning: "vanlig S" },
       ]},
       { type: "example", text: "60 mm S med 30°-bockar: 60 × 2 = 120 mm mellan markeringarna. Med 45°-bockar: 60 × 1,41 = 84,6 mm." },
+      { type: "p", text: "Tighta S-bockar med 45°: 15 mm rör ger cirka 60 mm cc, 12 mm rör cirka 50 mm cc när bockarna läggs så nära varandra som möjligt." },
+      { type: "p", text: "För större S-bockar finns en praktisk formel: 15 mm rör → markavstånd = 110 + X. 12 mm rör → 90 + X. X är det S-mått du vill ha. Exempel: 15 mm rör och S = 80 mm → 110 + 80 = 190 mm mellan markeringarna." },
+      { type: "p", text: "Metod: märk avståndet, bocka första 45°-bocken, vänd röret och lägg märket på bockverktygets mittlinje, bocka andra 45°-bocken." },
+      { type: "note", text: "Bockverktyget har ofta två märken för tighta S-bockar. På 15 mm rör ger första märket cirka 15 mm S och andra märket cirka 35 mm S; på 12 mm rör cirka 10 mm respektive 30 mm. Alla bocknycklar slår olika – lär känna din egen." },
       { type: "bullets", items: [
         "Sätt ett startstreck – det kan ligga var som helst, men du måste veta var det är.",
         "Mät upp avståndet och gör ett bockstreck runt hela röret.",
