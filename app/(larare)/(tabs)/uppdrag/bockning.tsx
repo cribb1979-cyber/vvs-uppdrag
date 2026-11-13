@@ -11,6 +11,7 @@ import { skapaMallFranUppdrag } from "@/lib/uppdragsbank";
 import { supabase } from "@/lib/supabase";
 import { BOCKNINGAR, bockImagePath, type BockNiva, type BockOvning } from "@/lib/bockVvs";
 import { quizImageUrl } from "@/lib/quizImages";
+import { SystemSkiss } from "@/components/SystemSkiss";
 
 const NIVÅER: Array<"Alla" | BockNiva> = ["Alla", "Grund", "Fördjupning", "Mästare"];
 
@@ -35,6 +36,7 @@ export default function Bockningar() {
   const [skickar, setSkickar] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [niva, setNiva] = useState<"Alla" | BockNiva>("Alla");
+  const [plockat, setPlockat] = useState<Record<string, boolean>>({});
   const [oppna, setOppna] = useState<Record<string, boolean>>({});
 
   const q = normalisera(query.trim());
@@ -217,7 +219,20 @@ export default function Bockningar() {
             </View>
             <Text style={{ color: theme.muted, fontSize: 13, lineHeight: 19, marginTop: 6 }}>{o.sammanfattning}</Text>
 
-            {o.ritning !== false && (
+            {o.skiss === "system-cirkulation" ? (
+              <View
+                style={{
+                  marginTop: 10,
+                  borderRadius: 10,
+                  overflow: "hidden",
+                  backgroundColor: "#f7f9fc",
+                  width: "100%",
+                  aspectRatio: 600 / 420,
+                }}
+              >
+                <SystemSkiss />
+              </View>
+            ) : o.ritning !== false && (
               <>
                 <TouchableOpacity
                   onPress={() => Linking.openURL(quizImageUrl(bockImagePath(o.id)))}
@@ -267,6 +282,44 @@ export default function Bockningar() {
                   <>
                     <Text style={[styles.delRubrik, { color: theme.text }]}>Förklaring</Text>
                     <Text style={{ color: theme.text, fontSize: 13, lineHeight: 19, marginTop: 4 }}>{o.forklaring}</Text>
+                  </>
+                )}
+
+                {o.skiss === "system-cirkulation" && (
+                  <>
+                    <Text style={[styles.delRubrik, { color: theme.text, marginTop: 12 }]}>Hitta material</Text>
+                    <Text style={{ color: theme.muted, fontSize: 12, marginTop: 2 }}>
+                      Plocka fram delarna själv och kryssa av listan innan du börjar bygga.
+                    </Text>
+                    {o.material.map((m, i) => {
+                      const nyckel = `${o.id}-${i}`;
+                      const klar = Boolean(plockat[nyckel]);
+                      return (
+                        <TouchableOpacity
+                          key={nyckel}
+                          onPress={() => setPlockat((p) => ({ ...p, [nyckel]: !p[nyckel] }))}
+                          accessibilityRole="checkbox"
+                          accessibilityState={{ checked: klar }}
+                          style={{ flexDirection: "row", gap: 8, marginTop: 6, alignItems: "flex-start" }}
+                        >
+                          <Text style={{ color: klar ? theme.success : theme.text, fontSize: 14 }}>
+                            {klar ? "☑" : "☐"}
+                          </Text>
+                          <Text
+                            style={{
+                              color: klar ? theme.muted : theme.text,
+                              fontSize: 13,
+                              flex: 1,
+                              textDecorationLine: klar ? "line-through" : "none",
+                            }}
+                          >
+                            {m.component}
+                            {m.dimension ? ` ${m.dimension}` : ""}
+                            {m.quantity ? ` – ${m.quantity} st` : ""}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
                   </>
                 )}
 

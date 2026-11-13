@@ -35,6 +35,8 @@ export interface BockOvning {
   kalla?: string;
   /** false = övningen har ingen ritningsbild i bildbucketen. */
   ritning?: boolean;
+  /** Inbyggd principskiss (SVG i appen) i stället för bild från bucketen. */
+  skiss?: "system-cirkulation";
 }
 
 export const BOCK_IMAGE_BASE = "ac3e0e58-428f-4610-8231-151b4f511f3d/bockning";
@@ -890,6 +892,7 @@ export const BOCKNINGAR: BockOvning[] = [
     niva: "Mästare",
     tidMin: 180,
     ritning: false,
+    skiss: "system-cirkulation",
     sammanfattning:
       "Bygg ett litet värmesystem på en tavla: panna av 110-rör, öppet expansionskärl av 75-rör, framledning och retur i 15 mm, två radiatorer i 12 mm och en liten cirkulationspump som flyttar vattnet runt. Du hämtar själv materialet enligt listan och fäster upp allt stadigt med gängstång, svepklammer samt Z- och L-järn.",
     forklaring:
