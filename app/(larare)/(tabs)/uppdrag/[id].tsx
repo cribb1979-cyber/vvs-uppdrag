@@ -12,6 +12,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { MODE_OPTIONS, modeFromFields, modeToFields } from "@/lib/assignmentMode";
 import { getErrorMessage } from "@/lib/errors";
 import { pickQuizImage, quizImageUrl, uploadQuizImage } from "@/lib/quizImages";
+import { arLokalSkiss, skissId } from "@/lib/skisser";
+import { SkissRuta } from "@/components/SystemSkiss";
 import { supabase } from "@/lib/supabase";
 import { sessionJoinUrl } from "@/lib/links";
 import { skapaMallFranUppdrag } from "@/lib/uppdragsbank";
@@ -691,7 +693,9 @@ export default function AssignmentDetail() {
           </Card>
 
           <Text style={[styles.label, { color: theme.muted }]}>REFERENSBILD (SYNS BARA I ÖVNINGSLÄGE)</Text>
-          {assignment.reference_image_path ? (
+          {arLokalSkiss(assignment.reference_image_path) ? (
+            <SkissRuta id={skissId(assignment.reference_image_path)} style={styles.referencePreview} />
+          ) : assignment.reference_image_path ? (
             <Image source={{ uri: quizImageUrl(assignment.reference_image_path) }} style={styles.referencePreview} />
           ) : (
             <View style={[styles.referencePreview, styles.referencePlaceholder, { borderColor: theme.border }]}>

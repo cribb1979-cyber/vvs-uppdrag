@@ -18,6 +18,8 @@ import Colors from "@/constants/Colors";
 import { useAuth } from "@/contexts/AuthContext";
 import { getErrorMessage } from "@/lib/errors";
 import { quizImageUrl } from "@/lib/quizImages";
+import { arLokalSkiss, skissId } from "@/lib/skisser";
+import { SkissRuta } from "@/components/SystemSkiss";
 import {
   BANK_STATUS_LABEL,
   BANK_STATUS_TONE,
@@ -153,12 +155,16 @@ export default function BankMall() {
 
       {!!a?.reference_image_path && (
         <>
-          <TouchableOpacity
-            onPress={() => Linking.openURL(quizImageUrl(a.reference_image_path!))}
-            accessibilityRole="imagebutton"
-          >
-            <Image source={{ uri: quizImageUrl(a.reference_image_path) }} style={styles.bankImage} />
-          </TouchableOpacity>
+          {arLokalSkiss(a.reference_image_path) ? (
+            <SkissRuta id={skissId(a.reference_image_path)} style={styles.bankImage} />
+          ) : (
+            <TouchableOpacity
+              onPress={() => Linking.openURL(quizImageUrl(a.reference_image_path!))}
+              accessibilityRole="imagebutton"
+            >
+              <Image source={{ uri: quizImageUrl(a.reference_image_path) }} style={styles.bankImage} />
+            </TouchableOpacity>
+          )}
           <Text style={{ color: theme.muted, fontSize: 11, marginTop: 2 }}>
             Tryck på bilden för att öppna i full storlek.
           </Text>

@@ -16,6 +16,8 @@ import type { AssignmentKind } from "@/lib/database.types";
 import { REGLER, reglerFor, regel as hamtaRegel, reglerPerOmrade, SAKERVATTEN_VERSION } from "@/lib/sakervatten";
 import { materialForRegel, materialForRegler, type MaterialRad } from "@/lib/ovningsmaterial";
 import { bockning as hamtaBockning, materialForBockning } from "@/lib/bockVvs";
+import { referensForSkiss, type SkissId } from "@/lib/skisser";
+import { SkissRuta } from "@/components/SystemSkiss";
 
 interface DraftRequirement {
   key: string;
@@ -64,6 +66,7 @@ export default function NewAssignment() {
   );
   const [mode, setMode] = useState<AssignmentMode>("prov");
   const [referenceAsset, setReferenceAsset] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [lokalSkiss, setLokalSkiss] = useState<SkissId | null>(null);
   const [pickingReference, setPickingReference] = useState<"camera" | "library" | null>(null);
   const [requirements, setRequirements] = useState<DraftRequirement[]>([
     { key: String(Date.now()), component: "", dimension: "", quantity: "1" },
@@ -100,6 +103,7 @@ export default function NewAssignment() {
       setSelfItems(o.kontroll.join("\n"));
       setReflItems(o.reflektion.join("\n"));
       setRequirements(tillDraftRader(materialForBockning(o)));
+      setLokalSkiss(o.skiss ?? null);
       return;
     }
     if (regelKod) {
@@ -217,7 +221,11 @@ export default function NewAssignment() {
     setError(null);
     setSaving(true);
     try {
-      const referenceImagePath = referenceAsset ? await uploadQuizImage(org.id, referenceAsset) : null;
+      const referenceImagePath = referenceAsset
+        ? await uploadQuizImage(org.id, referenceAsset)
+        : lokalSkiss
+          ? referensForSkiss(lokalSkiss)
+          : null;
 
       const { data: assignment, error: assignErr } = await supabase
         .from("assignments")
@@ -418,6 +426,8 @@ export default function NewAssignment() {
             <Text style={[styles.label, { color: theme.muted, marginTop: 8 }]}>REFERENSBILD (VALFRI, VISAS BARA I ÖVNINGSLÄGE)</Text>
             {referenceAsset ? (
               <Image source={{ uri: referenceAsset.uri }} style={styles.referencePreview} />
+            ) : lokalSkiss ? (
+              <SkissRuta id={lokalSkiss} style={styles.referencePreview} />
             ) : (
               <View style={[styles.referencePreview, styles.referencePlaceholder, { borderColor: theme.border }]}>
                 <Text style={{ color: theme.muted }}>Ingen bild vald</Text>

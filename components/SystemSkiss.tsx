@@ -1,5 +1,7 @@
 import React from "react";
+import { View, type StyleProp, type ViewStyle } from "react-native";
 import { SvgXml } from "react-native-svg";
+import type { SkissId } from "@/lib/skisser";
 
 /**
  * Principskiss för systemövningen "Värmesystem på tavla".
@@ -59,6 +61,20 @@ export const SYSTEM_SKISS = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 
   <text x="588" y="404" font-family="DejaVu Sans" font-size="9.5" fill="#43566d" text-anchor="end">Z-JÄRN OCH L-JÄRN STAGAR TAVLAN</text>
 </svg>`;
 
-export function SystemSkiss() {
-  return <SvgXml xml={SYSTEM_SKISS} width="100%" height="100%" />;
+const SKISSER: Record<SkissId, string> = {
+  "system-cirkulation": SYSTEM_SKISS,
+};
+
+export function SystemSkiss({ id = "system-cirkulation" }: { id?: SkissId }) {
+  return <SvgXml xml={SKISSER[id]} width="100%" height="100%" />;
+}
+
+/** Skissen i en ruta med samma mått som en referensbild. */
+export function SkissRuta({ id, style }: { id: SkissId | null; style?: StyleProp<ViewStyle> }) {
+  if (!id) return null;
+  return (
+    <View style={[{ backgroundColor: "#f7f9fc", borderRadius: 12, overflow: "hidden" }, style]}>
+      <SystemSkiss id={id} />
+    </View>
+  );
 }

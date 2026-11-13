@@ -23,7 +23,7 @@ begin
     "course_code": "VVS",
     "skolverket_ref": "",
     "assessment_visible": false,
-    "reference_image_path": "",
+    "reference_image_path": "lokal:system-cirkulation",
     "goal": "Hämta och kontrollera materialet enligt listan. Kapa och plugga 110- och 75-rör. Montera täta 15 mm-genomföringar i pannan. Fästa upp systemet stabilt med gängstång, svepklammer, Z- och L-järn. Bygga framledning och retur i 15 mm samt två radiatorer i 12 mm. Montera och rikta cirkulationspumpen. Fylla, lufta och provköra systemet så att cirkulationen fungerar.",
     "self_check_items": [
       "Framledning sitter högt och retur lågt på pannan.",
