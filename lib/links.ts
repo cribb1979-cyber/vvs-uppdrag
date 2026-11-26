@@ -11,8 +11,9 @@ const WEBB_URL = (typeof window !== "undefined" && window.location?.origin)
   ? window.location.origin.replace(/\/+$/, "") : "";
 // Känd produktionsadress. Används i mobilappen om varken EXPO_PUBLIC_APP_URL
 // eller en webbadress finns, så att QR-koder/länkar ändå blir riktiga länkar.
-const PROD_URL = "https://vvs-uppdrag.vercel.app";
-const APP_URL = ENV_APP_URL || WEBB_URL || PROD_URL;
+// Det enda stället adressen står på – ändra här vid flytt.
+export const PROD_URL = "https://vvs-uppdrag.vercel.app";
+export const APP_URL = ENV_APP_URL || WEBB_URL || PROD_URL;
 
 export function sessionJoinUrl(code: string): string {
   if (!APP_URL) return code;
@@ -48,7 +49,7 @@ export function examTaskUrl(taskId: string): string {
 // En QR för hela examensveckan: publika översiktssidan med alla moment.
 export function examWeekUrl(): string {
   if (!APP_URL) return "examensprov";
-  return `${APP_URL}/examensprov`;
+  return `${APP_URL}/examensprov/oversikt`;
 }
 
 // Laneskär Ritverkstad – fristående ritverktyg i webbläsaren.

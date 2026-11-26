@@ -1,5 +1,6 @@
 import * as Crypto from "expo-crypto";
 import type * as ImagePicker from "expo-image-picker";
+import { APP_URL } from "./links";
 import { supabase } from "./supabase";
 
 export interface Installation {
@@ -26,19 +27,9 @@ export function nyToken(): string {
   return Crypto.randomUUID().replace(/-/g, "").slice(0, 16);
 }
 
-/** Basadressen som QR-koden kodar. På webben används fönstrets adress, så
-    koden pekar rätt även på en preview-deploy. */
-function basUrl(): string {
-  const envc = process.env.EXPO_PUBLIC_APP_URL?.replace(/\/+$/, "");
-  if (envc) return envc;
-  if (typeof window !== "undefined" && window.location?.origin) {
-    return window.location.origin.replace(/\/+$/, "");
-  }
-  return "https://vvs-uppdrag.vercel.app";
-}
-
+/** Publik adress som QR-koden kodar. Basadressen kommer från lib/links. */
 export function publikUrl(token: string): string {
-  return `${basUrl()}/i/${token}`;
+  return `${APP_URL}/i/${token}`;
 }
 
 export const TOM_INSTALLATION = {

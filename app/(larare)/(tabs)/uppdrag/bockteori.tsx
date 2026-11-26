@@ -5,11 +5,12 @@ import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { BOCK_TEORI, type TeoriBlock } from "@/lib/bockTeori";
 import { bockImagePath } from "@/lib/bockVvs";
+import { PROD_URL } from "@/lib/links";
 import { quizImageUrl } from "@/lib/quizImages";
 
 function skrivUt(titel: string, css: string, body: string) {
   if (Platform.OS !== "web") {
-    Alert.alert("Skriv ut", "Öppna webbversionen (vvs-uppdrag.vercel.app) och tryck på Skriv ut där.");
+    Alert.alert("Skriv ut", `Öppna webbversionen (${PROD_URL.replace(/^https?:\/\//, "")}) och tryck på Skriv ut där.`);
     return;
   }
   const w = (globalThis as any).window?.open("", "_blank");

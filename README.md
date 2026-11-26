@@ -34,6 +34,17 @@ Varje delmoment kan startas i två lägen:
 Innehållet ligger i `lib/examVvs.ts` – ändra där, inte i databasen. Tidsgränsen sparas i
 uppdragets `steps` (JSONB) via `lib/examMode.ts`, så ingen databasmigrering behövs.
 
+## Prov
+
+```bash
+bash test/kor-alla.sh
+```
+
+Proven ligger i `test/` och kontrollerar den rena logiken i `lib/` (CSV-import,
+examensklockans läge, övnings-/provläge, länkar) och att innehållet hänger ihop
+(unika koder, regelhänvisningar som finns). Inga extra beroenden – projektets
+TypeScript och Node:s inbyggda testkörare.
+
 ## Publicering
 
 Appen publiceras på **Vercel** (`https://vvs-uppdrag.vercel.app`) från `main` i
@@ -222,7 +233,7 @@ anslutningar. Eleven ritar i Laneskär Ritverkstad och exporterar ritningen som
 SVG/PNG eller `.cad`.
 
 Från **Examensprov** kan läraren skriva ut **examensveckans QR**. Den öppnar
-den publika översikten `/examensprov` med alla moment och länken till
+den publika översikten `/examensprov/oversikt` med alla moment och länken till
 Ritverkstaden. Samma sida kan delas som länk till elever på dator.
 
 ## QR-koder
