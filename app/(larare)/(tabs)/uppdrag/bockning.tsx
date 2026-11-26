@@ -11,7 +11,8 @@ import { skapaMallFranUppdrag } from "@/lib/uppdragsbank";
 import { supabase } from "@/lib/supabase";
 import { BOCKNINGAR, bockImagePath, type BockNiva, type BockOvning } from "@/lib/bockVvs";
 import { quizImageUrl } from "@/lib/quizImages";
-import { SystemSkiss } from "@/components/SystemSkiss";
+import { SkissMedZoom } from "@/components/SystemSkiss";
+import { referensForSkiss } from "@/lib/skisser";
 
 const NIVÅER: Array<"Alla" | BockNiva> = ["Alla", "Grund", "Fördjupning", "Mästare"];
 
@@ -66,6 +67,7 @@ export default function Bockningar() {
     try {
       const beskrivning = [
         o.sammanfattning,
+        ...(o.forklaring ? ["", o.forklaring] : []),
         "",
         "Moment:",
         ...o.moment.map((m, i) => `${i + 1}. ${m}`),
@@ -92,6 +94,7 @@ export default function Bockningar() {
           goal: o.mal.join(" "),
           self_check_items: o.kontroll,
           reflection_questions: o.reflektion,
+          reference_image_path: o.skiss ? referensForSkiss(o.skiss) : null,
           rule_refs: [],
           status: "draft",
         })
@@ -147,7 +150,7 @@ export default function Bockningar() {
     >
       <Text style={[styles.title, { color: theme.text }]}>Bockövningar</Text>
       <Text style={[styles.ingress, { color: theme.muted }]}>
-        Åtta praktiska bockövningar i koppar och PEX. Skapa ett uppdrag med moment, kontrollpunkter, yrkesspråk och
+        {BOCKNINGAR.length} praktiska bockövningar i koppar och PEX. Skapa ett uppdrag med moment, kontrollpunkter, yrkesspråk och
         materialrader – ändra allt innan du sparar.
       </Text>
 
@@ -219,18 +222,12 @@ export default function Bockningar() {
             </View>
             <Text style={{ color: theme.muted, fontSize: 13, lineHeight: 19, marginTop: 6 }}>{o.sammanfattning}</Text>
 
-            {o.skiss === "system-cirkulation" ? (
-              <View
-                style={{
-                  marginTop: 10,
-                  borderRadius: 10,
-                  overflow: "hidden",
-                  backgroundColor: "#f7f9fc",
-                  width: "100%",
-                  aspectRatio: 600 / 420,
-                }}
-              >
-                <SystemSkiss />
+            {o.skiss ? (
+              <View style={{ marginTop: 10 }}>
+                <SkissMedZoom id={o.skiss} />
+                <Text style={{ color: theme.muted, fontSize: 11, marginTop: 2 }}>
+                  Tryck på skissen för att förstora den.
+                </Text>
               </View>
             ) : o.ritning !== false && (
               <>

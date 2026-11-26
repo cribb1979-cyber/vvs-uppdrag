@@ -87,6 +87,7 @@ export default function NewAssignment() {
       setTitle(`Bockövning – ${o.titel}`);
       setDescription([
         o.sammanfattning,
+        ...(o.forklaring ? ["", o.forklaring] : []),
         "",
         "Moment:",
         ...o.moment.map((m, i) => `${i + 1}. ${m}`),

@@ -1,6 +1,7 @@
-import React from "react";
-import { View, type StyleProp, type ViewStyle } from "react-native";
+import React, { useState } from "react";
+import { Modal, ScrollView, Text, TouchableOpacity, View, useWindowDimensions, type StyleProp, type ViewStyle } from "react-native";
 import { SvgXml } from "react-native-svg";
+import { bockSkissProportion, bockSkissSvg } from "@/lib/bockSkisser";
 import type { SkissId } from "@/lib/skisser";
 
 /**
@@ -61,20 +62,74 @@ export const SYSTEM_SKISS = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 
   <text x="588" y="404" font-family="DejaVu Sans" font-size="9.5" fill="#43566d" text-anchor="end">Z-JÄRN OCH L-JÄRN STAGAR TAVLAN</text>
 </svg>`;
 
-const SKISSER: Record<SkissId, string> = {
-  "system-cirkulation": SYSTEM_SKISS,
-};
-
-export function SystemSkiss({ id = "system-cirkulation" }: { id?: SkissId }) {
-  return <SvgXml xml={SKISSER[id]} width="100%" height="100%" />;
+function skissSvg(id: SkissId): string {
+  return id === "system-cirkulation" ? SYSTEM_SKISS : bockSkissSvg(id);
 }
 
-/** Skissen i en ruta med samma mått som en referensbild. */
+/** Bredd/höjd – så att skissen får rätt proportioner i en ruta. */
+export function skissProportion(id: SkissId): number {
+  return id === "system-cirkulation" ? 600 / 420 : bockSkissProportion(id);
+}
+
+export function SystemSkiss({ id = "system-cirkulation" }: { id?: SkissId }) {
+  return <SvgXml xml={skissSvg(id)} width="100%" height="100%" />;
+}
+
+/** Skissen i helskärm. På en telefon blir den bredare än skärmen, så man
+    kan dra i sidled och läsa måtten. */
+function SkissZoom({ id, onClose }: { id: SkissId; onClose: () => void }) {
+  const { width, height } = useWindowDimensions();
+  const bredd = width < 700 ? Math.max(width * 1.8, 640) : Math.min(width - 32, 1200);
+  return (
+    <Modal visible animationType="fade" onRequestClose={onClose} transparent>
+      <View style={{ flex: 1, backgroundColor: "rgba(10,20,35,0.92)", paddingTop: 48 }}>
+        <TouchableOpacity
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel="Stäng skissen"
+          style={{ position: "absolute", top: 10, right: 16, padding: 8, zIndex: 2 }}
+        >
+          <Text style={{ color: "#fff", fontSize: 16, fontWeight: "700" }}>✕ Stäng</Text>
+        </TouchableOpacity>
+        <ScrollView contentContainerStyle={{ minHeight: height - 48, justifyContent: "center" }}>
+          <ScrollView horizontal contentContainerStyle={{ padding: 16 }}>
+            <View style={{ width: bredd, aspectRatio: skissProportion(id), backgroundColor: "#f7f9fc", borderRadius: 8, overflow: "hidden" }}>
+              <SystemSkiss id={id} />
+            </View>
+          </ScrollView>
+        </ScrollView>
+      </View>
+    </Modal>
+  );
+}
+
+/** Skiss med rätt proportioner. Tryck för att förstora. */
+export function SkissMedZoom({ id, style }: { id: SkissId; style?: StyleProp<ViewStyle> }) {
+  const [stor, setStor] = useState(false);
+  return (
+    <>
+      <TouchableOpacity onPress={() => setStor(true)} accessibilityRole="imagebutton" accessibilityLabel="Förstora skissen">
+        <View style={[{ width: "100%", aspectRatio: skissProportion(id), backgroundColor: "#f7f9fc", borderRadius: 10, overflow: "hidden" }, style]}>
+          <SystemSkiss id={id} />
+        </View>
+      </TouchableOpacity>
+      {stor && <SkissZoom id={id} onClose={() => setStor(false)} />}
+    </>
+  );
+}
+
+/** Skissen i en ruta med samma mått som en referensbild. Tryck för att förstora. */
 export function SkissRuta({ id, style }: { id: SkissId | null; style?: StyleProp<ViewStyle> }) {
+  const [stor, setStor] = useState(false);
   if (!id) return null;
   return (
-    <View style={[{ backgroundColor: "#f7f9fc", borderRadius: 12, overflow: "hidden" }, style]}>
-      <SystemSkiss id={id} />
-    </View>
+    <>
+      <TouchableOpacity onPress={() => setStor(true)} accessibilityRole="imagebutton" accessibilityLabel="Förstora skissen">
+        <View style={[{ backgroundColor: "#f7f9fc", borderRadius: 12, overflow: "hidden" }, style]}>
+          <SystemSkiss id={id} />
+        </View>
+      </TouchableOpacity>
+      {stor && <SkissZoom id={id} onClose={() => setStor(false)} />}
+    </>
   );
 }

@@ -4,7 +4,8 @@ import { Card } from "@/components/ui/Card";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { BOCK_TEORI, type TeoriBlock } from "@/lib/bockTeori";
-import { bockImagePath } from "@/lib/bockVvs";
+import { SkissMedZoom } from "@/components/SystemSkiss";
+import { bockImagePath, bockning } from "@/lib/bockVvs";
 import { PROD_URL } from "@/lib/links";
 import { quizImageUrl } from "@/lib/quizImages";
 
@@ -73,6 +74,15 @@ export default function BockTeori() {
       );
     }
     if (b.type === "image") {
+      const skiss = bockning(b.exerciseId)?.skiss;
+      if (skiss) {
+        return (
+          <View key={i} style={{ marginTop: 8 }}>
+            <SkissMedZoom id={skiss} />
+            {!!b.caption && <Text style={{ color: theme.muted, fontSize: 12, marginTop: 2 }}>{b.caption}</Text>}
+          </View>
+        );
+      }
       return (
         <TouchableOpacity
           key={i}
@@ -119,7 +129,7 @@ export default function BockTeori() {
       <h1>Räkneexempel</h1>
       <p>Så räknar du ut avståndet innan du bockar.</p>
       <table><tr><th>Vinkel</th><th>Faktor</th><th>Exempel</th></tr>
-        <tr><td>15°</td><td>3,7</td><td>60 mm S → 60 × 3,7 = 222 mm</td></tr>
+        <tr><td>15°</td><td>3,86</td><td>60 mm S → 60 × 3,86 = 231,6 mm</td></tr>
         <tr><td>30°</td><td>2,0</td><td>60 mm S → 60 × 2,0 = 120 mm</td></tr>
         <tr><td>45°</td><td>1,41</td><td>60 mm S → 60 × 1,41 = 84,6 mm</td></tr>
         <tr><td>90°</td><td>1,0</td><td>Z-bock – offset = cc-mått</td></tr>
@@ -173,7 +183,7 @@ export default function BockTeori() {
       <p class="sub">Formler, två vanliga bockar och de mått du använder oftast.</p>
       <table>
         <tr><th>Vinkel</th><th>Faktor</th><th>Används till</th><th>Exempel: S eller offset 60 mm</th></tr>
-        <tr><td>15°</td><td>3,7</td><td>stor offset/S</td><td>60 × 3,7 = 222 mm</td></tr>
+        <tr><td>15°</td><td>3,86</td><td>stor offset/S</td><td>60 × 3,86 = 231,6 mm</td></tr>
         <tr><td>30°</td><td>2,0</td><td>vanlig S</td><td>60 × 2,0 = 120 mm</td></tr>
         <tr><td>45°</td><td>1,41</td><td>vanligast</td><td>60 × 1,41 = 84,6 mm</td></tr>
         <tr><td>60°</td><td>1,15</td><td>kort offset</td><td>60 × 1,15 = 69 mm</td></tr>

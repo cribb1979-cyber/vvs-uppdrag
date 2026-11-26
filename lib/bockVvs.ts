@@ -5,6 +5,8 @@
 // Övningarna är statiska och versioneras i koden. Ett uppdrag som skapas
 // från en övning får moment, kontrollpunkter och materialrader förifyllda.
 
+import type { SkissId } from "./skisser";
+
 export type BockNiva = "Grund" | "Fördjupning" | "Mästare";
 
 export interface BockMaterial {
@@ -36,7 +38,7 @@ export interface BockOvning {
   /** false = övningen har ingen ritningsbild i bildbucketen. */
   ritning?: boolean;
   /** Inbyggd principskiss (SVG i appen) i stället för bild från bucketen. */
-  skiss?: "system-cirkulation";
+  skiss?: SkissId;
 }
 
 export const BOCK_IMAGE_BASE = "ac3e0e58-428f-4610-8231-151b4f511f3d/bockning";
@@ -49,11 +51,17 @@ export function bockImagePath(id: string): string {
 export const BOCKNINGAR: BockOvning[] = [
   {
     id: "bock-90-koppar-15",
+    skiss: "bock-90",
     titel: "Bocka 90° med bockfjäder – koppar 15 mm",
     niva: "Grund",
     tidMin: 45,
     sammanfattning:
       "Bocka ett 15 mm kopparrör 90° med bockfjäder. Öva bockmått, bockradie och kontroll av bockvinkel och ovalitet.",
+    forklaring:
+      "En 90°-bock gör ett hörn: röret går rakt och svänger sedan rakt upp. Bockfjädern stöttar röret inifrån så att det inte veckar sig eller blir ovalt.\n\n" +
+      "Exempel (se skissen): ben A ska vara 300 mm och ben B 200 mm, båda mätta till rörets centrumlinje. Märk där bocken ska ligga, för in fjädern så att den täcker hela bockzonen och bocka lugnt mot vinkelhaken.\n\n" +
+      "Lär känna din bock: bocka först en provbit. Märk t.ex. 200 mm, bocka 90° och mät sedan från röränden till centrum av det andra benet. Blir det 212 mm är skillnaden 12 mm – det är din bocks tillägg. Dra av det nästa gång (300 − 12 = 288 mm). Tillägget beror på fjädern och hur du bockar, så mät ditt eget.\n\n" +
+      "Godkänt: 90° ±2°, inga veck och ovalitet under 10 % (för 15 mm rör högst 1,5 mm skillnad mellan största och minsta diameter över bocken).",
     mal: [
       "Mäta och märka ut bockmått före bockning.",
       "Välja rätt bockfjäder för rördiameter och bockradie.",
@@ -125,11 +133,16 @@ export const BOCKNINGAR: BockOvning[] = [
   },
   {
     id: "bock-45-koppar-15",
+    skiss: "bock-45",
     titel: "Bocka 45° och kontrollera bockvinkel",
     niva: "Grund",
     tidMin: 30,
     sammanfattning:
       "Bocka ett 15 mm kopparrör 45° med bockfjäder och kontrollera vinkeln mot en vinkelmall.",
+    forklaring:
+      "En 45°-bock är halva 90°-bocken. Den används när röret ska byta riktning lite mjukare, och två 45°-bockar åt motsatt håll blir en offset.\n\n" +
+      "Det svåra är att stanna på rätt vinkel. Bocka lugnt, ta ut röret och lägg det mot vinkelmallen. Hellre två försiktiga tag än ett för mycket – en bock som gått för långt är svår att få tillbaka utan att röret blir ovalt.\n\n" +
+      "Kontroll: lägg röret mot mallen, 45° ±2°. Kontrollera också att röret inte har vridit sig, så att bocken ligger i det plan du tänkt.",
     mal: [
       "Mäta och märka ut bockmått.",
       "Bocka 45° med bockfjäder utan veck.",
@@ -169,6 +182,7 @@ export const BOCKNINGAR: BockOvning[] = [
   },
   {
     id: "bock-offset-45",
+    skiss: "bock-offset",
     titel: "Parallellförskjutning (offset) – två 45°-bockar",
     niva: "Fördjupning",
     tidMin: 60,
@@ -236,11 +250,16 @@ export const BOCKNINGAR: BockOvning[] = [
   },
   {
     id: "bock-dubbel-90",
+    skiss: "bock-u",
     titel: "Dubbelbock/U-bock efter mått",
     niva: "Fördjupning",
     tidMin: 60,
     sammanfattning:
       "Bocka en U-form med två 90°-bockar. Kontrollera cc-mått, höjd och att benen blir parallella.",
+    forklaring:
+      "En U-bock är två 90°-bockar i samma plan. Röret går upp, över och ner igen – som en bygel runt ett hinder.\n\n" +
+      "Exempel (se skissen): cc 200 mm mellan benen och höjd 150 mm. cc betyder centrum till centrum. På ett 15 mm rör ligger centrum 7,5 mm in från kanten, så mäter du från första benets närmaste kant blir det 200 − 7,5 = 192,5 mm till centrum av andra bocken.\n\n" +
+      "Bocka första bocken, kontrollera 90°, mät upp till andra bocken och bocka den i samma plan. Lägg röret på bänken: båda benen ska ligga plant och vara parallella.",
     mal: [
       "Mäta upp cc-mått och höjd.",
       "Bocka två 90°-bockar i samma plan.",
@@ -281,11 +300,16 @@ export const BOCKNINGAR: BockOvning[] = [
   },
   {
     id: "bock-efter-ritning",
+    skiss: "bock-ritning",
     titel: "Bocka efter ritning och mall",
     niva: "Fördjupning",
     tidMin: 75,
     sammanfattning:
       "Läs en enkel rörritning, måttsätt och bocka röret efter mall. Kontrollera mått, vinklar och toleranser mot ritningen.",
+    forklaring:
+      "På en rörritning står måtten till rörets centrumlinje. Din uppgift är att göra om ritningens mått till märken på röret och bocka i rätt ordning.\n\n" +
+      "Exempel (se skissen): 250 mm rakt, 90°-bock, 150 mm upp och sedan 45°. Börja i den ände där du har ett säkert mått, numrera bockarna på ritningen (1, 2 …) och bocka i nummerordning.\n\n" +
+      "Kontrollera mot mallen efter varje bock. Ett fel på 3 mm i första bocken följer med till alla bockar efter – det är billigare att rätta direkt än att börja om.",
     mal: [
       "Läsa byggmått och centrumlinjer på en rörritning.",
       "Mäta ut bockpunkter och bockmått.",
@@ -327,11 +351,17 @@ export const BOCKNINGAR: BockOvning[] = [
   },
   {
     id: "bock-tunnvaggig",
+    skiss: "bock-tunnvaggig",
     titel: "Bocka tunnväggigt kopparrör utan veck",
     niva: "Mästare",
     tidMin: 60,
     sammanfattning:
       "Bocka ett tunnväggigt kopparrör med stor bockradie utan veck och med kontrollerad ovalitet.",
+    forklaring:
+      "Ett tunnväggigt rör har mindre gods som håller emot, så insidan veckar sig och tvärsnittet blir ovalt lättare än på ett vanligt rör. Lösningen är stor bockradie, en hel bockfjäder som täcker hela bocken och att bocka långsamt.\n\n" +
+      "Ovalitet mäter du med skjutmått över bocken: största diametern minus minsta diametern. Gränsen är 10 % av rördiametern – för 15 mm rör högst 1,5 mm.\n\n" +
+      "Exempel: du mäter 15,6 och 14,3 mm → 15,6 − 14,3 = 1,3 mm. Godkänt. Mäter du 15,9 och 13,8 mm blir skillnaden 2,1 mm – underkänt.\n\n" +
+      "Är röret hårt kan det behöva mjukglödgas före bockning. Glödga bara om läraren sagt det, och låt röret svalna kontrollerat.",
     mal: [
       "Välja rätt bockfjäder för tunnväggigt rör.",
       "Mjukglödga röret vid behov.",
@@ -378,11 +408,16 @@ export const BOCKNINGAR: BockOvning[] = [
   },
   {
     id: "bock-pex-16",
+    skiss: "bock-pex",
     titel: "Bocka PEX 16 mm med bockfjäder",
     niva: "Grund",
     tidMin: 30,
     sammanfattning:
       "Bocka PEX 16 mm med bockfjäder för PEX. Kontrollera minsta bockradie och att röret inte knäcks.",
+    forklaring:
+      "PEX är plast och böjs utan värme, men det får inte bockas för snävt – då knäcks röret. Ett knäckt PEX-rör ska bytas, det går inte att räta ut.\n\n" +
+      "Minsta bockradie står i tillverkarens anvisning. Ofta är den 5 × ytterdiametern med bockfjäder: 5 × 16 = 80 mm. Utan stöd krävs oftast större radie. Det är tillverkarens siffra som gäller, inte exemplet.\n\n" +
+      "I ändarna monteras presskoppling med stödhylsa. Stödhylsan håller röret runt när kopplingen pressas – utan den kan fogen läcka.",
     mal: [
       "Känna till PEX-bockfjäder och minsta bockradie.",
       "Bocka PEX utan att röret knäcks.",
@@ -424,11 +459,16 @@ export const BOCKNINGAR: BockOvning[] = [
   },
   {
     id: "bock-anslut-tathet",
+    skiss: "bock-tathet",
     titel: "Bocka och anslut – täthetsprovning",
     niva: "Fördjupning",
     tidMin: 60,
     sammanfattning:
       "Bocka 90°, anslut med klämringskopplingar och täthetsprova installationen. Koppla ihop bockning med egenkontroll och provtryck.",
+    forklaring:
+      "Här kopplar du ihop bockning med det som händer på riktigt: bocken ska anslutas och vara tät.\n\n" +
+      "Provtrycket är 0,6 MPa, det vill säga 6 bar. Prova med vatten, aldrig med luft – luft lagrar mycket energi och en fog som släpper kan skada. Fyll röret, lufta vid högsta punkten och höj trycket lugnt med provtryckspumpen.\n\n" +
+      "Läs av manometern, titta på alla fogar och skriv provtryck, tid och resultat i egenkontrollen. Sjunker trycket letar du upp läckan, tömmer, rättar fogen och provar igen.",
     mal: [
       "Bocka ett 15 mm kopparrör 90°.",
       "Montera klämringskopplingar på rätt sätt.",
@@ -491,11 +531,17 @@ export const BOCKNINGAR: BockOvning[] = [
   },
   {
     id: "bock-serie-insida",
+    skiss: "bock-insida",
     titel: "Bocka i serie – L-, U- och Z-bock med insida som måttreferens",
     niva: "Mästare",
     tidMin: 75,
     sammanfattning:
       "Bocka två eller flera 90°-bockar i serie (L-, U- eller Z-bock) och mät från rörets insida i stället för centrum. Kompensera med halva ytterdiametern och kontrollera cc-måttet.",
+    forklaring:
+      "När du bockar flera bockar efter varandra är det svårt att hitta rörets centrum med tumstocken. Det är lättare att mäta från rörets kant – insidan – och räkna om.\n\n" +
+      "Kompensationen är halva ytterdiametern: 7,5 mm för 15 mm rör och 6 mm för 12 mm rör.\n\n" +
+      "Exempel (se skissen): Z-bock på 15 mm rör med cc 150 mm. Efter första bocken mäter du från insidan av det liggande benet: 150 − 7,5 = 142,5 mm till centrum av nästa bock.\n\n" +
+      "Välj en referens – centrum eller insida – och håll dig till den hela jobbet. Att blanda dem är det vanligaste felet.",
     mal: [
       "Förstå skillnaden mellan att mäta från centrum och från rörets insida.",
       "Beräkna kompensationen: halva ytterdiametern (7,5 mm för 15 mm rör, 6 mm för 12 mm rör).",
@@ -645,6 +691,7 @@ export const BOCKNINGAR: BockOvning[] = [
   },
   {
     id: "bock-s-bock",
+    skiss: "bock-s",
     titel: "S-bock – två lika stora bockar med beräknat avstånd",
     niva: "Mästare",
     tidMin: 75,
@@ -674,7 +721,7 @@ export const BOCKNINGAR: BockOvning[] = [
     ],
     moment: [
       "Bestäm S-måttet och bockvinkeln, till exempel 45°.",
-      "Beräkna avståndet mellan markeringarna: S-mått × faktor. 30° → ×2, 45° → ×1,41, 15° → ×3,7.",
+      "Beräkna avståndet mellan markeringarna: S-mått × faktor. 30° → ×2, 45° → ×1,41, 15° → ×3,86.",
       "Tight S-bock: lägg bockarna så nära varandra som möjligt (15 mm ≈ 60 mm cc, 12 mm ≈ 50 mm cc).",
       "Större S-bock: 15 mm rör → markavstånd = 110 + X; 12 mm rör → 90 + X.",
       "Sätt ett startstreck vid bockverktygets referens (0 på 0). Startstrecket kan ligga var som helst, men måste vara känt.",

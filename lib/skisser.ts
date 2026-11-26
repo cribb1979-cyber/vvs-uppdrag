@@ -1,3 +1,4 @@
+
 // Inbyggda principskisser.
 //
 // Skissen ritas som SVG i appen och har ingen fil i bildbucketen. När ett
@@ -5,7 +6,11 @@
 // bildsökväg: "lokal:<skiss-id>". Vyerna känner igen markören och ritar
 // skissen direkt, så eleven slipper ladda ner något.
 
-export type SkissId = "system-cirkulation";
+import { BOCK_SKISS_IDS, type BockSkissId } from "./bockSkisser";
+
+export type SkissId = "system-cirkulation" | BockSkissId;
+
+const KANDA: readonly string[] = ["system-cirkulation", ...BOCK_SKISS_IDS];
 
 export const SKISS_PREFIX = "lokal:";
 
@@ -16,7 +21,7 @@ export function arLokalSkiss(varde?: string | null): boolean {
 export function skissId(varde?: string | null): SkissId | null {
   if (!arLokalSkiss(varde)) return null;
   const id = varde!.slice(SKISS_PREFIX.length);
-  return id === "system-cirkulation" ? id : null;
+  return KANDA.includes(id) ? (id as SkissId) : null;
 }
 
 export function referensForSkiss(id: SkissId): string {

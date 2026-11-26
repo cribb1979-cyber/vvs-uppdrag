@@ -80,7 +80,7 @@ export const BOCK_TEORI: TeoriSection[] = [
       { type: "p", text: "En offset görs med två lika stora bockar åt motsatt håll. Röret fortsätter rakt – men på en ny nivå." },
       { type: "p", text: "Tänk dig att du går rakt fram, tar ett steg snett uppåt och ett steg snett tillbaka. Du går fortfarande rakt fram, men på en ny nivå. Så fungerar en offset." },
       { type: "formula", rows: [
-        { vinkel: "15°", faktor: "3,7", anvandning: "stor offset/S" },
+        { vinkel: "15°", faktor: "3,86", anvandning: "stor offset/S" },
         { vinkel: "30°", faktor: "2,0", anvandning: "offset/S" },
         { vinkel: "45°", faktor: "1,41", anvandning: "vanligast" },
         { vinkel: "60°", faktor: "1,15", anvandning: "kort offset" },
@@ -105,7 +105,7 @@ export const BOCK_TEORI: TeoriSection[] = [
       { type: "p", text: "En S-bock består av två lika stora bockar. S-måttet är hur mycket röret förskjuts i höjd- eller sidled." },
       { type: "p", text: "En S-bock kan aldrig vara 90° – då blir det en Z-bock. Vid 90° är faktorn 1, och då går röret rakt upp och rakt tillbaka." },
       { type: "formula", rows: [
-        { vinkel: "15°", faktor: "3,7", anvandning: "stor S" },
+        { vinkel: "15°", faktor: "3,86", anvandning: "stor S" },
         { vinkel: "30°", faktor: "2,0", anvandning: "vanlig S" },
         { vinkel: "45°", faktor: "1,41", anvandning: "vanlig S" },
       ]},
@@ -128,7 +128,7 @@ export const BOCK_TEORI: TeoriSection[] = [
     titel: "Räkneexempel steg för steg",
     ingress: "Så räknar du ut avståndet innan du bockar.",
     block: [
-      { type: "p", text: "Grundregeln: avstånd mellan bockarna = S-mått × faktor. Vid 45° är faktorn 1,41, vid 30° är den 2,0 och vid 15° är den 3,7." },
+      { type: "p", text: "Grundregeln: avstånd mellan bockarna = S-mått × faktor. Vid 45° är faktorn 1,41, vid 30° är den 2,0 och vid 15° är den 3,86." },
       { type: "example", text: "Offset 50 mm, 45°: 50 × 1,41 = 70,5 mm. Märk 70,5 mm mellan bockpunkterna." },
       { type: "example", text: "Offset 100 mm, 30°: 100 × 2,0 = 200 mm." },
       { type: "example", text: "S-bock 60 mm, 45°: 60 × 1,41 = 84,6 mm." },
