@@ -11,6 +11,7 @@ import { getErrorMessage } from "@/lib/errors";
 import { EXAM_TASKS, timmar, type ExamTask } from "@/lib/examVvs";
 import { examWeekUrl, RITVERKSTAD_URL } from "@/lib/links";
 import { examMeta } from "@/lib/examMode";
+import { referensForSkiss } from "@/lib/skisser";
 import { modeToFields, type AssignmentMode } from "@/lib/assignmentMode";
 import { supabase } from "@/lib/supabase";
 
@@ -48,6 +49,8 @@ export default function Examensprov() {
           self_check_items: task.checklista,
           reflection_questions: task.fragor,
           steps: [examMeta(task.id, task.minut, lage)],
+          // Skissen sparas alltid; databasen visar den bara för eleven i övningsläge.
+          reference_image_path: task.skiss ? referensForSkiss(task.skiss) : null,
           status: "draft",
         })
         .select()

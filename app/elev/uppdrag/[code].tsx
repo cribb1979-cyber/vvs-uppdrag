@@ -11,6 +11,8 @@ import { MaintenancePlanCard } from "@/components/MaintenancePlanCard";
 import { SakervattenCard } from "@/components/SakervattenCard";
 import { examInfo } from "@/lib/examMode";
 import { quizImageUrl } from "@/lib/quizImages";
+import { arLokalSkiss, skissId } from "@/lib/skisser";
+import { SkissRuta } from "@/components/SystemSkiss";
 import { supabase } from "@/lib/supabase";
 import { TeacherSignedInError, useStudentSession } from "@/lib/useStudentSession";
 
@@ -238,7 +240,11 @@ export default function ElevUppdrag() {
       {data.assignment.kind === "uppdrag" && !!data.assignment.reference_image_path && (
         <>
           <Text style={{ color: theme.muted, fontSize: 13, fontWeight: "700", marginTop: 16, marginBottom: 8 }}>REFERENSBILD</Text>
-          <Image source={{ uri: quizImageUrl(data.assignment.reference_image_path) }} style={styles.referenceImage} />
+          {arLokalSkiss(data.assignment.reference_image_path) ? (
+            <SkissRuta id={skissId(data.assignment.reference_image_path)} style={styles.referenceImage} />
+          ) : (
+            <Image source={{ uri: quizImageUrl(data.assignment.reference_image_path) }} style={styles.referenceImage} />
+          )}
         </>
       )}
 

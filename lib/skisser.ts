@@ -7,10 +7,11 @@
 // skissen direkt, så eleven slipper ladda ner något.
 
 import { BOCK_SKISS_IDS, type BockSkissId } from "./bockSkisser";
+import { EXAM_SKISS_IDS, type ExamSkissId } from "./examSkisser";
 
-export type SkissId = "system-cirkulation" | BockSkissId;
+export type SkissId = "system-cirkulation" | BockSkissId | ExamSkissId;
 
-const KANDA: readonly string[] = ["system-cirkulation", ...BOCK_SKISS_IDS];
+const KANDA: readonly string[] = ["system-cirkulation", ...BOCK_SKISS_IDS, ...EXAM_SKISS_IDS];
 
 export const SKISS_PREFIX = "lokal:";
 

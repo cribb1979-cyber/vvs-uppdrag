@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Modal, ScrollView, Text, TouchableOpacity, View, useWindowDimensions, type StyleProp, type ViewStyle } from "react-native";
 import { SvgXml } from "react-native-svg";
-import { bockSkissProportion, bockSkissSvg } from "@/lib/bockSkisser";
+import { bockSkissProportion, bockSkissSvg, type BockSkissId } from "@/lib/bockSkisser";
+import { EXAM_SKISS_IDS, examSkissProportion, examSkissSvg, type ExamSkissId } from "@/lib/examSkisser";
 import type { SkissId } from "@/lib/skisser";
 
 /**
@@ -62,13 +63,19 @@ export const SYSTEM_SKISS = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 
   <text x="588" y="404" font-family="DejaVu Sans" font-size="9.5" fill="#43566d" text-anchor="end">Z-JÄRN OCH L-JÄRN STAGAR TAVLAN</text>
 </svg>`;
 
+function arExam(id: SkissId): id is ExamSkissId {
+  return (EXAM_SKISS_IDS as string[]).includes(id);
+}
+
 function skissSvg(id: SkissId): string {
-  return id === "system-cirkulation" ? SYSTEM_SKISS : bockSkissSvg(id);
+  if (id === "system-cirkulation") return SYSTEM_SKISS;
+  return arExam(id) ? examSkissSvg(id) : bockSkissSvg(id as BockSkissId);
 }
 
 /** Bredd/höjd – så att skissen får rätt proportioner i en ruta. */
 export function skissProportion(id: SkissId): number {
-  return id === "system-cirkulation" ? 600 / 420 : bockSkissProportion(id);
+  if (id === "system-cirkulation") return 600 / 420;
+  return arExam(id) ? examSkissProportion(id) : bockSkissProportion(id as BockSkissId);
 }
 
 export function SystemSkiss({ id = "system-cirkulation" }: { id?: SkissId }) {

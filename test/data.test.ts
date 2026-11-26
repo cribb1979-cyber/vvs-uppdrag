@@ -9,6 +9,7 @@ import { BOCKNINGAR } from "../lib/bockVvs";
 import { BOCK_SKISS_IDS, bockSkissProportion, bockSkissSvg } from "../lib/bockSkisser";
 import { referensForSkiss, skissId } from "../lib/skisser";
 import { BOCK_TEORI } from "../lib/bockTeori";
+import { EXAM_SKISS_IDS, examSkissSvg } from "../lib/examSkisser";
 
 function dubbletter(lista: string[]): string[] {
   return lista.filter((x, i) => lista.indexOf(x) !== i);
@@ -79,5 +80,18 @@ test("bockteori: 15°-faktorn är 1/sin 15° = 3,86", () => {
         assert.ok(Math.abs(Number(r.faktor.replace(",", ".")) - forvantat) < 0.01, `${r.vinkel}: ${r.faktor}`);
       }
     }
+  }
+});
+
+test("examensprov: installationernas skisser finns och ritas utan fel", () => {
+  for (const id of ["expansionskarl", "varmvattenberedare", "komplettering-badrum"]) {
+    const skiss = examTask(id)?.skiss;
+    assert.ok(skiss, `${id} saknar skiss`);
+    assert.equal(skissId(referensForSkiss(skiss!)), skiss);
+  }
+  for (const id of EXAM_SKISS_IDS) {
+    const svg = examSkissSvg(id);
+    assert.ok(svg.startsWith("<svg") && svg.endsWith("</svg>"), id);
+    assert.ok(!/NaN|undefined|Infinity/.test(svg), `${id}: trasigt tal i skissen`);
   }
 });

@@ -4,6 +4,7 @@
 // uppgifterna från det skarpa provet.
 
 import { RITVERKSTAD_URL } from "./links";
+import type { SkissId } from "./skisser";
 
 export type ExamKategori = "Dokumentation" | "Kontroll" | "Beräkning" | "Installation";
 
@@ -23,6 +24,8 @@ export interface ExamTask {
   regelRefs?: string[];
   /** Externt ritverktyg som momentet använder. */
   verktygUrl?: string;
+  /** Principskiss som visas för eleven i övningsläge (döljs i skarpt läge). */
+  skiss?: SkissId;
 }
 
 export const EXAM_TASKS: ExamTask[] = [
@@ -184,6 +187,7 @@ export const EXAM_TASKS: ExamTask[] = [
   },
   {
     id: "expansionskarl",
+    skiss: "exam-expansion",
     regelRefs: ["varme-fordelare", "varme-service", "kontroll-tryck"],
     titel: "Installation – slutet expansionskärl",
     minut: 480,
@@ -215,6 +219,7 @@ export const EXAM_TASKS: ExamTask[] = [
   },
   {
     id: "varmvattenberedare",
+    skiss: "exam-vvb",
     regelRefs: ["legionella-temp", "legionella-utformning", "kontroll-temp", "aterstromning"],
     titel: "Installation – varmvattenberedare",
     minut: 480,
@@ -241,6 +246,7 @@ export const EXAM_TASKS: ExamTask[] = [
   },
   {
     id: "komplettering-badrum",
+    skiss: "exam-badrum",
     regelRefs: ["tatskikt-golv", "tatskikt-vagg", "infastning-vagg", "infastning-golv", "golvbrunn"],
     titel: "Installation – komplettering av badrum",
     minut: 480,
